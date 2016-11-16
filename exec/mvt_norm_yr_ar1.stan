@@ -7,6 +7,9 @@ data {
   int<lower=1> yearID[N];
   real y[N];
   int prior_gp_scale[3];
+  int prior_gp_sigma[3];
+  int prior_sigma[3];
+  int prior_ar[3];
   matrix[nKnots,nKnots] distKnotsSq;
   matrix[nLocs,nKnots] distKnots21Sq;
 }
@@ -50,9 +53,9 @@ transformed parameters {
 model {
   // priors:
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
-  gp_sigma ~ student_t(3, 0, 2);
-  sigma ~ student_t(3, 0, 2);
-  ar ~ normal(0, 1);
+  gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
+  sigma ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+  ar ~ student_t(prior_ar[1], prior_ar[2], prior_ar[3]);
   df ~ gamma(2, 0.1);
   year_sigma ~ student_t(3, 0, 2);
 

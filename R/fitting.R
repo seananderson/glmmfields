@@ -29,8 +29,7 @@ format_data <- function(data, y, time, lon = "lon", lat = "lat", nKnots = 25L) {
     yearID = yearID,
     y = Y,
     distKnotsSq = distKnotsSq,
-    distKnots21Sq = distKnots21Sq
-    )
+    distKnots21Sq = distKnots21Sq)
   spatglm_data
 }
 
@@ -49,13 +48,25 @@ stan_pars <- function() {
   spatglm_pars
 }
 
+parse_t_prior <- function(x) {
+  as.vector(unlist(x)[-1], mode = "integer")
+}
+
 #' @export
 #' @importFrom rstanarm student_t normal
-rrfield <- function(data, pars = stan_pars(), prior_gp_scale = student_t(3, 0, 10),
+rrfield <- function(data, pars = stan_pars(),
+  prior_gp_scale = student_t(3, 0, 10),
+  prior_gp_sigma = student_t(3, 0, 2),
+  prior_sigma = student_t(3, 0, 2),
+  prior_ar = student_t(100, 0, 1),
   ...) {
 
   data <- c(data,
-    list(prior_gp_scale = as.vector(unlist(prior_gp_scale)[-1], mode = "integer")))
+    list(prior_gp_scale = parse_t_prior(prior_gp_scale)),
+    list(prior_gp_scale = parse_t_prior(prior_gp_sigma)),
+    list(prior_gp_scale = parse_t_prior(prior_sigma)),
+    list(prior_gp_scale = parse_t_prior(prior_ar))
+  )
   m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = data, pars = pars, ...)
   m
 }
