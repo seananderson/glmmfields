@@ -33,7 +33,7 @@ private:
     vector<int> stationID;
     vector<int> yearID;
     vector<double> y;
-    vector<double> x;
+    vector<int> prior_gp_scale;
     matrix_d distKnotsSq;
     matrix_d distKnots21Sq;
 public:
@@ -112,14 +112,14 @@ public:
         for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
             y[i_0__] = vals_r__[pos__++];
         }
-        context__.validate_dims("data initialization", "x", "double", context__.to_vec(N));
-        validate_non_negative_index("x", "N", N);
-        x = std::vector<double>(N,double(0));
-        vals_r__ = context__.vals_r("x");
+        context__.validate_dims("data initialization", "prior_gp_scale", "int", context__.to_vec(3));
+        validate_non_negative_index("prior_gp_scale", "3", 3);
+        prior_gp_scale = std::vector<int>(3,int(0));
+        vals_i__ = context__.vals_i("prior_gp_scale");
         pos__ = 0;
-        size_t x_limit_0__ = N;
-        for (size_t i_0__ = 0; i_0__ < x_limit_0__; ++i_0__) {
-            x[i_0__] = vals_r__[pos__++];
+        size_t prior_gp_scale_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_gp_scale_limit_0__; ++i_0__) {
+            prior_gp_scale[i_0__] = vals_i__[pos__++];
         }
         context__.validate_dims("data initialization", "distKnotsSq", "matrix_d", context__.to_vec(nKnots,nKnots));
         validate_non_negative_index("distKnotsSq", "nKnots", nKnots);
@@ -214,30 +214,30 @@ public:
             throw std::runtime_error(std::string("Error transforming variable gp_scale: ") + e.what());
         }
 
-        if (!(context__.contains_r("gp_sigmaSq")))
-            throw std::runtime_error("variable gp_sigmaSq missing");
-        vals_r__ = context__.vals_r("gp_sigmaSq");
+        if (!(context__.contains_r("gp_sigma")))
+            throw std::runtime_error("variable gp_sigma missing");
+        vals_r__ = context__.vals_r("gp_sigma");
         pos__ = 0U;
-        context__.validate_dims("initialization", "gp_sigmaSq", "double", context__.to_vec());
-        double gp_sigmaSq(0);
-        gp_sigmaSq = vals_r__[pos__++];
+        context__.validate_dims("initialization", "gp_sigma", "double", context__.to_vec());
+        double gp_sigma(0);
+        gp_sigma = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0,gp_sigmaSq);
+            writer__.scalar_lb_unconstrain(0,gp_sigma);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable gp_sigmaSq: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable gp_sigma: ") + e.what());
         }
 
-        if (!(context__.contains_r("scaledf")))
-            throw std::runtime_error("variable scaledf missing");
-        vals_r__ = context__.vals_r("scaledf");
+        if (!(context__.contains_r("df")))
+            throw std::runtime_error("variable df missing");
+        vals_r__ = context__.vals_r("df");
         pos__ = 0U;
-        context__.validate_dims("initialization", "scaledf", "double", context__.to_vec());
-        double scaledf(0);
-        scaledf = vals_r__[pos__++];
+        context__.validate_dims("initialization", "df", "double", context__.to_vec());
+        double df(0);
+        df = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(2,scaledf);
+            writer__.scalar_lb_unconstrain(2,df);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable scaledf: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable df: ") + e.what());
         }
 
         if (!(context__.contains_r("sigma")))
@@ -347,19 +347,19 @@ public:
         else
             gp_scale = in__.scalar_lb_constrain(0);
 
-        T__ gp_sigmaSq;
-        (void) gp_sigmaSq;  // dummy to suppress unused var warning
+        T__ gp_sigma;
+        (void) gp_sigma;  // dummy to suppress unused var warning
         if (jacobian__)
-            gp_sigmaSq = in__.scalar_lb_constrain(0,lp__);
+            gp_sigma = in__.scalar_lb_constrain(0,lp__);
         else
-            gp_sigmaSq = in__.scalar_lb_constrain(0);
+            gp_sigma = in__.scalar_lb_constrain(0);
 
-        T__ scaledf;
-        (void) scaledf;  // dummy to suppress unused var warning
+        T__ df;
+        (void) df;  // dummy to suppress unused var warning
         if (jacobian__)
-            scaledf = in__.scalar_lb_constrain(2,lp__);
+            df = in__.scalar_lb_constrain(2,lp__);
         else
-            scaledf = in__.scalar_lb_constrain(2);
+            df = in__.scalar_lb_constrain(2);
 
         T__ sigma;
         (void) sigma;  // dummy to suppress unused var warning
@@ -415,6 +415,8 @@ public:
         (void) invSigmaKnots;  // dummy to suppress unused var warning
         Eigen::Matrix<T__,Eigen::Dynamic,1>  y_hat(static_cast<Eigen::VectorXd::Index>(N));
         (void) y_hat;  // dummy to suppress unused var warning
+        T__ gp_sigmaSq;
+        (void) gp_sigmaSq;  // dummy to suppress unused var warning
 
         // initialize transformed variables to avoid seg fault on val access
         stan::math::fill(muZeros,DUMMY_VAR__);
@@ -423,8 +425,10 @@ public:
         stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
         stan::math::fill(invSigmaKnots,DUMMY_VAR__);
         stan::math::fill(y_hat,DUMMY_VAR__);
+        stan::math::fill(gp_sigmaSq,DUMMY_VAR__);
 
         try {
+            stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
             stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
             stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int i = 1; i <= nKnots; ++i) {
@@ -494,25 +498,31 @@ public:
                 throw std::runtime_error(msg__.str());
             }
         }
+        if (stan::math::is_uninitialized(gp_sigmaSq)) {
+            std::stringstream msg__;
+            msg__ << "Undefined transformed parameter: gp_sigmaSq";
+            throw std::runtime_error(msg__.str());
+        }
 
         const char* function__ = "validate transformed params";
         (void) function__;  // dummy to suppress unused var warning
+        check_greater_or_equal(function__,"gp_sigmaSq",gp_sigmaSq,0);
 
         // model body
         try {
-            lp_accum__.add(student_t_log<propto__>(gp_scale, 3, 0, 10));
-            lp_accum__.add(student_t_log<propto__>(gp_sigmaSq, 3, 0, 2));
+            lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
+            lp_accum__.add(student_t_log<propto__>(gp_sigma, 3, 0, 2));
             lp_accum__.add(student_t_log<propto__>(sigma, 3, 0, 2));
             lp_accum__.add(normal_log<propto__>(ar, 0, 1));
-            lp_accum__.add(gamma_log<propto__>(scaledf, 2, 0.10000000000000001));
+            lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
             lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
             lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 3, 0, 2));
             for (int t = 2; t <= nT; ++t) {
                 lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
             }
-            lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), scaledf, muZeros, SigmaKnots));
+            lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), df, muZeros, SigmaKnots));
             for (int t = 2; t <= nT; ++t) {
-                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), scaledf, multiply(ar,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), df, multiply(ar,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
             }
             lp_accum__.add(normal_log<propto__>(y, y_hat, sigma));
         } catch (const std::exception& e) {
@@ -541,8 +551,8 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("gp_scale");
-        names__.push_back("gp_sigmaSq");
-        names__.push_back("scaledf");
+        names__.push_back("gp_sigma");
+        names__.push_back("df");
         names__.push_back("sigma");
         names__.push_back("ar");
         names__.push_back("yearEffects");
@@ -554,6 +564,7 @@ public:
         names__.push_back("SigmaOffDiag");
         names__.push_back("invSigmaKnots");
         names__.push_back("y_hat");
+        names__.push_back("gp_sigmaSq");
     }
 
 
@@ -601,6 +612,8 @@ public:
         dims__.resize(0);
         dims__.push_back(N);
         dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
     }
 
     template <typename RNG>
@@ -617,8 +630,8 @@ public:
         (void) function__; // dummy call to supress warning
         // read-transform, write parameters
         double gp_scale = in__.scalar_lb_constrain(0);
-        double gp_sigmaSq = in__.scalar_lb_constrain(0);
-        double scaledf = in__.scalar_lb_constrain(2);
+        double gp_sigma = in__.scalar_lb_constrain(0);
+        double df = in__.scalar_lb_constrain(2);
         double sigma = in__.scalar_lb_constrain(0);
         double ar = in__.scalar_lub_constrain(-(1),1);
         vector<double> yearEffects;
@@ -633,8 +646,8 @@ public:
             spatialEffectsKnots.push_back(in__.vector_constrain(nKnots));
         }
         vars__.push_back(gp_scale);
-        vars__.push_back(gp_sigmaSq);
-        vars__.push_back(scaledf);
+        vars__.push_back(gp_sigma);
+        vars__.push_back(df);
         vars__.push_back(sigma);
         vars__.push_back(ar);
         for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
@@ -664,8 +677,11 @@ public:
         (void) invSigmaKnots;  // dummy to suppress unused var warning
         vector_d y_hat(static_cast<Eigen::VectorXd::Index>(N));
         (void) y_hat;  // dummy to suppress unused var warning
+        double gp_sigmaSq(0.0);
+        (void) gp_sigmaSq;  // dummy to suppress unused var warning
 
         try {
+            stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
             stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
             stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int i = 1; i <= nKnots; ++i) {
@@ -685,6 +701,7 @@ public:
         }
 
         // validate transformed parameters
+        check_greater_or_equal(function__,"gp_sigmaSq",gp_sigmaSq,0);
 
         // write transformed parameters
         for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
@@ -713,6 +730,7 @@ public:
         for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(y_hat[k_0__]);
         }
+        vars__.push_back(gp_sigmaSq);
 
         if (!include_gqs__) return;
         // declare and define generated quantities
@@ -766,10 +784,10 @@ public:
         param_name_stream__ << "gp_scale";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigmaSq";
+        param_name_stream__ << "gp_sigma";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "scaledf";
+        param_name_stream__ << "df";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
@@ -832,6 +850,9 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigmaSq";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
     }
@@ -845,10 +866,10 @@ public:
         param_name_stream__ << "gp_scale";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigmaSq";
+        param_name_stream__ << "gp_sigma";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "scaledf";
+        param_name_stream__ << "df";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
@@ -911,6 +932,9 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigmaSq";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
     }

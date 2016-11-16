@@ -6,14 +6,14 @@ data {
   int<lower=1> stationID[N];
   int<lower=1> yearID[N];
   real y[N];
-  real x[N];
+  int prior_gp_scale[3];
   matrix[nKnots,nKnots] distKnotsSq;
   matrix[nLocs,nKnots] distKnots21Sq;
 }
 parameters {
   real<lower=0> gp_scale;
-  real<lower=0> gp_sigmaSq;
-  real<lower=2> scaledf;
+  real<lower=0> gp_sigma;
+  real<lower=2> df;
   real<lower=0> sigma;
   real<lower=-1,upper=1> ar;
   real yearEffects[nT];
@@ -24,9 +24,12 @@ transformed parameters {
 	vector[nKnots] muZeros;
 	vector[nLocs] spatialEffects[nT];
   matrix[nKnots, nKnots] SigmaKnots;
-  matrix[nLocs,nKnots] SigmaOffDiag;
-  matrix[nLocs,nKnots] invSigmaKnots;
+  matrix[nLocs, nKnots] SigmaOffDiag;
+  matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
+  real<lower=0> gp_sigmaSq;
+
+  gp_sigmaSq = gp_sigma^2;
 
   // cov matrix between knots:
   SigmaKnots = gp_sigmaSq * exp(-gp_scale * distKnotsSq);
@@ -45,14 +48,12 @@ transformed parameters {
 	}
 }
 model {
-  # priors:
-  gp_scale ~ student_t(3, 0, 10);
-  gp_sigmaSq ~ student_t(3, 0, 2);
+  // priors:
+  gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
+  gp_sigma ~ student_t(3, 0, 2);
   sigma ~ student_t(3, 0, 2);
   ar ~ normal(0, 1);
-
-  // https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations:
-  scaledf ~ gamma(2, 0.1);
+  df ~ gamma(2, 0.1);
   year_sigma ~ student_t(3, 0, 2);
 
   // random walk in year terms:
@@ -60,9 +61,9 @@ model {
   for(t in 2:nT) {
     yearEffects[t] ~ normal(yearEffects[t-1], year_sigma);
   }
-  spatialEffectsKnots[1] ~ multi_student_t(scaledf, muZeros, SigmaKnots);
+  spatialEffectsKnots[1] ~ multi_student_t(df, muZeros, SigmaKnots);
   for(t in 2:nT) {
-    spatialEffectsKnots[t] ~ multi_student_t(scaledf,
+    spatialEffectsKnots[t] ~ multi_student_t(df,
       ar*spatialEffectsKnots[t-1], SigmaKnots);
   }
 
