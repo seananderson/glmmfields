@@ -7,7 +7,7 @@
 
 #include <stan/model/model_header.hpp>
 
-namespace model_mvn_norm_namespace {
+namespace model_mvt_norm_yr_ar1_namespace {
 
 using std::istream;
 using std::string;
@@ -24,16 +24,20 @@ typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matrix_d;
 
 static int current_statement_begin__;
 
-class model_mvn_norm : public prob_grad {
+class model_mvt_norm_yr_ar1 : public prob_grad {
 private:
     int nKnots;
     int nLocs;
     int nT;
-    matrix_d y;
+    int N;
+    vector<int> stationID;
+    vector<int> yearID;
+    vector<double> y;
+    vector<double> x;
     matrix_d distKnotsSq;
     matrix_d distKnots21Sq;
 public:
-    model_mvn_norm(stan::io::var_context& context__,
+    model_mvt_norm_yr_ar1(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
         typedef boost::ecuyer1988 rng_t;
@@ -42,7 +46,7 @@ public:
     }
 
     template <class RNG>
-    model_mvn_norm(stan::io::var_context& context__,
+    model_mvt_norm_yr_ar1(stan::io::var_context& context__,
         RNG& base_rng__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
@@ -55,7 +59,7 @@ public:
                    std::ostream* pstream__) {
         current_statement_begin__ = -1;
 
-        static const char* function__ = "model_mvn_norm_namespace::model_mvn_norm";
+        static const char* function__ = "model_mvt_norm_yr_ar1_namespace::model_mvt_norm_yr_ar1";
         (void) function__; // dummy call to supress warning
         size_t pos__;
         (void) pos__; // dummy call to supress warning
@@ -76,18 +80,46 @@ public:
         vals_i__ = context__.vals_i("nT");
         pos__ = 0;
         nT = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "y", "matrix_d", context__.to_vec(nT,nLocs));
-        validate_non_negative_index("y", "nT", nT);
-        validate_non_negative_index("y", "nLocs", nLocs);
-        y = matrix_d(static_cast<Eigen::VectorXd::Index>(nT),static_cast<Eigen::VectorXd::Index>(nLocs));
+        context__.validate_dims("data initialization", "N", "int", context__.to_vec());
+        N = int(0);
+        vals_i__ = context__.vals_i("N");
+        pos__ = 0;
+        N = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "stationID", "int", context__.to_vec(N));
+        validate_non_negative_index("stationID", "N", N);
+        stationID = std::vector<int>(N,int(0));
+        vals_i__ = context__.vals_i("stationID");
+        pos__ = 0;
+        size_t stationID_limit_0__ = N;
+        for (size_t i_0__ = 0; i_0__ < stationID_limit_0__; ++i_0__) {
+            stationID[i_0__] = vals_i__[pos__++];
+        }
+        context__.validate_dims("data initialization", "yearID", "int", context__.to_vec(N));
+        validate_non_negative_index("yearID", "N", N);
+        yearID = std::vector<int>(N,int(0));
+        vals_i__ = context__.vals_i("yearID");
+        pos__ = 0;
+        size_t yearID_limit_0__ = N;
+        for (size_t i_0__ = 0; i_0__ < yearID_limit_0__; ++i_0__) {
+            yearID[i_0__] = vals_i__[pos__++];
+        }
+        context__.validate_dims("data initialization", "y", "double", context__.to_vec(N));
+        validate_non_negative_index("y", "N", N);
+        y = std::vector<double>(N,double(0));
         vals_r__ = context__.vals_r("y");
         pos__ = 0;
-        size_t y_m_mat_lim__ = nT;
-        size_t y_n_mat_lim__ = nLocs;
-        for (size_t n_mat__ = 0; n_mat__ < y_n_mat_lim__; ++n_mat__) {
-            for (size_t m_mat__ = 0; m_mat__ < y_m_mat_lim__; ++m_mat__) {
-                y(m_mat__,n_mat__) = vals_r__[pos__++];
-            }
+        size_t y_limit_0__ = N;
+        for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
+            y[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "x", "double", context__.to_vec(N));
+        validate_non_negative_index("x", "N", N);
+        x = std::vector<double>(N,double(0));
+        vals_r__ = context__.vals_r("x");
+        pos__ = 0;
+        size_t x_limit_0__ = N;
+        for (size_t i_0__ = 0; i_0__ < x_limit_0__; ++i_0__) {
+            x[i_0__] = vals_r__[pos__++];
         }
         context__.validate_dims("data initialization", "distKnotsSq", "matrix_d", context__.to_vec(nKnots,nKnots));
         validate_non_negative_index("distKnotsSq", "nKnots", nKnots);
@@ -120,6 +152,13 @@ public:
         check_greater_or_equal(function__,"nKnots",nKnots,1);
         check_greater_or_equal(function__,"nLocs",nLocs,1);
         check_greater_or_equal(function__,"nT",nT,1);
+        check_greater_or_equal(function__,"N",N,1);
+        for (int k0__ = 0; k0__ < N; ++k0__) {
+            check_greater_or_equal(function__,"stationID[k0__]",stationID[k0__],1);
+        }
+        for (int k0__ = 0; k0__ < N; ++k0__) {
+            check_greater_or_equal(function__,"yearID[k0__]",yearID[k0__],1);
+        }
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -141,10 +180,15 @@ public:
         param_ranges_i__.clear();
         ++num_params_r__;
         ++num_params_r__;
+        ++num_params_r__;
+        ++num_params_r__;
+        ++num_params_r__;
+        num_params_r__ += nT;
+        ++num_params_r__;
         num_params_r__ += nKnots * nT;
     }
 
-    ~model_mvn_norm() { }
+    ~model_mvt_norm_yr_ar1() { }
 
 
     void transform_inits(const stan::io::var_context& context__,
@@ -181,6 +225,73 @@ public:
             writer__.scalar_lb_unconstrain(0,gp_sigmaSq);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable gp_sigmaSq: ") + e.what());
+        }
+
+        if (!(context__.contains_r("scaledf")))
+            throw std::runtime_error("variable scaledf missing");
+        vals_r__ = context__.vals_r("scaledf");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "scaledf", "double", context__.to_vec());
+        double scaledf(0);
+        scaledf = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(2,scaledf);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable scaledf: ") + e.what());
+        }
+
+        if (!(context__.contains_r("sigma")))
+            throw std::runtime_error("variable sigma missing");
+        vals_r__ = context__.vals_r("sigma");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "sigma", "double", context__.to_vec());
+        double sigma(0);
+        sigma = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,sigma);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable sigma: ") + e.what());
+        }
+
+        if (!(context__.contains_r("ar")))
+            throw std::runtime_error("variable ar missing");
+        vals_r__ = context__.vals_r("ar");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "ar", "double", context__.to_vec());
+        double ar(0);
+        ar = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(-(1),1,ar);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable ar: ") + e.what());
+        }
+
+        if (!(context__.contains_r("yearEffects")))
+            throw std::runtime_error("variable yearEffects missing");
+        vals_r__ = context__.vals_r("yearEffects");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "yearEffects", "double", context__.to_vec(nT));
+        std::vector<double> yearEffects(nT,double(0));
+        for (int i0__ = 0U; i0__ < nT; ++i0__)
+            yearEffects[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < nT; ++i0__)
+            try {
+            writer__.scalar_unconstrain(yearEffects[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable yearEffects: ") + e.what());
+        }
+
+        if (!(context__.contains_r("year_sigma")))
+            throw std::runtime_error("variable year_sigma missing");
+        vals_r__ = context__.vals_r("year_sigma");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "year_sigma", "double", context__.to_vec());
+        double year_sigma(0);
+        year_sigma = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,year_sigma);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable year_sigma: ") + e.what());
         }
 
         if (!(context__.contains_r("spatialEffectsKnots")))
@@ -243,6 +354,44 @@ public:
         else
             gp_sigmaSq = in__.scalar_lb_constrain(0);
 
+        T__ scaledf;
+        (void) scaledf;  // dummy to suppress unused var warning
+        if (jacobian__)
+            scaledf = in__.scalar_lb_constrain(2,lp__);
+        else
+            scaledf = in__.scalar_lb_constrain(2);
+
+        T__ sigma;
+        (void) sigma;  // dummy to suppress unused var warning
+        if (jacobian__)
+            sigma = in__.scalar_lb_constrain(0,lp__);
+        else
+            sigma = in__.scalar_lb_constrain(0);
+
+        T__ ar;
+        (void) ar;  // dummy to suppress unused var warning
+        if (jacobian__)
+            ar = in__.scalar_lub_constrain(-(1),1,lp__);
+        else
+            ar = in__.scalar_lub_constrain(-(1),1);
+
+        vector<T__> yearEffects;
+        size_t dim_yearEffects_0__ = nT;
+        yearEffects.reserve(dim_yearEffects_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
+            if (jacobian__)
+                yearEffects.push_back(in__.scalar_constrain(lp__));
+            else
+                yearEffects.push_back(in__.scalar_constrain());
+        }
+
+        T__ year_sigma;
+        (void) year_sigma;  // dummy to suppress unused var warning
+        if (jacobian__)
+            year_sigma = in__.scalar_lb_constrain(0,lp__);
+        else
+            year_sigma = in__.scalar_lb_constrain(0);
+
         vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
         spatialEffectsKnots.reserve(dim_spatialEffectsKnots_0__);
@@ -262,22 +411,31 @@ public:
         (void) SigmaKnots;  // dummy to suppress unused var warning
         Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  SigmaOffDiag(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
         (void) SigmaOffDiag;  // dummy to suppress unused var warning
+        Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  invSigmaKnots(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+        (void) invSigmaKnots;  // dummy to suppress unused var warning
+        Eigen::Matrix<T__,Eigen::Dynamic,1>  y_hat(static_cast<Eigen::VectorXd::Index>(N));
+        (void) y_hat;  // dummy to suppress unused var warning
 
         // initialize transformed variables to avoid seg fault on val access
         stan::math::fill(muZeros,DUMMY_VAR__);
         stan::math::fill(spatialEffects,DUMMY_VAR__);
         stan::math::fill(SigmaKnots,DUMMY_VAR__);
         stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
+        stan::math::fill(invSigmaKnots,DUMMY_VAR__);
+        stan::math::fill(y_hat,DUMMY_VAR__);
 
         try {
+            stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
+            stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int i = 1; i <= nKnots; ++i) {
                 stan::math::assign(get_base1_lhs(muZeros,i,"muZeros",1), 0);
             }
-            stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
-            stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
-            for (int t = 1; t <= nT; ++t) {
-                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
+            for (int i = 1; i <= nT; ++i) {
+                stan::math::assign(get_base1_lhs(spatialEffects,i,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,i,"spatialEffectsKnots",1)));
+            }
+            for (int i = 1; i <= N; ++i) {
+                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -320,20 +478,43 @@ public:
                 }
             }
         }
+        for (int i0__ = 0; i0__ < nLocs; ++i0__) {
+            for (int i1__ = 0; i1__ < nKnots; ++i1__) {
+                if (stan::math::is_uninitialized(invSigmaKnots(i0__,i1__))) {
+                    std::stringstream msg__;
+                    msg__ << "Undefined transformed parameter: invSigmaKnots" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                    throw std::runtime_error(msg__.str());
+                }
+            }
+        }
+        for (int i0__ = 0; i0__ < N; ++i0__) {
+            if (stan::math::is_uninitialized(y_hat(i0__))) {
+                std::stringstream msg__;
+                msg__ << "Undefined transformed parameter: y_hat" << '[' << i0__ << ']';
+                throw std::runtime_error(msg__.str());
+            }
+        }
 
         const char* function__ = "validate transformed params";
         (void) function__;  // dummy to suppress unused var warning
 
         // model body
         try {
-            lp_accum__.add(cauchy_log<propto__>(gp_scale, 0, 5));
-            lp_accum__.add(cauchy_log<propto__>(gp_sigmaSq, 0, 5));
-            for (int t = 1; t <= nT; ++t) {
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), muZeros, SigmaKnots));
+            lp_accum__.add(student_t_log<propto__>(gp_scale, 3, 0, 10));
+            lp_accum__.add(student_t_log<propto__>(gp_sigmaSq, 3, 0, 2));
+            lp_accum__.add(student_t_log<propto__>(sigma, 3, 0, 2));
+            lp_accum__.add(normal_log<propto__>(ar, 0, 1));
+            lp_accum__.add(gamma_log<propto__>(scaledf, 2, 0.10000000000000001));
+            lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
+            lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 3, 0, 2));
+            for (int t = 2; t <= nT; ++t) {
+                lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
             }
-            for (int t = 1; t <= nT; ++t) {
-                lp_accum__.add(normal_log<propto__>(get_base1(y,t,"y",1), get_base1(spatialEffects,t,"spatialEffects",1), 0.10000000000000001));
+            lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), scaledf, muZeros, SigmaKnots));
+            for (int t = 2; t <= nT; ++t) {
+                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), scaledf, multiply(ar,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
             }
+            lp_accum__.add(normal_log<propto__>(y, y_hat, sigma));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
             // Next line prevents compiler griping about no return
@@ -361,11 +542,18 @@ public:
         names__.resize(0);
         names__.push_back("gp_scale");
         names__.push_back("gp_sigmaSq");
+        names__.push_back("scaledf");
+        names__.push_back("sigma");
+        names__.push_back("ar");
+        names__.push_back("yearEffects");
+        names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
         names__.push_back("muZeros");
         names__.push_back("spatialEffects");
         names__.push_back("SigmaKnots");
         names__.push_back("SigmaOffDiag");
+        names__.push_back("invSigmaKnots");
+        names__.push_back("y_hat");
     }
 
 
@@ -377,6 +565,17 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nT);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
         dims__.push_back(nT);
         dims__.push_back(nKnots);
         dimss__.push_back(dims__);
@@ -394,6 +593,13 @@ public:
         dims__.resize(0);
         dims__.push_back(nLocs);
         dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nLocs);
+        dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N);
         dimss__.push_back(dims__);
     }
 
@@ -407,11 +613,20 @@ public:
                      std::ostream* pstream__ = 0) const {
         vars__.resize(0);
         stan::io::reader<double> in__(params_r__,params_i__);
-        static const char* function__ = "model_mvn_norm_namespace::write_array";
+        static const char* function__ = "model_mvt_norm_yr_ar1_namespace::write_array";
         (void) function__; // dummy call to supress warning
         // read-transform, write parameters
         double gp_scale = in__.scalar_lb_constrain(0);
         double gp_sigmaSq = in__.scalar_lb_constrain(0);
+        double scaledf = in__.scalar_lb_constrain(2);
+        double sigma = in__.scalar_lb_constrain(0);
+        double ar = in__.scalar_lub_constrain(-(1),1);
+        vector<double> yearEffects;
+        size_t dim_yearEffects_0__ = nT;
+        for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
+            yearEffects.push_back(in__.scalar_constrain());
+        }
+        double year_sigma = in__.scalar_lb_constrain(0);
         vector<vector_d> spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
         for (size_t k_0__ = 0; k_0__ < dim_spatialEffectsKnots_0__; ++k_0__) {
@@ -419,6 +634,13 @@ public:
         }
         vars__.push_back(gp_scale);
         vars__.push_back(gp_sigmaSq);
+        vars__.push_back(scaledf);
+        vars__.push_back(sigma);
+        vars__.push_back(ar);
+        for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
+            vars__.push_back(yearEffects[k_0__]);
+        }
+        vars__.push_back(year_sigma);
         for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
             for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
                 vars__.push_back(spatialEffectsKnots[k_0__][k_1__]);
@@ -438,16 +660,23 @@ public:
         (void) SigmaKnots;  // dummy to suppress unused var warning
         matrix_d SigmaOffDiag(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
         (void) SigmaOffDiag;  // dummy to suppress unused var warning
+        matrix_d invSigmaKnots(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+        (void) invSigmaKnots;  // dummy to suppress unused var warning
+        vector_d y_hat(static_cast<Eigen::VectorXd::Index>(N));
+        (void) y_hat;  // dummy to suppress unused var warning
 
         try {
+            stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
+            stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int i = 1; i <= nKnots; ++i) {
                 stan::math::assign(get_base1_lhs(muZeros,i,"muZeros",1), 0);
             }
-            stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
-            stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
-            for (int t = 1; t <= nT; ++t) {
-                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
+            for (int i = 1; i <= nT; ++i) {
+                stan::math::assign(get_base1_lhs(spatialEffects,i,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,i,"spatialEffectsKnots",1)));
+            }
+            for (int i = 1; i <= N; ++i) {
+                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -476,502 +705,13 @@ public:
                 vars__.push_back(SigmaOffDiag(k_0__, k_1__));
             }
         }
-
-        if (!include_gqs__) return;
-        // declare and define generated quantities
-
-        double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
-        (void) DUMMY_VAR__;  // suppress unused var warning
-
-
-        // initialize transformed variables to avoid seg fault on val access
-
-        try {
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-            throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate generated quantities
-
-        // write generated quantities
-    }
-
-    template <typename RNG>
-    void write_array(RNG& base_rng,
-                     Eigen::Matrix<double,Eigen::Dynamic,1>& params_r,
-                     Eigen::Matrix<double,Eigen::Dynamic,1>& vars,
-                     bool include_tparams = true,
-                     bool include_gqs = true,
-                     std::ostream* pstream = 0) const {
-      std::vector<double> params_r_vec(params_r.size());
-      for (int i = 0; i < params_r.size(); ++i)
-        params_r_vec[i] = params_r(i);
-      std::vector<double> vars_vec;
-      std::vector<int> params_i_vec;
-      write_array(base_rng,params_r_vec,params_i_vec,vars_vec,include_tparams,include_gqs,pstream);
-      vars.resize(vars_vec.size());
-      for (int i = 0; i < vars.size(); ++i)
-        vars(i) = vars_vec[i];
-    }
-
-    static std::string model_name() {
-        return "model_mvn_norm";
-    }
-
-
-    void constrained_param_names(std::vector<std::string>& param_names__,
-                                 bool include_tparams__ = true,
-                                 bool include_gqs__ = true) const {
-        std::stringstream param_name_stream__;
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_scale";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigmaSq";
-        param_names__.push_back(param_name_stream__.str());
-        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "spatialEffectsKnots" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
+            for (int k_0__ = 0; k_0__ < nLocs; ++k_0__) {
+                vars__.push_back(invSigmaKnots(k_0__, k_1__));
             }
         }
-
-        if (!include_gqs__ && !include_tparams__) return;
-        for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "muZeros" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "SigmaKnots" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "SigmaOffDiag" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-
-        if (!include_gqs__) return;
-    }
-
-
-    void unconstrained_param_names(std::vector<std::string>& param_names__,
-                                   bool include_tparams__ = true,
-                                   bool include_gqs__ = true) const {
-        std::stringstream param_name_stream__;
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_scale";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigmaSq";
-        param_names__.push_back(param_name_stream__.str());
-        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "spatialEffectsKnots" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-
-        if (!include_gqs__ && !include_tparams__) return;
-        for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "muZeros" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "SigmaKnots" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "SigmaOffDiag" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-
-        if (!include_gqs__) return;
-    }
-
-}; // model
-
-} // namespace
-
-
-
-
-// Code generated by Stan version 2.12
-
-#include <stan/model/model_header.hpp>
-
-namespace model_schools_namespace {
-
-using std::istream;
-using std::string;
-using std::stringstream;
-using std::vector;
-using stan::io::dump;
-using stan::math::lgamma;
-using stan::model::prob_grad;
-using namespace stan::math;
-
-typedef Eigen::Matrix<double,Eigen::Dynamic,1> vector_d;
-typedef Eigen::Matrix<double,1,Eigen::Dynamic> row_vector_d;
-typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matrix_d;
-
-static int current_statement_begin__;
-
-class model_schools : public prob_grad {
-private:
-    int J;
-    vector<double> y;
-    vector<double> sigma;
-public:
-    model_schools(stan::io::var_context& context__,
-        std::ostream* pstream__ = 0)
-        : prob_grad(0) {
-        typedef boost::ecuyer1988 rng_t;
-        rng_t base_rng(0);  // 0 seed default
-        ctor_body(context__, base_rng, pstream__);
-    }
-
-    template <class RNG>
-    model_schools(stan::io::var_context& context__,
-        RNG& base_rng__,
-        std::ostream* pstream__ = 0)
-        : prob_grad(0) {
-        ctor_body(context__, base_rng__, pstream__);
-    }
-
-    template <class RNG>
-    void ctor_body(stan::io::var_context& context__,
-                   RNG& base_rng__,
-                   std::ostream* pstream__) {
-        current_statement_begin__ = -1;
-
-        static const char* function__ = "model_schools_namespace::model_schools";
-        (void) function__; // dummy call to supress warning
-        size_t pos__;
-        (void) pos__; // dummy call to supress warning
-        std::vector<int> vals_i__;
-        std::vector<double> vals_r__;
-        context__.validate_dims("data initialization", "J", "int", context__.to_vec());
-        J = int(0);
-        vals_i__ = context__.vals_i("J");
-        pos__ = 0;
-        J = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "y", "double", context__.to_vec(J));
-        validate_non_negative_index("y", "J", J);
-        y = std::vector<double>(J,double(0));
-        vals_r__ = context__.vals_r("y");
-        pos__ = 0;
-        size_t y_limit_0__ = J;
-        for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
-            y[i_0__] = vals_r__[pos__++];
-        }
-        context__.validate_dims("data initialization", "sigma", "double", context__.to_vec(J));
-        validate_non_negative_index("sigma", "J", J);
-        sigma = std::vector<double>(J,double(0));
-        vals_r__ = context__.vals_r("sigma");
-        pos__ = 0;
-        size_t sigma_limit_0__ = J;
-        for (size_t i_0__ = 0; i_0__ < sigma_limit_0__; ++i_0__) {
-            sigma[i_0__] = vals_r__[pos__++];
-        }
-
-        // validate data
-        check_greater_or_equal(function__,"J",J,0);
-        for (int k0__ = 0; k0__ < J; ++k0__) {
-            check_greater_or_equal(function__,"sigma[k0__]",sigma[k0__],0);
-        }
-
-        double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
-        (void) DUMMY_VAR__;  // suppress unused var warning
-
-
-        // initialize transformed variables to avoid seg fault on val access
-
-        try {
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-            throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate transformed data
-
-        // set parameter ranges
-        num_params_r__ = 0U;
-        param_ranges_i__.clear();
-        ++num_params_r__;
-        ++num_params_r__;
-        num_params_r__ += J;
-    }
-
-    ~model_schools() { }
-
-
-    void transform_inits(const stan::io::var_context& context__,
-                         std::vector<int>& params_i__,
-                         std::vector<double>& params_r__,
-                         std::ostream* pstream__) const {
-        stan::io::writer<double> writer__(params_r__,params_i__);
-        size_t pos__;
-        (void) pos__; // dummy call to supress warning
-        std::vector<double> vals_r__;
-        std::vector<int> vals_i__;
-
-        if (!(context__.contains_r("mu")))
-            throw std::runtime_error("variable mu missing");
-        vals_r__ = context__.vals_r("mu");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "mu", "double", context__.to_vec());
-        double mu(0);
-        mu = vals_r__[pos__++];
-        try {
-            writer__.scalar_unconstrain(mu);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable mu: ") + e.what());
-        }
-
-        if (!(context__.contains_r("tau")))
-            throw std::runtime_error("variable tau missing");
-        vals_r__ = context__.vals_r("tau");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "tau", "double", context__.to_vec());
-        double tau(0);
-        tau = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,tau);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable tau: ") + e.what());
-        }
-
-        if (!(context__.contains_r("eta")))
-            throw std::runtime_error("variable eta missing");
-        vals_r__ = context__.vals_r("eta");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "eta", "double", context__.to_vec(J));
-        std::vector<double> eta(J,double(0));
-        for (int i0__ = 0U; i0__ < J; ++i0__)
-            eta[i0__] = vals_r__[pos__++];
-        for (int i0__ = 0U; i0__ < J; ++i0__)
-            try {
-            writer__.scalar_unconstrain(eta[i0__]);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable eta: ") + e.what());
-        }
-
-        params_r__ = writer__.data_r();
-        params_i__ = writer__.data_i();
-    }
-
-    void transform_inits(const stan::io::var_context& context,
-                         Eigen::Matrix<double,Eigen::Dynamic,1>& params_r,
-                         std::ostream* pstream__) const {
-      std::vector<double> params_r_vec;
-      std::vector<int> params_i_vec;
-      transform_inits(context, params_i_vec, params_r_vec, pstream__);
-      params_r.resize(params_r_vec.size());
-      for (int i = 0; i < params_r.size(); ++i)
-        params_r(i) = params_r_vec[i];
-    }
-
-
-    template <bool propto__, bool jacobian__, typename T__>
-    T__ log_prob(vector<T__>& params_r__,
-                 vector<int>& params_i__,
-                 std::ostream* pstream__ = 0) const {
-
-        T__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
-        (void) DUMMY_VAR__;  // suppress unused var warning
-
-        T__ lp__(0.0);
-        stan::math::accumulator<T__> lp_accum__;
-
-        // model parameters
-        stan::io::reader<T__> in__(params_r__,params_i__);
-
-        T__ mu;
-        (void) mu;  // dummy to suppress unused var warning
-        if (jacobian__)
-            mu = in__.scalar_constrain(lp__);
-        else
-            mu = in__.scalar_constrain();
-
-        T__ tau;
-        (void) tau;  // dummy to suppress unused var warning
-        if (jacobian__)
-            tau = in__.scalar_lb_constrain(0,lp__);
-        else
-            tau = in__.scalar_lb_constrain(0);
-
-        vector<T__> eta;
-        size_t dim_eta_0__ = J;
-        eta.reserve(dim_eta_0__);
-        for (size_t k_0__ = 0; k_0__ < dim_eta_0__; ++k_0__) {
-            if (jacobian__)
-                eta.push_back(in__.scalar_constrain(lp__));
-            else
-                eta.push_back(in__.scalar_constrain());
-        }
-
-
-        // transformed parameters
-        vector<T__> theta(J);
-
-        // initialize transformed variables to avoid seg fault on val access
-        stan::math::fill(theta,DUMMY_VAR__);
-
-        try {
-            for (int j = 1; j <= J; ++j) {
-                stan::math::assign(get_base1_lhs(theta,j,"theta",1), (mu + (tau * get_base1(eta,j,"eta",1))));
-            }
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-            throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate transformed parameters
-        for (int i0__ = 0; i0__ < J; ++i0__) {
-            if (stan::math::is_uninitialized(theta[i0__])) {
-                std::stringstream msg__;
-                msg__ << "Undefined transformed parameter: theta" << '[' << i0__ << ']';
-                throw std::runtime_error(msg__.str());
-            }
-        }
-
-        const char* function__ = "validate transformed params";
-        (void) function__;  // dummy to suppress unused var warning
-
-        // model body
-        try {
-            lp_accum__.add(normal_log(eta,0,1));
-            lp_accum__.add(normal_log(y,theta,sigma));
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-            throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        lp_accum__.add(lp__);
-        return lp_accum__.sum();
-
-    } // log_prob()
-
-    template <bool propto, bool jacobian, typename T_>
-    T_ log_prob(Eigen::Matrix<T_,Eigen::Dynamic,1>& params_r,
-               std::ostream* pstream = 0) const {
-      std::vector<T_> vec_params_r;
-      vec_params_r.reserve(params_r.size());
-      for (int i = 0; i < params_r.size(); ++i)
-        vec_params_r.push_back(params_r(i));
-      std::vector<int> vec_params_i;
-      return log_prob<propto,jacobian,T_>(vec_params_r, vec_params_i, pstream);
-    }
-
-
-    void get_param_names(std::vector<std::string>& names__) const {
-        names__.resize(0);
-        names__.push_back("mu");
-        names__.push_back("tau");
-        names__.push_back("eta");
-        names__.push_back("theta");
-    }
-
-
-    void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
-        dimss__.resize(0);
-        std::vector<size_t> dims__;
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(J);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(J);
-        dimss__.push_back(dims__);
-    }
-
-    template <typename RNG>
-    void write_array(RNG& base_rng__,
-                     std::vector<double>& params_r__,
-                     std::vector<int>& params_i__,
-                     std::vector<double>& vars__,
-                     bool include_tparams__ = true,
-                     bool include_gqs__ = true,
-                     std::ostream* pstream__ = 0) const {
-        vars__.resize(0);
-        stan::io::reader<double> in__(params_r__,params_i__);
-        static const char* function__ = "model_schools_namespace::write_array";
-        (void) function__; // dummy call to supress warning
-        // read-transform, write parameters
-        double mu = in__.scalar_constrain();
-        double tau = in__.scalar_lb_constrain(0);
-        vector<double> eta;
-        size_t dim_eta_0__ = J;
-        for (size_t k_0__ = 0; k_0__ < dim_eta_0__; ++k_0__) {
-            eta.push_back(in__.scalar_constrain());
-        }
-        vars__.push_back(mu);
-        vars__.push_back(tau);
-        for (int k_0__ = 0; k_0__ < J; ++k_0__) {
-            vars__.push_back(eta[k_0__]);
-        }
-
-        if (!include_tparams__) return;
-        // declare and define transformed parameters
-        double lp__ = 0.0;
-        (void) lp__; // dummy call to supress warning
-        stan::math::accumulator<double> lp_accum__;
-
-        vector<double> theta(J, 0.0);
-
-        try {
-            for (int j = 1; j <= J; ++j) {
-                stan::math::assign(get_base1_lhs(theta,j,"theta",1), (mu + (tau * get_base1(eta,j,"eta",1))));
-            }
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-            throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate transformed parameters
-
-        // write transformed parameters
-        for (int k_0__ = 0; k_0__ < J; ++k_0__) {
-            vars__.push_back(theta[k_0__]);
+        for (int k_0__ = 0; k_0__ < N; ++k_0__) {
+            vars__.push_back(y_hat[k_0__]);
         }
 
         if (!include_gqs__) return;
@@ -1014,7 +754,7 @@ public:
     }
 
     static std::string model_name() {
-        return "model_schools";
+        return "model_mvt_norm_yr_ar1";
     }
 
 
@@ -1023,21 +763,73 @@ public:
                                  bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
         param_name_stream__.str(std::string());
-        param_name_stream__ << "mu";
+        param_name_stream__ << "gp_scale";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "tau";
+        param_name_stream__ << "gp_sigmaSq";
         param_names__.push_back(param_name_stream__.str());
-        for (int k_0__ = 1; k_0__ <= J; ++k_0__) {
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "scaledf";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "sigma";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "ar";
+        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "eta" << '.' << k_0__;
+            param_name_stream__ << "yearEffects" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
+        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "year_sigma";
+        param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialEffectsKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
         }
 
         if (!include_gqs__ && !include_tparams__) return;
-        for (int k_0__ = 1; k_0__ <= J; ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "theta" << '.' << k_0__;
+            param_name_stream__ << "muZeros" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "SigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "SigmaOffDiag" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "invSigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
 
@@ -1050,21 +842,73 @@ public:
                                    bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
         param_name_stream__.str(std::string());
-        param_name_stream__ << "mu";
+        param_name_stream__ << "gp_scale";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "tau";
+        param_name_stream__ << "gp_sigmaSq";
         param_names__.push_back(param_name_stream__.str());
-        for (int k_0__ = 1; k_0__ <= J; ++k_0__) {
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "scaledf";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "sigma";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "ar";
+        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "eta" << '.' << k_0__;
+            param_name_stream__ << "yearEffects" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
+        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "year_sigma";
+        param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialEffectsKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
         }
 
         if (!include_gqs__ && !include_tparams__) return;
-        for (int k_0__ = 1; k_0__ <= J; ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "theta" << '.' << k_0__;
+            param_name_stream__ << "muZeros" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "SigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "SigmaOffDiag" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "invSigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
 

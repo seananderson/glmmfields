@@ -6,7 +6,15 @@ Date: 2016-11-11
 Author: Who wrote it
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
-License:  GPL (>=3)
-Depends: R (>= 3.0.2), Rcpp (>= 0.11.0)
-Imports: rstan (>= 2.8.1)
-LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>= 0.12.0), RcppEigen
+License: GPL (>=3)
+Depends:
+    R (>= 3.0.2),
+    Rcpp (>= 0.11.0)
+Imports:
+    rstan (>= 2.8.1),
+    cluster
+LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
+    0.12.0), RcppEigen
+Suggests:
+    testthat
+RoxygenNote: 5.0.1
