@@ -1,5 +1,3 @@
-
-
 #' @export
 
 format_data <- function(data, y, time, lon = "lon", lat = "lat", nKnots = 25L) {
@@ -33,7 +31,6 @@ format_data <- function(data, y, time, lon = "lon", lat = "lat", nKnots = 25L) {
   spatglm_data
 }
 
-#' @export
 stan_pars <- function() {
   spatglm_pars = c(
     "df",
@@ -49,7 +46,7 @@ stan_pars <- function() {
 }
 
 parse_t_prior <- function(x) {
-  as.vector(unlist(x)[-1], mode = "integer")
+  as.vector(unlist(x)[-1], mode = "numeric")
 }
 
 #' @export

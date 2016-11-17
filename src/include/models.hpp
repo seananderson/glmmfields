@@ -33,7 +33,10 @@ private:
     vector<int> stationID;
     vector<int> yearID;
     vector<double> y;
-    vector<int> prior_gp_scale;
+    vector<double> prior_gp_scale;
+    vector<double> prior_gp_sigma;
+    vector<double> prior_sigma;
+    vector<double> prior_ar;
     matrix_d distKnotsSq;
     matrix_d distKnots21Sq;
 public:
@@ -112,14 +115,41 @@ public:
         for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
             y[i_0__] = vals_r__[pos__++];
         }
-        context__.validate_dims("data initialization", "prior_gp_scale", "int", context__.to_vec(3));
+        context__.validate_dims("data initialization", "prior_gp_scale", "double", context__.to_vec(3));
         validate_non_negative_index("prior_gp_scale", "3", 3);
-        prior_gp_scale = std::vector<int>(3,int(0));
-        vals_i__ = context__.vals_i("prior_gp_scale");
+        prior_gp_scale = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_gp_scale");
         pos__ = 0;
         size_t prior_gp_scale_limit_0__ = 3;
         for (size_t i_0__ = 0; i_0__ < prior_gp_scale_limit_0__; ++i_0__) {
-            prior_gp_scale[i_0__] = vals_i__[pos__++];
+            prior_gp_scale[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "prior_gp_sigma", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_gp_sigma", "3", 3);
+        prior_gp_sigma = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_gp_sigma");
+        pos__ = 0;
+        size_t prior_gp_sigma_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_gp_sigma_limit_0__; ++i_0__) {
+            prior_gp_sigma[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "prior_sigma", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_sigma", "3", 3);
+        prior_sigma = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_sigma");
+        pos__ = 0;
+        size_t prior_sigma_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_sigma_limit_0__; ++i_0__) {
+            prior_sigma[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "prior_ar", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_ar", "3", 3);
+        prior_ar = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_ar");
+        pos__ = 0;
+        size_t prior_ar_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_ar_limit_0__; ++i_0__) {
+            prior_ar[i_0__] = vals_r__[pos__++];
         }
         context__.validate_dims("data initialization", "distKnotsSq", "matrix_d", context__.to_vec(nKnots,nKnots));
         validate_non_negative_index("distKnotsSq", "nKnots", nKnots);
@@ -511,9 +541,9 @@ public:
         // model body
         try {
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
-            lp_accum__.add(student_t_log<propto__>(gp_sigma, 3, 0, 2));
-            lp_accum__.add(student_t_log<propto__>(sigma, 3, 0, 2));
-            lp_accum__.add(normal_log<propto__>(ar, 0, 1));
+            lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            lp_accum__.add(student_t_log<propto__>(sigma, get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+            lp_accum__.add(student_t_log<propto__>(ar, get_base1(prior_ar,1,"prior_ar",1), get_base1(prior_ar,2,"prior_ar",1), get_base1(prior_ar,3,"prior_ar",1)));
             lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
             lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
             lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 3, 0, 2));

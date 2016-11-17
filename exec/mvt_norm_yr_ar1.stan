@@ -6,10 +6,10 @@ data {
   int<lower=1> stationID[N];
   int<lower=1> yearID[N];
   real y[N];
-  int prior_gp_scale[3];
-  int prior_gp_sigma[3];
-  int prior_sigma[3];
-  int prior_ar[3];
+  real prior_gp_scale[3];
+  real prior_gp_sigma[3];
+  real prior_sigma[3];
+  real prior_ar[3];
   matrix[nKnots,nKnots] distKnotsSq;
   matrix[nLocs,nKnots] distKnots21Sq;
 }
