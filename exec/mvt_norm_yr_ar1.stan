@@ -31,7 +31,7 @@ transformed parameters {
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
   real<lower=0> gp_sigmaSq;
-
+  // flag for gaussian
   gp_sigmaSq = gp_sigma^2;
 
   // cov matrix between knots:

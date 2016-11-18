@@ -33,16 +33,13 @@ format_data <- function(data, y, time, lon = "lon", lat = "lat", nKnots = 25L) {
 
 stan_pars <- function() {
   spatglm_pars = c(
-    "df",
-    "yearEffects",
-    "sigma",
-    "gp_sigma",
-    "gp_scale",
-    "year_sigma",
-    "ar",
-    "spatialEffectsKnots"
-  )
-  spatglm_pars
+  "muZeros",
+  "spatialEffects",
+  "SigmaKnots",
+  "SigmaOffDiag",
+  "invSigmaKnots",
+  "y_hat",
+  "gp_sigmaSq")
 }
 
 parse_t_prior <- function(x) {
@@ -51,11 +48,21 @@ parse_t_prior <- function(x) {
 
 #' @export
 #' @importFrom rstanarm student_t normal
-rrfield <- function(data, pars = stan_pars(),
+rrfield <- function(formula,
+  time,
+  lon,
+  lat,
+  data,
+  pars = stan_pars(),
+  nKnots = 25L,
   prior_gp_scale = student_t(3, 0, 10),
   prior_gp_sigma = student_t(3, 0, 2),
   prior_sigma = student_t(3, 0, 2),
   prior_ar = student_t(100, 0, 1),
+  estimate_df = TRUE,
+  year_effects = c("random","fixed","zero"),
+  obs_error = c("normal","gamma"),
+  correlation = c("gaussian", "exponential"),
   ...) {
 
   data <- c(data,
@@ -64,6 +71,6 @@ rrfield <- function(data, pars = stan_pars(),
     list(prior_gp_scale = parse_t_prior(prior_sigma)),
     list(prior_gp_scale = parse_t_prior(prior_ar))
   )
-  m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = data, pars = pars, ...)
+  m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = data, pars = pars, include=FALSE, ...)
   m
 }
