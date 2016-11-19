@@ -2,3 +2,4 @@
 *.o
 *.so
 *.bak
+.DS_Store
