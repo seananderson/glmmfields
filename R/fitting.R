@@ -32,18 +32,17 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
   spatglm_data
 }
 
-stan_pars <- function() {
+stan_pars <- function(obs_error) {
   c(
     "df",
 #    "yearEffects",
-    "sigma",
     "gp_sigma",
     "gp_scale",
 #    "year_sigma",
 #    "ar",
     "B",
-    "CV",
-    "spatialEffectsKnots"
+    "spatialEffectsKnots",
+    ifelse(obs_error==1,"sigma","CV")
   )
 }
 
@@ -91,7 +90,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   sampling_args <- list(
     object = stanmodels$rrfield,
     data = stan_data,
-    pars = stan_pars(),
+    pars = stan_pars(obs_model),
     ...)
 
   m <- do.call(sampling, sampling_args)
