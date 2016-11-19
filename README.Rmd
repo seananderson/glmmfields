@@ -61,7 +61,7 @@ print(m, pars = c("df[1]", "gp_sigma", "sigma", "gp_scale", "lp__"))
 
 Plot:
 
-```{r plot, cache=TRUE, dependson="fit", warning=FALSE}
+```{r plot, cache=FALSE, dependson="fit", warning=FALSE, message=FALSE}
 library(bayesplot)
 posterior <- rstan::extract(m, inc_warmup = FALSE, permuted = FALSE)
 mcmc_trace(posterior,  pars = c("df[1]", "gp_sigma", "sigma", "gp_scale"))
