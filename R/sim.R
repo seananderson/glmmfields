@@ -1,7 +1,8 @@
 #' @export
 
-sim_mvt_rf <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
-  sigma_t = 0.2, mvt = TRUE, df = 3, seed = NULL, nDataPoints = 100) {
+sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
+  sigma_t = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
+  sd_obs = 0.2) {
 
   g <- data.frame(lon = runif(nDataPoints, 0, 10),
     lat = runif(nDataPoints, 0, 10))
@@ -37,6 +38,15 @@ sim_mvt_rf <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # project random effects to locations of the data
   proj <- t((sigma21 %*% invsigma_knots) %*% t(re_knots))
 
+  # add observation error:
+  proj <- proj + matrix(data = rnorm(ncol(proj) * nrow(proj), 0, sd_obs),
+    ncol = ncol(proj), nrow = nrow(proj))
+  out <- reshape2::melt(s$proj)
+  names(out) <- c("time", "pt", "y")
+  out <- dplyr::arrange_(out, "time", "pt")
+  out$lon <- rep(s$g$lon, n_draws)
+  out$lat <- rep(s$g$lat, n_draws)
+
   return(
     list(
       knots = knots,
@@ -45,7 +55,8 @@ sim_mvt_rf <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
       dist_knots_sq = dist_knots_sq,
       dist_knots21_sq = dist_knots21_sq,
       sigma_knots = sigma_knots,
-      g = g
+      g = g,
+      dat = out
     )
   )
 }

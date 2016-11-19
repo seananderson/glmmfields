@@ -2,7 +2,7 @@
 
 export(format_data)
 export(rrfield)
-export(sim_mvt_rf)
+export(sim_rrfield)
 importFrom(rstanarm,normal)
 importFrom(rstanarm,student_t)
 useDynLib(rrfields, .registration = TRUE)
