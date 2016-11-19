@@ -1,8 +1,8 @@
 skip_on_cran()
 
-test_that("mvt-norm ar1 model fits", {
+test_that("mvt-norm model fits", {
   library(rrfields)
-  set.seed(2)
+  set.seed(3)
   n_draws <- 5
   s <- sim_mvt_rf(df = 5, n_draws = n_draws, n_knots = 12)
   s$proj <- s$proj +matrix(data = rnorm(ncol(s$proj) * nrow(s$proj), 0, 0.2),
@@ -22,6 +22,6 @@ test_that("mvt-norm ar1 model fits", {
 
   m <- rrfield(y ~ 1, data = out, time = "time_slice",
     lat = "lat", lon = "lon", nknots = 12, estimate_df = FALSE,
-    iter = 300, chains = 1, control = list(adapt_delta = 0.8))
+    iter = 300, chains = 1, control = list(adapt_delta = 0.85))
   expect_is(m, "stanfit")
 })
