@@ -55,6 +55,7 @@ parse_t_prior <- function(x) {
 #' @export
 #' @importFrom rstanarm student_t normal
 #' @importFrom rstan sampling
+#' @import Rcpp
 rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 10),
   prior_gp_sigma = student_t(3, 0, 2),

@@ -1,7 +1,14 @@
-skip_on_cran()
+library(rrfields)
+# library(rstan)
+if (interactive()) options(mc.cores = parallel::detectCores())
 
+ITER <- 400
+CHAINS <- 2
+SEED <- 123
+
+skip_on_cran()
 test_that("mvt-norm model fits", {
-  set.seed(123)
+  set.seed(SEED)
   n_draws <- 5
   s <- sim_rrfield(df = 3, n_draws = n_draws)
   library(ggplot2)
@@ -10,10 +17,11 @@ test_that("mvt-norm model fits", {
     geom_point(size = 3) +
     viridis::scale_color_viridis() +
     theme_light()
-  print(g)
+  # print(g)
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = 15, estimate_df = FALSE,
-    iter = 300, chains = 1)
-  expect_is(m, "stanfit")
+    lat = "lat", lon = "lon", nknots = 15,
+    iter = ITER, chains = CHAINS)
+
+  # expect_equal(fixef(fit), fixef(ans), tol = FIXEF_tol)
 })
