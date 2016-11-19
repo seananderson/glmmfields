@@ -83,6 +83,12 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
       est_df = as.integer(estimate_df),
       fixed_df_value = fixed_df_value))
 
-  m <- sampling(stanmodels$rrfield, data = stan_data, pars = stan_pars(), ...)
+  sampling_args <- list(
+    object = stanmodels$rrfield,
+    data = stan_data,
+    pars = stan_pars(),
+    ...)
+
+  m <- do.call(sampling, sampling_args)
   m
 }
