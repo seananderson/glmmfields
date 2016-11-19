@@ -40,7 +40,7 @@ stan_pars <- function() {
     "gp_sigma",
     "gp_scale",
     "year_sigma",
-    "ar",
+#    "ar",
     "spatialEffectsKnots"
   )
 }

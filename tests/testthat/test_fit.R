@@ -18,6 +18,6 @@ test_that("mvt-norm ar1 model fits", {
 
   m <- rrfield(y ~ 1, data = out, time = "time_slice",
     lat = "lat", lon = "lon", nknots = 12,
-    iter = 500, chains = 1, control = list(adapt_delta = 0.9))
+    iter = 500, chains = 1, control = list(adapt_delta = 0.8))
   expect_is(m, "stanfit")
 })

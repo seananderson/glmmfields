@@ -233,7 +233,6 @@ public:
         ++num_params_r__;
         ++num_params_r__;
         ++num_params_r__;
-        ++num_params_r__;
         num_params_r__ += nT;
         ++num_params_r__;
         num_params_r__ += nKnots * nT;
@@ -303,19 +302,6 @@ public:
             writer__.scalar_lb_unconstrain(0,sigma);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable sigma: ") + e.what());
-        }
-
-        if (!(context__.contains_r("ar")))
-            throw std::runtime_error("variable ar missing");
-        vals_r__ = context__.vals_r("ar");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "ar", "double", context__.to_vec());
-        double ar(0);
-        ar = vals_r__[pos__++];
-        try {
-            writer__.scalar_lub_unconstrain(-(1),1,ar);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable ar: ") + e.what());
         }
 
         if (!(context__.contains_r("yearEffects")))
@@ -434,13 +420,6 @@ public:
         else
             sigma = in__.scalar_lb_constrain(0);
 
-        T__ ar;
-        (void) ar;  // dummy to suppress unused var warning
-        if (jacobian__)
-            ar = in__.scalar_lub_constrain(-(1),1,lp__);
-        else
-            ar = in__.scalar_lub_constrain(-(1),1);
-
         vector<T__> yearEffects;
         size_t dim_yearEffects_0__ = nT;
         yearEffects.reserve(dim_yearEffects_0__);
@@ -504,15 +483,15 @@ public:
             stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
             stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
             stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
-            for (int i = 1; i <= nKnots; ++i) {
-                stan::math::assign(get_base1_lhs(muZeros,i,"muZeros",1), 0);
+            for (int k = 1; k <= nKnots; ++k) {
+                stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
             }
             stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
-            for (int i = 1; i <= nT; ++i) {
-                stan::math::assign(get_base1_lhs(spatialEffects,i,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,i,"spatialEffectsKnots",1)));
+            for (int t = 1; t <= nT; ++t) {
+                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
             }
             for (int i = 1; i <= N; ++i) {
-                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + multiply(get_base1(X,i,"X",1),B)));
+                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -586,19 +565,10 @@ public:
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
             lp_accum__.add(student_t_log<propto__>(sigma, get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-            lp_accum__.add(student_t_log<propto__>(ar, get_base1(prior_ar,1,"prior_ar",1), get_base1(prior_ar,2,"prior_ar",1), get_base1(prior_ar,3,"prior_ar",1)));
             lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
-            for (int i = 1; i <= nCov; ++i) {
-                lp_accum__.add(normal_log<propto__>(get_base1(B,i,"B",1), 0, 1));
-            }
-            lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
-            lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 3, 0, 2));
+            lp_accum__.add(normal_log<propto__>(B, 0, 1));
             for (int t = 2; t <= nT; ++t) {
-                lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
-            }
-            lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), df, muZeros, SigmaKnots));
-            for (int t = 2; t <= nT; ++t) {
-                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), df, multiply(ar,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), df, muZeros, SigmaKnots));
             }
             lp_accum__.add(normal_log<propto__>(y, y_hat, sigma));
         } catch (const std::exception& e) {
@@ -630,7 +600,6 @@ public:
         names__.push_back("gp_sigma");
         names__.push_back("df");
         names__.push_back("sigma");
-        names__.push_back("ar");
         names__.push_back("yearEffects");
         names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
@@ -648,8 +617,6 @@ public:
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
         std::vector<size_t> dims__;
-        dims__.resize(0);
-        dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -713,7 +680,6 @@ public:
         double gp_sigma = in__.scalar_lb_constrain(0);
         double df = in__.scalar_lb_constrain(2);
         double sigma = in__.scalar_lb_constrain(0);
-        double ar = in__.scalar_lub_constrain(-(1),1);
         vector<double> yearEffects;
         size_t dim_yearEffects_0__ = nT;
         for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
@@ -730,7 +696,6 @@ public:
         vars__.push_back(gp_sigma);
         vars__.push_back(df);
         vars__.push_back(sigma);
-        vars__.push_back(ar);
         for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
             vars__.push_back(yearEffects[k_0__]);
         }
@@ -768,15 +733,15 @@ public:
             stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
             stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
             stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
-            for (int i = 1; i <= nKnots; ++i) {
-                stan::math::assign(get_base1_lhs(muZeros,i,"muZeros",1), 0);
+            for (int k = 1; k <= nKnots; ++k) {
+                stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
             }
             stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
-            for (int i = 1; i <= nT; ++i) {
-                stan::math::assign(get_base1_lhs(spatialEffects,i,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,i,"spatialEffectsKnots",1)));
+            for (int t = 1; t <= nT; ++t) {
+                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
             }
             for (int i = 1; i <= N; ++i) {
-                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + multiply(get_base1(X,i,"X",1),B)));
+                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -876,9 +841,6 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "ar";
-        param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "yearEffects" << '.' << k_0__;
@@ -962,9 +924,6 @@ public:
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "ar";
         param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
             param_name_stream__.str(std::string());
