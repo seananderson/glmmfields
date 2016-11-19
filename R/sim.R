@@ -41,7 +41,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # add observation error:
   proj <- proj + matrix(data = rnorm(ncol(proj) * nrow(proj), 0, sd_obs),
     ncol = ncol(proj), nrow = nrow(proj))
-  out <- reshape2::melt(s$proj)
+  out <- reshape2::melt(proj)
   names(out) <- c("time", "pt", "y")
   out <- dplyr::arrange_(out, "time", "pt")
   out$lon <- rep(s$g$lon, n_draws)
