@@ -29,7 +29,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
     distKnots21Sq = distKnots21Sq,
     X = X,
     nCov = ncol(X))
-  spatglm_data
+  return(list(spatglm_data = spatglm_data, knots = knots))
 }
 
 stan_pars <- function(obs_error) {
@@ -71,8 +71,10 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   y <- model.response(mf, "numeric")
 
   # user inputs raw data. this function formats it for STAN
-  stan_data <- format_data(data = data, y = y, X = X, time = time,
+  data_list <- format_data(data = data, y = y, X = X, time = time,
     lon = lon, lat = lat, nknots = nknots)
+  stan_data = data_list$spatglm_data
+  data_knots = data_list$knots
 
   gauss_cor <- switch(correlation[[1]], gaussian = 1L, exponential = 0L, 1L)
 
@@ -94,5 +96,5 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
     ...)
 
   m <- do.call(sampling, sampling_args)
-  m
+  return(list(model = m, knots = data_knots))
 }
