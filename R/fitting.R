@@ -1,8 +1,8 @@
 #' @export
 
-format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nKnots = 25L) {
+format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L) {
 
-  knots = cluster::pam(data[, c(lon, lat)], nKnots)$medoids
+  knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
 
   distKnots = as.matrix(dist(knots))
   distKnotsSq = distKnots^2 # squared distances
@@ -19,7 +19,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nKnots = 25L
 
   # create list for STAN
   spatglm_data = list(
-    nKnots = nKnots,
+    nKnots = nknots,
     nLocs = nLocs,
     nT = length(unique(yearID)),
     N = length(Y),
@@ -34,51 +34,51 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nKnots = 25L
 }
 
 stan_pars <- function() {
-  spatglm_pars = c(
-  "muZeros",
-  "spatialEffects",
-  "SigmaKnots",
-  "SigmaOffDiag",
-  "invSigmaKnots",
-  "y_hat",
-  "gp_sigmaSq")
+  c(
+    "df",
+    "yearEffects",
+    "sigma",
+    "gp_sigma",
+    "gp_scale",
+    "year_sigma",
+    "ar",
+    "spatialEffectsKnots"
+  )
 }
 
 parse_t_prior <- function(x) {
   as.vector(unlist(x)[-1], mode = "numeric")
 }
 
+#' Fit a robust spatiotemporal random fields model
+#'
 #' @export
 #' @importFrom rstanarm student_t normal
-rrfield <- function(formula,
-  time,
-  lon,
-  lat,
-  data,
-  y,
-  X,
-  pars = stan_pars(),
-  nKnots = 25L,
+rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = rstanarm::student_t(3, 0, 10),
   prior_gp_sigma = rstanarm::student_t(3, 0, 2),
   prior_sigma = rstanarm::student_t(3, 0, 2),
   prior_ar = rstanarm::student_t(100, 0, 1),
   estimate_df = TRUE,
-  year_effects = c("fixed","zero"),
   obs_error = c("normal","gamma"),
   correlation = c("gaussian", "exponential"),
   ...) {
 
-  # user inputs raw data. this function formats it for STAN
-  data = format_data(data=data, y=y, X=X, time=time, lon=lon, lat=lat, nKnots=nKnots)
+  mf <- model.frame(formula, data)
+  X <- model.matrix(formula, mf)
 
-  data <- c(data,
+  # user inputs raw data. this function formats it for STAN
+  stan_data <- format_data(data = data, y = mf[,1], X = X, time = time,
+    lon = lon, lat = lat, nknots = nknots)
+
+  stan_data <- c(stan_data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale)),
     list(prior_gp_scale = parse_t_prior(prior_gp_sigma)),
     list(prior_gp_scale = parse_t_prior(prior_sigma)),
     list(prior_gp_scale = parse_t_prior(prior_ar))
   )
 
-  m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = data, pars = pars, include=FALSE, ...)
+  m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = stan_data,
+    pars = stan_pars(), ...)
   m
 }
