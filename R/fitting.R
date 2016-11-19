@@ -13,7 +13,6 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
   # this is the transpose of the lower left corner
   distKnots21Sq = t(distAll[-c(1:nLocs), -c((nLocs + 1):ncol(distAll))])
 
-  Y = as.numeric(data[,y])
   yearID = as.numeric(as.factor(data[,time]))
   stationID = seq(1, nrow(data))
 
@@ -22,10 +21,10 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
     nKnots = nknots,
     nLocs = nLocs,
     nT = length(unique(yearID)),
-    N = length(Y),
+    N = length(y),
     stationID = stationID,
     yearID = yearID,
-    y = Y,
+    y = y,
     distKnotsSq = distKnotsSq,
     distKnots21Sq = distKnots21Sq,
     X = X,
@@ -73,9 +72,9 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   stan_data <- c(stan_data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale)),
-    list(prior_gp_scale = parse_t_prior(prior_gp_sigma)),
-    list(prior_gp_scale = parse_t_prior(prior_sigma)),
-    list(prior_gp_scale = parse_t_prior(prior_ar))
+    list(prior_gp_sigma = parse_t_prior(prior_gp_sigma)),
+    list(prior_sigma = parse_t_prior(prior_sigma)),
+    list(prior_ar = parse_t_prior(prior_ar))
   )
 
   m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = stan_data,
