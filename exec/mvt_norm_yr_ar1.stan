@@ -15,11 +15,13 @@ data {
   int<lower=1> nCov;
   matrix[N,nCov] X;
   int<lower=0,upper=1> gauss_cor;
+  int<lower=0,upper=1> est_df;
+  real<lower=2> fixed_df_value;
 }
 parameters {
   real<lower=0> gp_scale;
   real<lower=0> gp_sigma;
-  real<lower=2> df;
+  real<lower=2> df[est_df];
   real<lower=0> sigma;
   real yearEffects[nT];
   real<lower=0> year_sigma;
@@ -62,13 +64,17 @@ model {
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
   sigma ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-  df ~ gamma(2, 0.1);
-
-  // regression coefficients:
   B ~ normal(0, 1);
 
-  for(t in 2:nT) {
-    spatialEffectsKnots[t] ~ multi_student_t(df, muZeros, SigmaKnots);
+  if (est_df == 1) {
+    df ~ gamma(2, 0.1);
+    for(t in 2:nT) {
+      spatialEffectsKnots[t] ~ multi_student_t(df[1], muZeros, SigmaKnots);
+    }
+  } else {
+    for(t in 2:nT) {
+      spatialEffectsKnots[t] ~ multi_student_t(fixed_df_value, muZeros, SigmaKnots);
+    }
   }
 
   y ~ normal(y_hat, sigma);

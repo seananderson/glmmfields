@@ -42,6 +42,8 @@ private:
     int nCov;
     matrix_d X;
     int gauss_cor;
+    int est_df;
+    double fixed_df_value;
 public:
     model_mvt_norm_yr_ar1(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -203,6 +205,16 @@ public:
         vals_i__ = context__.vals_i("gauss_cor");
         pos__ = 0;
         gauss_cor = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "est_df", "int", context__.to_vec());
+        est_df = int(0);
+        vals_i__ = context__.vals_i("est_df");
+        pos__ = 0;
+        est_df = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "fixed_df_value", "double", context__.to_vec());
+        fixed_df_value = double(0);
+        vals_r__ = context__.vals_r("fixed_df_value");
+        pos__ = 0;
+        fixed_df_value = vals_r__[pos__++];
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -218,6 +230,9 @@ public:
         check_greater_or_equal(function__,"nCov",nCov,1);
         check_greater_or_equal(function__,"gauss_cor",gauss_cor,0);
         check_less_or_equal(function__,"gauss_cor",gauss_cor,1);
+        check_greater_or_equal(function__,"est_df",est_df,0);
+        check_less_or_equal(function__,"est_df",est_df,1);
+        check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -239,7 +254,7 @@ public:
         param_ranges_i__.clear();
         ++num_params_r__;
         ++num_params_r__;
-        ++num_params_r__;
+        num_params_r__ += est_df;
         ++num_params_r__;
         num_params_r__ += nT;
         ++num_params_r__;
@@ -290,11 +305,13 @@ public:
             throw std::runtime_error("variable df missing");
         vals_r__ = context__.vals_r("df");
         pos__ = 0U;
-        context__.validate_dims("initialization", "df", "double", context__.to_vec());
-        double df(0);
-        df = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(2,df);
+        context__.validate_dims("initialization", "df", "double", context__.to_vec(est_df));
+        std::vector<double> df(est_df,double(0));
+        for (int i0__ = 0U; i0__ < est_df; ++i0__)
+            df[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < est_df; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(2,df[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable df: ") + e.what());
         }
@@ -414,12 +431,15 @@ public:
         else
             gp_sigma = in__.scalar_lb_constrain(0);
 
-        T__ df;
-        (void) df;  // dummy to suppress unused var warning
-        if (jacobian__)
-            df = in__.scalar_lb_constrain(2,lp__);
-        else
-            df = in__.scalar_lb_constrain(2);
+        vector<T__> df;
+        size_t dim_df_0__ = est_df;
+        df.reserve(dim_df_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
+            if (jacobian__)
+                df.push_back(in__.scalar_lb_constrain(2,lp__));
+            else
+                df.push_back(in__.scalar_lb_constrain(2));
+        }
 
         T__ sigma;
         (void) sigma;  // dummy to suppress unused var warning
@@ -577,10 +597,16 @@ public:
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
             lp_accum__.add(student_t_log<propto__>(sigma, get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-            lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
             lp_accum__.add(normal_log<propto__>(B, 0, 1));
-            for (int t = 2; t <= nT; ++t) {
-                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), df, muZeros, SigmaKnots));
+            if (as_bool(logical_eq(est_df,1))) {
+                lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
+                for (int t = 2; t <= nT; ++t) {
+                    lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), get_base1(df,1,"df",1), muZeros, SigmaKnots));
+                }
+            } else {
+                for (int t = 2; t <= nT; ++t) {
+                    lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), fixed_df_value, muZeros, SigmaKnots));
+                }
             }
             lp_accum__.add(normal_log<propto__>(y, y_hat, sigma));
         } catch (const std::exception& e) {
@@ -634,6 +660,7 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(est_df);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
@@ -690,7 +717,11 @@ public:
         // read-transform, write parameters
         double gp_scale = in__.scalar_lb_constrain(0);
         double gp_sigma = in__.scalar_lb_constrain(0);
-        double df = in__.scalar_lb_constrain(2);
+        vector<double> df;
+        size_t dim_df_0__ = est_df;
+        for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
+            df.push_back(in__.scalar_lb_constrain(2));
+        }
         double sigma = in__.scalar_lb_constrain(0);
         vector<double> yearEffects;
         size_t dim_yearEffects_0__ = nT;
@@ -706,7 +737,9 @@ public:
         vector_d B = in__.vector_constrain(nCov);
         vars__.push_back(gp_scale);
         vars__.push_back(gp_sigma);
-        vars__.push_back(df);
+        for (int k_0__ = 0; k_0__ < est_df; ++k_0__) {
+            vars__.push_back(df[k_0__]);
+        }
         vars__.push_back(sigma);
         for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
             vars__.push_back(yearEffects[k_0__]);
@@ -851,9 +884,11 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_sigma";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "df";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= est_df; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "df" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
         param_names__.push_back(param_name_stream__.str());
@@ -935,9 +970,11 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_sigma";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "df";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= est_df; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "df" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
         param_names__.push_back(param_name_stream__.str());

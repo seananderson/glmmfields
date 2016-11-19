@@ -41,6 +41,7 @@ stan_pars <- function() {
     "gp_scale",
     "year_sigma",
 #    "ar",
+    "B",
     "spatialEffectsKnots"
   )
 }
@@ -58,6 +59,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_sigma = rstanarm::student_t(3, 0, 2),
   prior_sigma = rstanarm::student_t(3, 0, 2),
   prior_ar = rstanarm::student_t(100, 0, 1),
+  fixed_df_value = 5,
   estimate_df = TRUE,
   obs_error = c("normal","gamma"),
   correlation = c("gaussian", "exponential"),
@@ -77,7 +79,9 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
       prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
       prior_ar = parse_t_prior(prior_ar),
-      gauss_cor = gauss_cor))
+      gauss_cor = gauss_cor,
+      est_df = as.integer(estimate_df),
+      fixed_df_value = fixed_df_value))
 
   m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = stan_data,
     pars = stan_pars(), ...)

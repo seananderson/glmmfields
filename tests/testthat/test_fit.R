@@ -2,9 +2,9 @@ skip_on_cran()
 
 test_that("mvt-norm ar1 model fits", {
   library(rrfields)
-  set.seed(99)
-  n_draws <- 10
-  s <- sim_mvt_rf(df = 7, n_draws = n_draws, n_knots = 12)
+  set.seed(2)
+  n_draws <- 15
+  s <- sim_mvt_rf(df = 5, n_draws = n_draws, n_knots = 20)
   out <- reshape2::melt(s$proj)
   names(out) <- c("time_slice", "pt", "y")
   out <- dplyr::arrange(out, time_slice, pt)
@@ -17,7 +17,7 @@ test_that("mvt-norm ar1 model fits", {
   #   theme_light()
 
   m <- rrfield(y ~ 1, data = out, time = "time_slice",
-    lat = "lat", lon = "lon", nknots = 12,
-    iter = 200, chains = 1, control = list(adapt_delta = 0.8))
+    lat = "lat", lon = "lon", nknots = 20, estimate_df = FALSE,
+    iter = 300, chains = 2, control = list(adapt_delta = 0.8))
   expect_is(m, "stanfit")
 })
