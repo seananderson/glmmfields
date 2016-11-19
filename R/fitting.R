@@ -54,10 +54,11 @@ parse_t_prior <- function(x) {
 #'
 #' @export
 #' @importFrom rstanarm student_t normal
+#' @importFrom rstan sampling
 rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
-  prior_gp_scale = rstanarm::student_t(3, 0, 10),
-  prior_gp_sigma = rstanarm::student_t(3, 0, 2),
-  prior_sigma = rstanarm::student_t(3, 0, 2),
+  prior_gp_scale = student_t(3, 0, 10),
+  prior_gp_sigma = student_t(3, 0, 2),
+  prior_sigma = student_t(3, 0, 2),
   fixed_df_value = 5,
   estimate_df = TRUE,
   obs_error = c("normal","gamma"),
@@ -66,12 +67,13 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   mf <- model.frame(formula, data)
   X <- model.matrix(formula, mf)
+  y <- model.response(mf, "numeric")
 
   # user inputs raw data. this function formats it for STAN
-  stan_data <- format_data(data = data, y = mf[,1], X = X, time = time,
+  stan_data <- format_data(data = data, y = y, X = X, time = time,
     lon = lon, lat = lat, nknots = nknots)
 
-  gauss_cor <- switch(correlation[[1]], gaussian = 1, exponential = 0, 1)
+  gauss_cor <- switch(correlation[[1]], gaussian = 1L, exponential = 0L, 1L)
 
   stan_data <- c(stan_data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale),
@@ -81,7 +83,6 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
       est_df = as.integer(estimate_df),
       fixed_df_value = fixed_df_value))
 
-  m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = stan_data,
-    pars = stan_pars(), ...)
+  m <- sampling(stanmodels$rrfield, data = stan_data, pars = stan_pars(), ...)
   m
 }

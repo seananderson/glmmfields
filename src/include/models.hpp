@@ -7,7 +7,7 @@
 
 #include <stan/model/model_header.hpp>
 
-namespace model_mvt_norm_yr_ar1_namespace {
+namespace model_rrfield_namespace {
 
 using std::istream;
 using std::string;
@@ -24,7 +24,7 @@ typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matrix_d;
 
 static int current_statement_begin__;
 
-class model_mvt_norm_yr_ar1 : public prob_grad {
+class model_rrfield : public prob_grad {
 private:
     int nKnots;
     int nLocs;
@@ -44,7 +44,7 @@ private:
     int est_df;
     double fixed_df_value;
 public:
-    model_mvt_norm_yr_ar1(stan::io::var_context& context__,
+    model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
         typedef boost::ecuyer1988 rng_t;
@@ -53,7 +53,7 @@ public:
     }
 
     template <class RNG>
-    model_mvt_norm_yr_ar1(stan::io::var_context& context__,
+    model_rrfield(stan::io::var_context& context__,
         RNG& base_rng__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
@@ -66,7 +66,7 @@ public:
                    std::ostream* pstream__) {
         current_statement_begin__ = -1;
 
-        static const char* function__ = "model_mvt_norm_yr_ar1_namespace::model_mvt_norm_yr_ar1";
+        static const char* function__ = "model_rrfield_namespace::model_rrfield";
         (void) function__; // dummy call to supress warning
         size_t pos__;
         (void) pos__; // dummy call to supress warning
@@ -250,7 +250,7 @@ public:
         num_params_r__ += nCov;
     }
 
-    ~model_mvt_norm_yr_ar1() { }
+    ~model_rrfield() { }
 
 
     void transform_inits(const stan::io::var_context& context__,
@@ -648,7 +648,7 @@ public:
                      std::ostream* pstream__ = 0) const {
         vars__.resize(0);
         stan::io::reader<double> in__(params_r__,params_i__);
-        static const char* function__ = "model_mvt_norm_yr_ar1_namespace::write_array";
+        static const char* function__ = "model_rrfield_namespace::write_array";
         (void) function__; // dummy call to supress warning
         // read-transform, write parameters
         double gp_scale = in__.scalar_lb_constrain(0);
@@ -796,7 +796,7 @@ public:
     }
 
     static std::string model_name() {
-        return "model_mvt_norm_yr_ar1";
+        return "model_rrfield";
     }
 
 
