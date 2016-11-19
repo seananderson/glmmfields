@@ -2,7 +2,7 @@
 rrfields
 ========
 
-The rrfields R package implements predictive process spatiotemporal models that allow for extreme spatial deviations through time. It uses random fields implemented with a multivariate-t distribution instead of a multivariate normal.
+The rrfields R package implements spatiotemporal models that allow for extreme spatial deviations through time. It uses a predictive process approach with random fields implemented through a multivariate-t distribution instead of a multivariate normal.
 
 You can install the development version of the package with:
 
@@ -88,3 +88,14 @@ mcmc_areas(mm, pars = c("gp_sigma", "sigma", "gp_scale"))
 ```
 
 ![](README-figs/plot-3.png)
+
+References
+==========
+
+Predictive-process models:
+
+Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A. Silander Jr. 2009. Hierarchical models facilitate spatial analysis of large data sets: a case study on invasive plant species in the northeastern United States. Ecology Letters 12:144–154.
+
+Shelton, A. O., J. T. Thorson, E. J. Ward, and B. E. Feist. 2014. Spatial semiparametric models improve estimates of species abundance and distribution. Canadian Journal of Fisheries and Aquatic Sciences 71:1655–1666.
+
+...
