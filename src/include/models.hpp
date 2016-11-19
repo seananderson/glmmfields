@@ -39,6 +39,8 @@ private:
     vector<double> prior_ar;
     matrix_d distKnotsSq;
     matrix_d distKnots21Sq;
+    int nCov;
+    matrix_d X;
 public:
     model_mvt_norm_yr_ar1(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -177,6 +179,24 @@ public:
                 distKnots21Sq(m_mat__,n_mat__) = vals_r__[pos__++];
             }
         }
+        context__.validate_dims("data initialization", "nCov", "int", context__.to_vec());
+        nCov = int(0);
+        vals_i__ = context__.vals_i("nCov");
+        pos__ = 0;
+        nCov = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "X", "matrix_d", context__.to_vec(N,nCov));
+        validate_non_negative_index("X", "N", N);
+        validate_non_negative_index("X", "nCov", nCov);
+        X = matrix_d(static_cast<Eigen::VectorXd::Index>(N),static_cast<Eigen::VectorXd::Index>(nCov));
+        vals_r__ = context__.vals_r("X");
+        pos__ = 0;
+        size_t X_m_mat_lim__ = N;
+        size_t X_n_mat_lim__ = nCov;
+        for (size_t n_mat__ = 0; n_mat__ < X_n_mat_lim__; ++n_mat__) {
+            for (size_t m_mat__ = 0; m_mat__ < X_m_mat_lim__; ++m_mat__) {
+                X(m_mat__,n_mat__) = vals_r__[pos__++];
+            }
+        }
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -189,6 +209,7 @@ public:
         for (int k0__ = 0; k0__ < N; ++k0__) {
             check_greater_or_equal(function__,"yearID[k0__]",yearID[k0__],1);
         }
+        check_greater_or_equal(function__,"nCov",nCov,1);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -216,6 +237,7 @@ public:
         num_params_r__ += nT;
         ++num_params_r__;
         num_params_r__ += nKnots * nT;
+        num_params_r__ += nCov;
     }
 
     ~model_mvt_norm_yr_ar1() { }
@@ -340,6 +362,20 @@ public:
             throw std::runtime_error(std::string("Error transforming variable spatialEffectsKnots: ") + e.what());
         }
 
+        if (!(context__.contains_r("B")))
+            throw std::runtime_error("variable B missing");
+        vals_r__ = context__.vals_r("B");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "B", "vector_d", context__.to_vec(nCov));
+        vector_d B(static_cast<Eigen::VectorXd::Index>(nCov));
+        for (int j1__ = 0U; j1__ < nCov; ++j1__)
+            B(j1__) = vals_r__[pos__++];
+        try {
+            writer__.vector_unconstrain(B);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable B: ") + e.what());
+        }
+
         params_r__ = writer__.data_r();
         params_i__ = writer__.data_i();
     }
@@ -432,6 +468,13 @@ public:
                 spatialEffectsKnots.push_back(in__.vector_constrain(nKnots));
         }
 
+        Eigen::Matrix<T__,Eigen::Dynamic,1>  B;
+        (void) B;  // dummy to suppress unused var warning
+        if (jacobian__)
+            B = in__.vector_constrain(nCov,lp__);
+        else
+            B = in__.vector_constrain(nCov);
+
 
         // transformed parameters
         Eigen::Matrix<T__,Eigen::Dynamic,1>  muZeros(static_cast<Eigen::VectorXd::Index>(nKnots));
@@ -469,7 +512,7 @@ public:
                 stan::math::assign(get_base1_lhs(spatialEffects,i,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,i,"spatialEffectsKnots",1)));
             }
             for (int i = 1; i <= N; ++i) {
-                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + multiply(get_base1(X,i,"X",1),B)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -545,6 +588,9 @@ public:
             lp_accum__.add(student_t_log<propto__>(sigma, get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
             lp_accum__.add(student_t_log<propto__>(ar, get_base1(prior_ar,1,"prior_ar",1), get_base1(prior_ar,2,"prior_ar",1), get_base1(prior_ar,3,"prior_ar",1)));
             lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
+            for (int i = 1; i <= nCov; ++i) {
+                lp_accum__.add(normal_log<propto__>(get_base1(B,i,"B",1), 0, 1));
+            }
             lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
             lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 3, 0, 2));
             for (int t = 2; t <= nT; ++t) {
@@ -588,6 +634,7 @@ public:
         names__.push_back("yearEffects");
         names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
+        names__.push_back("B");
         names__.push_back("muZeros");
         names__.push_back("spatialEffects");
         names__.push_back("SigmaKnots");
@@ -619,6 +666,9 @@ public:
         dims__.resize(0);
         dims__.push_back(nT);
         dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nCov);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nKnots);
@@ -675,6 +725,7 @@ public:
         for (size_t k_0__ = 0; k_0__ < dim_spatialEffectsKnots_0__; ++k_0__) {
             spatialEffectsKnots.push_back(in__.vector_constrain(nKnots));
         }
+        vector_d B = in__.vector_constrain(nCov);
         vars__.push_back(gp_scale);
         vars__.push_back(gp_sigma);
         vars__.push_back(df);
@@ -688,6 +739,9 @@ public:
             for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
                 vars__.push_back(spatialEffectsKnots[k_0__][k_1__]);
             }
+        }
+        for (int k_0__ = 0; k_0__ < nCov; ++k_0__) {
+            vars__.push_back(B[k_0__]);
         }
 
         if (!include_tparams__) return;
@@ -722,7 +776,7 @@ public:
                 stan::math::assign(get_base1_lhs(spatialEffects,i,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,i,"spatialEffectsKnots",1)));
             }
             for (int i = 1; i <= N; ++i) {
-                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + multiply(get_base1(X,i,"X",1),B)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -840,6 +894,11 @@ public:
                 param_names__.push_back(param_name_stream__.str());
             }
         }
+        for (int k_0__ = 1; k_0__ <= nCov; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "B" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__ && !include_tparams__) return;
         for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
@@ -921,6 +980,11 @@ public:
                 param_name_stream__ << "spatialEffectsKnots" << '.' << k_0__ << '.' << k_1__;
                 param_names__.push_back(param_name_stream__.str());
             }
+        }
+        for (int k_0__ = 1; k_0__ <= nCov; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "B" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
         }
 
         if (!include_gqs__ && !include_tparams__) return;
