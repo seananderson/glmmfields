@@ -1,6 +1,6 @@
 #' @export
 
-format_data <- function(data, y, time, lon = "lon", lat = "lat", nKnots = 25L) {
+format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nKnots = 25L) {
 
   knots = cluster::pam(data[, c(lon, lat)], nKnots)$medoids
 
@@ -27,7 +27,9 @@ format_data <- function(data, y, time, lon = "lon", lat = "lat", nKnots = 25L) {
     yearID = yearID,
     y = Y,
     distKnotsSq = distKnotsSq,
-    distKnots21Sq = distKnots21Sq)
+    distKnots21Sq = distKnots21Sq,
+    X = X,
+    nCov = ncol(X))
   spatglm_data
 }
 
@@ -53,6 +55,8 @@ rrfield <- function(formula,
   lon,
   lat,
   data,
+  y,
+  X,
   pars = stan_pars(),
   nKnots = 25L,
   prior_gp_scale = rstanarm::student_t(3, 0, 10),
@@ -66,7 +70,7 @@ rrfield <- function(formula,
   ...) {
 
   # user inputs raw data. this function formats it for STAN
-  data = format_data(data=data, y=y, time=time, lon=lon, lat=lat, nKnots=nKnots)
+  data = format_data(data=data, y=y, X=X, time=time, lon=lon, lat=lat, nKnots=nKnots)
 
   data <- c(data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale)),

@@ -10,6 +10,7 @@ test_that("mvt-norm ar1 model fits", {
   out <- dplyr::arrange(out, time_slice, pt)
   out$lon <- rep(s$g$lon, n_draws)
   out$lat <- rep(s$g$lat, n_draws)
+  X = matrix(1, nrow = nrow(out), ncol=1)
   # ggplot(out, aes(x = lon, y = lat, z = y, colour = y)) +
   #   facet_wrap(~time_slice, ncol = n_draws) +
   #   geom_point(size = 3) +
@@ -17,7 +18,7 @@ test_that("mvt-norm ar1 model fits", {
   #   theme_light()
 
   #d <- format_data(out, y = "y", time = "time_slice", nKnots = 12)
-  m <- rrfield(data = out, y = "y", time="time_slice",
+  m <- rrfield(data = out, y = "y", X = "X", nrow=time="time_slice",
     lat = "lat", lon = "lon", nKnots = 12,
     iter = 1000, chains = 1, control = list(adapt_delta = 0.95))
   expect_is(m, "stanfit")
