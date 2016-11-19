@@ -21,7 +21,7 @@ test_that("mvt-norm model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = 15,
-    iter = ITER, chains = CHAINS)
+    iter = ITER, chains = CHAINS, obs_model = 1)
 
   # expect_equal(fixef(fit), fixef(ans), tol = FIXEF_tol)
 })
