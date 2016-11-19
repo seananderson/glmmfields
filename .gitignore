@@ -2,4 +2,6 @@
 *.o
 *.so
 *.bak
+.Rhistory
 .DS_Store
+.Rapp.history
