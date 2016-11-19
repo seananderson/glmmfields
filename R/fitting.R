@@ -77,7 +77,6 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale),
       prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
-      prior_ar = parse_t_prior(prior_ar),
       gauss_cor = gauss_cor,
       est_df = as.integer(estimate_df),
       fixed_df_value = fixed_df_value))

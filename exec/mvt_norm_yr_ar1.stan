@@ -9,7 +9,7 @@ data {
   real prior_gp_scale[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
-  real prior_ar[3];
+//  real prior_ar[3];
   matrix[nKnots,nKnots] distKnotsSq;
   matrix[nLocs,nKnots] distKnots21Sq;
   int<lower=1> nCov;

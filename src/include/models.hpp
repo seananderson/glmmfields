@@ -36,7 +36,6 @@ private:
     vector<double> prior_gp_scale;
     vector<double> prior_gp_sigma;
     vector<double> prior_sigma;
-    vector<double> prior_ar;
     matrix_d distKnotsSq;
     matrix_d distKnots21Sq;
     int nCov;
@@ -146,15 +145,6 @@ public:
         size_t prior_sigma_limit_0__ = 3;
         for (size_t i_0__ = 0; i_0__ < prior_sigma_limit_0__; ++i_0__) {
             prior_sigma[i_0__] = vals_r__[pos__++];
-        }
-        context__.validate_dims("data initialization", "prior_ar", "double", context__.to_vec(3));
-        validate_non_negative_index("prior_ar", "3", 3);
-        prior_ar = std::vector<double>(3,double(0));
-        vals_r__ = context__.vals_r("prior_ar");
-        pos__ = 0;
-        size_t prior_ar_limit_0__ = 3;
-        for (size_t i_0__ = 0; i_0__ < prior_ar_limit_0__; ++i_0__) {
-            prior_ar[i_0__] = vals_r__[pos__++];
         }
         context__.validate_dims("data initialization", "distKnotsSq", "matrix_d", context__.to_vec(nKnots,nKnots));
         validate_non_negative_index("distKnotsSq", "nKnots", nKnots);
