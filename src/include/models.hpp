@@ -41,6 +41,7 @@ private:
     matrix_d distKnots21Sq;
     int nCov;
     matrix_d X;
+    int gauss_cor;
 public:
     model_mvt_norm_yr_ar1(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -197,6 +198,11 @@ public:
                 X(m_mat__,n_mat__) = vals_r__[pos__++];
             }
         }
+        context__.validate_dims("data initialization", "gauss_cor", "int", context__.to_vec());
+        gauss_cor = int(0);
+        vals_i__ = context__.vals_i("gauss_cor");
+        pos__ = 0;
+        gauss_cor = vals_i__[pos__++];
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -210,6 +216,8 @@ public:
             check_greater_or_equal(function__,"yearID[k0__]",yearID[k0__],1);
         }
         check_greater_or_equal(function__,"nCov",nCov,1);
+        check_greater_or_equal(function__,"gauss_cor",gauss_cor,0);
+        check_less_or_equal(function__,"gauss_cor",gauss_cor,1);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -480,7 +488,11 @@ public:
         stan::math::fill(gp_sigmaSq,DUMMY_VAR__);
 
         try {
-            stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
+            if (as_bool(logical_eq(gauss_cor,1))) {
+                stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
+            } else {
+                stan::math::assign(gp_sigmaSq, gp_sigma);
+            }
             stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
             stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int k = 1; k <= nKnots; ++k) {
@@ -730,7 +742,11 @@ public:
         (void) gp_sigmaSq;  // dummy to suppress unused var warning
 
         try {
-            stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
+            if (as_bool(logical_eq(gauss_cor,1))) {
+                stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
+            } else {
+                stan::math::assign(gp_sigmaSq, gp_sigma);
+            }
             stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
             stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int k = 1; k <= nKnots; ++k) {

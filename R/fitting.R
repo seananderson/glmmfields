@@ -70,12 +70,14 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   stan_data <- format_data(data = data, y = mf[,1], X = X, time = time,
     lon = lon, lat = lat, nknots = nknots)
 
+  gauss_cor <- switch(correlation[[1]], gaussian = 1, exponential = 0, 1)
+
   stan_data <- c(stan_data,
-    list(prior_gp_scale = parse_t_prior(prior_gp_scale)),
-    list(prior_gp_sigma = parse_t_prior(prior_gp_sigma)),
-    list(prior_sigma = parse_t_prior(prior_sigma)),
-    list(prior_ar = parse_t_prior(prior_ar))
-  )
+    list(prior_gp_scale = parse_t_prior(prior_gp_scale),
+      prior_gp_sigma = parse_t_prior(prior_gp_sigma),
+      prior_sigma = parse_t_prior(prior_sigma),
+      prior_ar = parse_t_prior(prior_ar),
+      gauss_cor = gauss_cor))
 
   m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = stan_data,
     pars = stan_pars(), ...)

@@ -14,6 +14,7 @@ data {
   matrix[nLocs,nKnots] distKnots21Sq;
   int<lower=1> nCov;
   matrix[N,nCov] X;
+  int<lower=0,upper=1> gauss_cor;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -33,8 +34,12 @@ transformed parameters {
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
   real<lower=0> gp_sigmaSq;
-  // flag for gaussian
-  gp_sigmaSq = gp_sigma^2;
+
+  if (gauss_cor == 1) {
+    gp_sigmaSq = gp_sigma^2;
+  } else {
+    gp_sigmaSq = gp_sigma;
+  }
 
   // cov matrix between knots:
   SigmaKnots = gp_sigmaSq * exp(-gp_scale * distKnotsSq);
