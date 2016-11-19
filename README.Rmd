@@ -1,0 +1,64 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-figs/",
+  cache.path = "README-cache/"
+)
+```
+
+# rrfields
+
+The rrfields R package implements predictive process spatiotemporal models that allow for extreme spatial deviations through time. It uses random fields implemented with a multivariate-t distribution instead of a multivariate normal.
+
+You can install the development version of the package with:
+
+    ```R
+    # install.packages("devtools")
+    devtools::install_github("seananderson/rrfields")
+    ```
+    
+## An example model
+
+Simulate data:
+
+```{r simulate, cache=TRUE}
+library(rrfields)
+set.seed(123)
+s <- sim_rrfield(df = 4, n_draws = 15)
+```
+
+```{r plot-sim, cache=TRUE, dependson="simulate"}
+library(ggplot2)
+ggplot(s$dat, aes(x = lon, y = lat, colour = y)) +
+  facet_wrap(~time, nrow = 3) +
+  geom_point(size = 2) +
+  scale_color_gradient2()
+```
+
+Fit the model:
+
+```{r fit, cache=TRUE, warning=FALSE, message=FALSE, results='hide', dependson="simulate"}
+options(mc.cores = parallel::detectCores())
+m <- rrfield(y ~ 1, data = s$dat, time = "time",
+  lat = "lat", lon = "lon", nknots = 15, iter = 400, chains = 4)
+```
+
+Plot:
+
+```{r plot, cache=TRUE, dependson="fit"}
+library(bayesplot)
+mm <- as.matrix(m)
+mcmc_areas(mm, pars = c("df[1]"))
+mcmc_areas(mm, pars = c("gp_sigma", "sigma", "gp_scale"))
+posterior <- rstan::extract(m, inc_warmup = FALSE, permuted = FALSE)
+mcmc_trace(posterior,  pars = c("df[1]", "gp_sigma", "sigma", "gp_scale"))
+```
