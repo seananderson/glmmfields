@@ -44,8 +44,8 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   out <- reshape2::melt(proj)
   names(out) <- c("time", "pt", "y")
   out <- dplyr::arrange_(out, "time", "pt")
-  out$lon <- rep(s$g$lon, n_draws)
-  out$lat <- rep(s$g$lat, n_draws)
+  out$lon <- rep(g$lon, n_draws)
+  out$lat <- rep(g$lat, n_draws)
 
   return(
     list(
