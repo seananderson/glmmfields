@@ -23,8 +23,6 @@ parameters {
   real<lower=0> gp_sigma;
   real<lower=2> df[est_df];
   real<lower=0> sigma;
-  real yearEffects[nT];
-  real<lower=0> year_sigma;
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
 }

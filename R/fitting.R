@@ -35,11 +35,11 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
 stan_pars <- function() {
   c(
     "df",
-    "yearEffects",
+#    "yearEffects",
     "sigma",
     "gp_sigma",
     "gp_scale",
-    "year_sigma",
+#    "year_sigma",
 #    "ar",
     "B",
     "spatialEffectsKnots"
