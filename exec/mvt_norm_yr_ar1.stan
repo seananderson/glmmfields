@@ -24,7 +24,7 @@ parameters {
   real yearEffects[nT];
   real<lower=0> year_sigma;
   vector[nKnots] spatialEffectsKnots[nT];
-  real B[nCov];
+  vector[nCov] B;
 }
 transformed parameters {
 	vector[nKnots] muZeros;
