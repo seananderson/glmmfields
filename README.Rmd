@@ -17,14 +17,16 @@ knitr::opts_chunk$set(
 
 # rrfields
 
-The rrfields R package implements predictive process spatiotemporal models that allow for extreme spatial deviations through time. It uses random fields implemented with a multivariate-t distribution instead of a multivariate normal.
+The rrfields R package implements predictive process spatiotemporal models that 
+allow for extreme spatial deviations through time. It uses random fields 
+implemented with a multivariate-t distribution instead of a multivariate normal.
 
 You can install the development version of the package with:
 
-    ```R
-    # install.packages("devtools")
-    devtools::install_github("seananderson/rrfields")
-    ```
+```{r, eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("seananderson/rrfields")
+```
     
 ## An example model
 
@@ -32,8 +34,8 @@ Simulate data:
 
 ```{r simulate, cache=TRUE}
 library(rrfields)
-set.seed(123)
-s <- sim_rrfield(df = 4, n_draws = 15)
+set.seed(999)
+s <- sim_rrfield(df = 3, n_draws = 15)
 ```
 
 ```{r plot-sim, cache=TRUE, dependson="simulate"}
@@ -46,19 +48,24 @@ ggplot(s$dat, aes(x = lon, y = lat, colour = y)) +
 
 Fit the model:
 
-```{r fit, cache=TRUE, warning=FALSE, message=FALSE, results='hide', dependson="simulate"}
-options(mc.cores = parallel::detectCores())
+```{r fit, cache=TRUE, warning=FALSE, message=FALSE, results='hide', dependson="simulate", cache.comments=FALSE}
+options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- rrfield(y ~ 1, data = s$dat, time = "time",
   lat = "lat", lon = "lon", nknots = 15, iter = 400, chains = 4)
 ```
 
+```{r print, cache=TRUE, dependson="fit"}
+print(m, pars = c("df[1]", "gp_sigma", "sigma", "gp_scale", "lp__"))
+```
+
 Plot:
 
-```{r plot, cache=TRUE, dependson="fit"}
+```{r plot, cache=TRUE, dependson="fit", warning=FALSE}
 library(bayesplot)
+posterior <- rstan::extract(m, inc_warmup = FALSE, permuted = FALSE)
+mcmc_trace(posterior,  pars = c("df[1]", "gp_sigma", "sigma", "gp_scale"))
+
 mm <- as.matrix(m)
 mcmc_areas(mm, pars = c("df[1]"))
 mcmc_areas(mm, pars = c("gp_sigma", "sigma", "gp_scale"))
-posterior <- rstan::extract(m, inc_warmup = FALSE, permuted = FALSE)
-mcmc_trace(posterior,  pars = c("df[1]", "gp_sigma", "sigma", "gp_scale"))
 ```

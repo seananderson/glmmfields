@@ -2,7 +2,7 @@
 
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   sigma_t = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
-  sd_obs = 0.2) {
+  sd_obs = 0.1) {
 
   g <- data.frame(lon = runif(nDataPoints, 0, 10),
     lat = runif(nDataPoints, 0, 10))
