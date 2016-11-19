@@ -55,15 +55,18 @@ rrfield <- function(formula,
   data,
   pars = stan_pars(),
   nKnots = 25L,
-  prior_gp_scale = student_t(3, 0, 10),
-  prior_gp_sigma = student_t(3, 0, 2),
-  prior_sigma = student_t(3, 0, 2),
-  prior_ar = student_t(100, 0, 1),
+  prior_gp_scale = rstanarm::student_t(3, 0, 10),
+  prior_gp_sigma = rstanarm::student_t(3, 0, 2),
+  prior_sigma = rstanarm::student_t(3, 0, 2),
+  prior_ar = rstanarm::student_t(100, 0, 1),
   estimate_df = TRUE,
-  year_effects = c("random","fixed","zero"),
+  year_effects = c("fixed","zero"),
   obs_error = c("normal","gamma"),
   correlation = c("gaussian", "exponential"),
   ...) {
+
+  # user inputs raw data. this function formats it for STAN
+  data = format_data(data=data, y=y, time=time, lon=lon, lat=lat, nKnots=nKnots)
 
   data <- c(data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale)),
@@ -71,6 +74,7 @@ rrfield <- function(formula,
     list(prior_gp_scale = parse_t_prior(prior_sigma)),
     list(prior_gp_scale = parse_t_prior(prior_ar))
   )
+
   m <- rstan::sampling(stanmodels$mvt_norm_yr_ar1, data = data, pars = pars, include=FALSE, ...)
   m
 }

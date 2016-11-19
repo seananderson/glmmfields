@@ -12,6 +12,8 @@ data {
   real prior_ar[3];
   matrix[nKnots,nKnots] distKnotsSq;
   matrix[nLocs,nKnots] distKnots21Sq;
+  int<lower=1> nCov;
+  matrix[N,nCov] X;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -22,6 +24,7 @@ parameters {
   real yearEffects[nT];
   real<lower=0> year_sigma;
   vector[nKnots] spatialEffectsKnots[nT];
+  real B[nCov];
 }
 transformed parameters {
 	vector[nKnots] muZeros;
@@ -57,6 +60,12 @@ model {
   sigma ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
   ar ~ student_t(prior_ar[1], prior_ar[2], prior_ar[3]);
   df ~ gamma(2, 0.1);
+
+  // regression coefficients
+  for(i in 1:nCov) {
+    B[i] ~ normal(0, 1);
+  }
+
   year_sigma ~ student_t(3, 0, 2);
 
   // random walk in year terms:

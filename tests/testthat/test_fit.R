@@ -16,7 +16,9 @@ test_that("mvt-norm ar1 model fits", {
   #   viridis::scale_color_viridis() +
   #   theme_light()
 
-  d <- format_data(out, y = "y", time = "time_slice", nKnots = 12)
-  m <- rrfield(data = d, iter = 1000, chains = 1, control = list(adapt_delta = 0.95))
+  #d <- format_data(out, y = "y", time = "time_slice", nKnots = 12)
+  m <- rrfield(data = out, y = "y", time="time_slice",
+    lat = "lat", lon = "lon", nKnots = 12,
+    iter = 1000, chains = 1, control = list(adapt_delta = 0.95))
   expect_is(m, "stanfit")
 })
