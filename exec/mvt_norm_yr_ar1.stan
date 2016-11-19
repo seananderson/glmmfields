@@ -50,7 +50,7 @@ transformed parameters {
     spatialEffects[i] = SigmaOffDiag * spatialEffectsKnots[i];
 	}
 	for(i in 1:N) {
-	  y_hat[i] = yearEffects[yearID[i]] + spatialEffects[yearID[i],stationID[i]];
+	  y_hat[i] = yearEffects[yearID[i]] + spatialEffects[yearID[i],stationID[i]] + X[i]*B;
 	}
 }
 model {
