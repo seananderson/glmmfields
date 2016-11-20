@@ -17,7 +17,8 @@ knitr::opts_chunk$set(
 
 # rrfields
 
-[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields)
+[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields) [![codecov](https://codecov.io/github/seananderson/rrfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/rrfields)
+
 
 The rrfields R package implements spatiotemporal models that allow for extreme
 spatial deviations through time. It uses a predictive process approach with
