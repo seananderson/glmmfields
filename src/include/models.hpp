@@ -36,8 +36,8 @@ private:
     vector<double> prior_gp_scale;
     vector<double> prior_gp_sigma;
     vector<double> prior_sigma;
-    matrix_d distKnotsSq;
-    matrix_d distKnots21Sq;
+    matrix_d distKnots;
+    matrix_d distKnots21;
     int nCov;
     matrix_d X;
     int gauss_cor;
@@ -149,30 +149,30 @@ public:
         for (size_t i_0__ = 0; i_0__ < prior_sigma_limit_0__; ++i_0__) {
             prior_sigma[i_0__] = vals_r__[pos__++];
         }
-        context__.validate_dims("data initialization", "distKnotsSq", "matrix_d", context__.to_vec(nKnots,nKnots));
-        validate_non_negative_index("distKnotsSq", "nKnots", nKnots);
-        validate_non_negative_index("distKnotsSq", "nKnots", nKnots);
-        distKnotsSq = matrix_d(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
-        vals_r__ = context__.vals_r("distKnotsSq");
+        context__.validate_dims("data initialization", "distKnots", "matrix_d", context__.to_vec(nKnots,nKnots));
+        validate_non_negative_index("distKnots", "nKnots", nKnots);
+        validate_non_negative_index("distKnots", "nKnots", nKnots);
+        distKnots = matrix_d(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+        vals_r__ = context__.vals_r("distKnots");
         pos__ = 0;
-        size_t distKnotsSq_m_mat_lim__ = nKnots;
-        size_t distKnotsSq_n_mat_lim__ = nKnots;
-        for (size_t n_mat__ = 0; n_mat__ < distKnotsSq_n_mat_lim__; ++n_mat__) {
-            for (size_t m_mat__ = 0; m_mat__ < distKnotsSq_m_mat_lim__; ++m_mat__) {
-                distKnotsSq(m_mat__,n_mat__) = vals_r__[pos__++];
+        size_t distKnots_m_mat_lim__ = nKnots;
+        size_t distKnots_n_mat_lim__ = nKnots;
+        for (size_t n_mat__ = 0; n_mat__ < distKnots_n_mat_lim__; ++n_mat__) {
+            for (size_t m_mat__ = 0; m_mat__ < distKnots_m_mat_lim__; ++m_mat__) {
+                distKnots(m_mat__,n_mat__) = vals_r__[pos__++];
             }
         }
-        context__.validate_dims("data initialization", "distKnots21Sq", "matrix_d", context__.to_vec(nLocs,nKnots));
-        validate_non_negative_index("distKnots21Sq", "nLocs", nLocs);
-        validate_non_negative_index("distKnots21Sq", "nKnots", nKnots);
-        distKnots21Sq = matrix_d(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
-        vals_r__ = context__.vals_r("distKnots21Sq");
+        context__.validate_dims("data initialization", "distKnots21", "matrix_d", context__.to_vec(nLocs,nKnots));
+        validate_non_negative_index("distKnots21", "nLocs", nLocs);
+        validate_non_negative_index("distKnots21", "nKnots", nKnots);
+        distKnots21 = matrix_d(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+        vals_r__ = context__.vals_r("distKnots21");
         pos__ = 0;
-        size_t distKnots21Sq_m_mat_lim__ = nLocs;
-        size_t distKnots21Sq_n_mat_lim__ = nKnots;
-        for (size_t n_mat__ = 0; n_mat__ < distKnots21Sq_n_mat_lim__; ++n_mat__) {
-            for (size_t m_mat__ = 0; m_mat__ < distKnots21Sq_m_mat_lim__; ++m_mat__) {
-                distKnots21Sq(m_mat__,n_mat__) = vals_r__[pos__++];
+        size_t distKnots21_m_mat_lim__ = nLocs;
+        size_t distKnots21_n_mat_lim__ = nKnots;
+        for (size_t n_mat__ = 0; n_mat__ < distKnots21_n_mat_lim__; ++n_mat__) {
+            for (size_t m_mat__ = 0; m_mat__ < distKnots21_m_mat_lim__; ++m_mat__) {
+                distKnots21(m_mat__,n_mat__) = vals_r__[pos__++];
             }
         }
         context__.validate_dims("data initialization", "nCov", "int", context__.to_vec());
@@ -493,9 +493,9 @@ public:
         (void) invSigmaKnots;  // dummy to suppress unused var warning
         Eigen::Matrix<T__,Eigen::Dynamic,1>  y_hat(static_cast<Eigen::VectorXd::Index>(N));
         (void) y_hat;  // dummy to suppress unused var warning
-        T__ gp_sigmaSq;
-        (void) gp_sigmaSq;  // dummy to suppress unused var warning
         vector<T__> gammaA(gamma_params);
+        T__ gp_sigma_sq;
+        (void) gp_sigma_sq;  // dummy to suppress unused var warning
 
         // initialize transformed variables to avoid seg fault on val access
         stan::math::fill(muZeros,DUMMY_VAR__);
@@ -504,17 +504,18 @@ public:
         stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
         stan::math::fill(invSigmaKnots,DUMMY_VAR__);
         stan::math::fill(y_hat,DUMMY_VAR__);
-        stan::math::fill(gp_sigmaSq,DUMMY_VAR__);
         stan::math::fill(gammaA,DUMMY_VAR__);
+        stan::math::fill(gp_sigma_sq,DUMMY_VAR__);
 
         try {
+            stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
             if (as_bool(logical_eq(gauss_cor,1))) {
-                stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots21))));
             } else {
-                stan::math::assign(gp_sigmaSq, gp_sigma);
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots21))));
             }
-            stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
-            stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int k = 1; k <= nKnots; ++k) {
                 stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
             }
@@ -585,11 +586,6 @@ public:
                 throw std::runtime_error(msg__.str());
             }
         }
-        if (stan::math::is_uninitialized(gp_sigmaSq)) {
-            std::stringstream msg__;
-            msg__ << "Undefined transformed parameter: gp_sigmaSq";
-            throw std::runtime_error(msg__.str());
-        }
         for (int i0__ = 0; i0__ < gamma_params; ++i0__) {
             if (stan::math::is_uninitialized(gammaA[i0__])) {
                 std::stringstream msg__;
@@ -597,13 +593,18 @@ public:
                 throw std::runtime_error(msg__.str());
             }
         }
+        if (stan::math::is_uninitialized(gp_sigma_sq)) {
+            std::stringstream msg__;
+            msg__ << "Undefined transformed parameter: gp_sigma_sq";
+            throw std::runtime_error(msg__.str());
+        }
 
         const char* function__ = "validate transformed params";
         (void) function__;  // dummy to suppress unused var warning
-        check_greater_or_equal(function__,"gp_sigmaSq",gp_sigmaSq,0);
         for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
             check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
         }
+        check_greater_or_equal(function__,"gp_sigma_sq",gp_sigma_sq,0);
 
         // model body
         try {
@@ -667,8 +668,8 @@ public:
         names__.push_back("SigmaOffDiag");
         names__.push_back("invSigmaKnots");
         names__.push_back("y_hat");
-        names__.push_back("gp_sigmaSq");
         names__.push_back("gammaA");
+        names__.push_back("gp_sigma_sq");
     }
 
 
@@ -718,9 +719,9 @@ public:
         dims__.push_back(N);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(gamma_params);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(gamma_params);
         dimss__.push_back(dims__);
     }
 
@@ -797,18 +798,19 @@ public:
         (void) invSigmaKnots;  // dummy to suppress unused var warning
         vector_d y_hat(static_cast<Eigen::VectorXd::Index>(N));
         (void) y_hat;  // dummy to suppress unused var warning
-        double gp_sigmaSq(0.0);
-        (void) gp_sigmaSq;  // dummy to suppress unused var warning
         vector<double> gammaA(gamma_params, 0.0);
+        double gp_sigma_sq(0.0);
+        (void) gp_sigma_sq;  // dummy to suppress unused var warning
 
         try {
+            stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
             if (as_bool(logical_eq(gauss_cor,1))) {
-                stan::math::assign(gp_sigmaSq, pow(gp_sigma,2));
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots21))));
             } else {
-                stan::math::assign(gp_sigmaSq, gp_sigma);
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots21))));
             }
-            stan::math::assign(SigmaKnots, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnotsSq))));
-            stan::math::assign(SigmaOffDiag, multiply(gp_sigmaSq,exp(multiply(-(gp_scale),distKnots21Sq))));
             for (int k = 1; k <= nKnots; ++k) {
                 stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
             }
@@ -829,10 +831,10 @@ public:
         }
 
         // validate transformed parameters
-        check_greater_or_equal(function__,"gp_sigmaSq",gp_sigmaSq,0);
         for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
             check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
         }
+        check_greater_or_equal(function__,"gp_sigma_sq",gp_sigma_sq,0);
 
         // write transformed parameters
         for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
@@ -861,10 +863,10 @@ public:
         for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(y_hat[k_0__]);
         }
-        vars__.push_back(gp_sigmaSq);
         for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
             vars__.push_back(gammaA[k_0__]);
         }
+        vars__.push_back(gp_sigma_sq);
 
         if (!include_gqs__) return;
         // declare and define generated quantities
@@ -987,14 +989,14 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigmaSq";
-        param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "gammaA" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigma_sq";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
     }
@@ -1077,14 +1079,14 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigmaSq";
-        param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "gammaA" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigma_sq";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
     }

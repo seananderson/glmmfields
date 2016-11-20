@@ -9,8 +9,8 @@ data {
   real prior_gp_scale[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
-  matrix[nKnots,nKnots] distKnotsSq;
-  matrix[nLocs,nKnots] distKnots21Sq;
+  matrix[nKnots,nKnots] distKnots;
+  matrix[nLocs,nKnots] distKnots21;
   int<lower=1> nCov;
   matrix[N,nCov] X;
   int<lower=0,upper=1> gauss_cor;
@@ -36,26 +36,25 @@ transformed parameters {
   matrix[nLocs, nKnots] SigmaOffDiag;
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
-  real<lower=0> gp_sigmaSq;
   real<lower=0> gammaA[gamma_params];
+  real<lower=0> gp_sigma_sq;
+
+  gp_sigma_sq = pow(gp_sigma, 2.0);
 
   // allow user to switch between gaussian and exponential covariance
   if (gauss_cor == 1) {
-    gp_sigmaSq = gp_sigma^2;
     // cov matrix between knots:
-    SigmaKnots = gp_sigmaSq * exp(-gp_scale * distKnotsSq);
+    SigmaKnots =   gp_sigma_sq *
+                   exp(-2.0 * pow(gp_scale, 2.0) * distKnots); // dist^2 as data
     // cov matrix between knots and projected locs:
-    SigmaOffDiag = gp_sigmaSq * exp(-gp_scale * distKnots21Sq);
+    SigmaOffDiag = gp_sigma_sq *
+                   exp(-2.0 * pow(gp_scale, 2.0) * distKnots21); // dist^2 as data
   } else {
-    gp_sigmaSq = gp_sigma;
-    // cov matrix between knots, sqrt() added because raw distance used
-    SigmaKnots = gp_sigmaSq * exp(-gp_scale * sqrt(distKnotsSq));
-    // cov matrix between knots and projected locs, sqrt() added because raw distance used
-    SigmaOffDiag = gp_sigmaSq * exp(-gp_scale * sqrt(distKnots21Sq));
+    // cov matrix between knots
+    SigmaKnots =   gp_sigma_sq * exp(-gp_scale * distKnots);
+    // cov matrix between knots and projected locs
+    SigmaOffDiag = gp_sigma_sq * exp(-gp_scale * distKnots21);
   }
-
-  SigmaKnots = gp_sigmaSq * exp(-gp_scale * distKnotsSq);
-
 
 	for(k in 1:nKnots) {
 		muZeros[k] = 0;
