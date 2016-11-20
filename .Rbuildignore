@@ -3,3 +3,4 @@ cleanup*
 ^\.Rproj\.user$
 ^README-*
 ^README\.Rmd
+^\.travis\.yml$
