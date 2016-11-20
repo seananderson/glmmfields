@@ -16,17 +16,19 @@ Depends:
     R (>= 3.3.0),
     Rcpp (>= 0.11.0)
 Imports:
-    rstan (>= 2.8.1),
+    rstan (>= 2.12.0),
+    ggplot2 (>= 2.2.0),
+    rstanarm (>= 2.12.0),
     cluster,
-    ggplot2,
-    rstanarm,
     dplyr,
     reshape2,
     mvtnorm
-LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
+LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:
     testthat,
     parallel,
     bayesplot
+URL: https://github.com/seananderson/rrfields
+BugReports: https://github.com/seananderson/rrfields/issues
 RoxygenNote: 5.0.1
