@@ -1,3 +1,5 @@
 cleanup*
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^README-*
+^README\.Rmd

@@ -47,7 +47,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   out$lon <- rep(g$lon, n_draws)
   out$lat <- rep(g$lat, n_draws)
 
-  plot <- ggplot(out, aes(x = lon, y = lat, colour = y)) +
+  plot <- ggplot(out, aes_string(x = "lon", y = "lat", colour = "y")) +
     facet_wrap(~ time) +
     geom_point(size = 2) +
     scale_color_gradient2()

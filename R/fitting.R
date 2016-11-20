@@ -53,6 +53,7 @@ parse_t_prior <- function(x) {
 #' @importFrom rstanarm student_t normal
 #' @importFrom rstan sampling
 #' @import Rcpp
+#' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 10),
   prior_gp_sigma = student_t(3, 0, 2),

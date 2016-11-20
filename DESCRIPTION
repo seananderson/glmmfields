@@ -3,9 +3,14 @@ Type: Package
 Title: Robust random fields for spatiotemporal modelling
 Version: 0.01
 Date: 2016-11-19
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Authors@R: c(
+    person(c("Sean", "C."), "Anderson", email = "sandrsn@uw.edu", 
+      role = c("aut", "cre")),
+    person(c("Eric", "J."), "Ward", role = "aut"))
+Description: Implements spatiotemporal models that allow for extreme spatial
+    deviations through time. It uses a predictive process approach with random
+    fields implemented through a multivariate-t distribution instead of a
+    multivariate normal.
 License: GPL (>=3)
 Depends:
     R (>= 3.3.0),
@@ -16,7 +21,8 @@ Imports:
     ggplot2,
     rstanarm,
     dplyr,
-    reshape2
+    reshape2,
+    mvtnorm
 LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:
