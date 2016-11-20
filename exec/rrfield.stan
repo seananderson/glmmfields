@@ -44,16 +44,16 @@ transformed parameters {
   // allow user to switch between gaussian and exponential covariance
   if (gauss_cor == 1) {
     // cov matrix between knots:
-    SigmaKnots =   gp_sigma_sq *
-                   exp(-2.0 * pow(gp_scale, 2.0) * distKnots); // dist^2 as data
+    SigmaKnots = gp_sigma_sq *
+      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots); // dist^2 as data
     // cov matrix between knots and projected locs:
     SigmaOffDiag = gp_sigma_sq *
-                   exp(-2.0 * pow(gp_scale, 2.0) * distKnots21); // dist^2 as data
+      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
   } else {
     // cov matrix between knots
-    SigmaKnots =   gp_sigma_sq * exp(-gp_scale * distKnots);
+    SigmaKnots =   gp_sigma_sq * exp(-distKnots / gp_scale);
     // cov matrix between knots and projected locs
-    SigmaOffDiag = gp_sigma_sq * exp(-gp_scale * distKnots21);
+    SigmaOffDiag = gp_sigma_sq * exp(-distKnots21 / gp_scale);
   }
 
 	for(k in 1:nKnots) {

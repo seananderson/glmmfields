@@ -10,10 +10,10 @@ SEED <- 123
 gp_sigma <- 0.2
 sigma <- 0.1
 df <- 3
-gp_scale <- 0.5
+gp_scale <- 1.2
 n_draws <- 5
 nknots <- 15
-TOL <- 0.15 # %
+TOL <- 0.2 # %
 TOL_df <- .25 # %
 
 skip_on_cran()
@@ -26,7 +26,7 @@ test_that("mvt-norm model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "normal", seed = SEED * 7)
+    iter = ITER, chains = CHAINS, obs_error = "normal", seed = SEED)
 
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)

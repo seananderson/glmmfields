@@ -510,11 +510,11 @@ public:
         try {
             stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
             if (as_bool(logical_eq(gauss_cor,1))) {
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
             } else {
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(divide(minus(distKnots),gp_scale))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(divide(minus(distKnots21),gp_scale))));
             }
             for (int k = 1; k <= nKnots; ++k) {
                 stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
@@ -805,11 +805,11 @@ public:
         try {
             stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
             if (as_bool(logical_eq(gauss_cor,1))) {
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply((-(2.0) * pow(gp_scale,2.0)),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
             } else {
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(gp_scale),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(divide(minus(distKnots),gp_scale))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(divide(minus(distKnots21),gp_scale))));
             }
             for (int k = 1; k <= nKnots; ++k) {
                 stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);

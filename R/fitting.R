@@ -11,7 +11,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
   distAll = as.matrix(stats::dist(rbind(data[, c(lon, lat)], knots)))
   nLocs = nrow(data)
 
-  if (correlation == "gaussian") {
+  if (correlation[[1]] == "gaussian") {
     distKnots = distKnots^2 # squared distances
     distAll = distAll^2 # squared distances
   }
@@ -61,9 +61,9 @@ parse_t_prior <- function(x) {
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
-  prior_gp_scale = student_t(3, 0, 10),
-  prior_gp_sigma = student_t(3, 0, 2),
-  prior_sigma = student_t(3, 0, 2),
+  prior_gp_scale = student_t(3, 0, 5),
+  prior_gp_sigma = student_t(3, 0, 5),
+  prior_sigma = student_t(3, 0, 5),
   fixed_df_value = 5,
   estimate_df = TRUE,
   obs_error = c("normal", "gamma"),
@@ -76,7 +76,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   # user inputs raw data. this function formats it for STAN
   data_list <- format_data(data = data, y = y, X = X, time = time,
-    lon = lon, lat = lat, nknots = nknots)
+    lon = lon, lat = lat, nknots = nknots, correlation = correlation)
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
@@ -100,5 +100,5 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
     ...)
 
   m <- do.call(sampling, sampling_args)
-  list(model = m, knots = data_knots, y = y, X = X, correlation = correlation)
+  list(model = m, knots = data_knots, y = y, X = X, correlation = correlation[[1]])
 }

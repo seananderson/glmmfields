@@ -2,7 +2,9 @@
 #' @importFrom ggplot2 ggplot aes facet_wrap geom_point scale_color_gradient2
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
-  sd_obs = 0.1) {
+  sd_obs = 0.1, correlation = "gaussian") {
+
+  if (correlation != "gaussian") stop("only gaussian correlation implemented")
 
   g <- data.frame(lon = runif(nDataPoints, 0, 10),
     lat = runif(nDataPoints, 0, 10))
@@ -16,8 +18,8 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   distKnots <- as.matrix(dist(knots))
   dist_knots_sq <- distKnots^2 # squared distances
 
-  cor_knots <- exp(-gp_scale * dist_knots_sq)
-  sigma_knots <- gp_sigma * gp_sigma * cor_knots
+  cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
+  sigma_knots <- gp_sigma^2 * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 
   # calculate distance from knots to grid
@@ -26,7 +28,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # this is the transpose of the lower left corner
   dist_knots21_sq <- t(
     dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-  sigma21 <- exp(-gp_scale * dist_knots21_sq) * gp_sigma * gp_sigma
+  sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (2 * gp_scale^2))
 
   # generate vector of random effects
   # each 'draw' here is hypothetical draw from posterior
