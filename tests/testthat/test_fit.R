@@ -26,7 +26,11 @@ test_that("mvt-norm model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "normal", seed = SEED)
+    iter = ITER, chains = CHAINS, obs_error = "normal",
+    correlation = "gaussian", seed = SEED, algorithm="sampling")
+
+  p <- predict_rrfield(fitted_model=m, new_data = s$dat,
+    mcmc_draws=10, time="time")
 
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)

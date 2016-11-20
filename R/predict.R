@@ -38,7 +38,7 @@ predict_rrfield <- function(fitted_model, new_data, mcmc_draws, time="time") {
     spat_effects = covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
 
     rows = seq_len(n_locs)
-    cols = new_data$time
+    cols = new_data[,time]
     pred_values[,i] = pars$B[mcmc.i[i],1] + spat_effects[cbind(rows,cols)] # check this for > 1 year. B will also have to be modified
   }
 
