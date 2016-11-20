@@ -107,5 +107,6 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
     m <- do.call(sampling, sampling_args)
   }
 
-  list(model = m, knots = data_knots, y = y, X = X, correlation = correlation[[1]])
+  list(model = m, knots = data_knots, y = y, X = X, correlation = correlation, time = time,
+    lon = lon, lat = lat)
 }
