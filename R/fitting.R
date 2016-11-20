@@ -94,5 +94,5 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
     ...)
 
   m <- do.call(sampling, sampling_args)
-  return(list(model = m, knots = data_knots))
+  return(list(model = m, knots = data_knots, y = y, X = X, gauss_cor=gauss_cor))
 }
