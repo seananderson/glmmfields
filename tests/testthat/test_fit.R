@@ -21,7 +21,7 @@ test_that("mvt-norm model fits", {
   set.seed(SEED)
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    sigma_t = gp_sigma, sd_obs = sigma, n_knots = nknots)
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
   # print(s$plot)
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
@@ -29,7 +29,7 @@ test_that("mvt-norm model fits", {
     iter = ITER, chains = CHAINS, obs_error = "normal", seed = SEED * 7)
 
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
-  expect_equal(b[b$term == "sigma", "estimate"], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
   expect_equal(b[b$term == "df[1]", "estimate"], df, tol = df * TOL_df)

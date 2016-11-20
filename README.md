@@ -18,16 +18,21 @@ Simulate data:
 
 ``` r
 library(rrfields)
-set.seed(999)
-s <- sim_rrfield(df = 3, n_draws = 15)
+set.seed(1)
+s <- sim_rrfield(df = 3, n_draws = 12, n_knots = 10, gp_scale = 0.5, 
+  gp_sigma = 0.2, sd_obs = 0.1)
+head(s$dat)
+#>   time pt           y      lon      lat
+#> 1    1  1 -0.05743592 2.655087 6.547239
+#> 2    1  2 -0.12775526 3.721239 3.531973
+#> 3    1  3  0.58242865 5.728534 2.702601
+#> 4    1  4 -0.25740965 9.082078 9.926841
+#> 5    1  5 -0.10636971 2.016819 6.334933
+#> 6    1  6 -0.02949620 8.983897 2.132081
 ```
 
 ``` r
-library(ggplot2)
-ggplot(s$dat, aes(x = lon, y = lat, colour = y)) +
-  facet_wrap(~time, nrow = 3) +
-  geom_point(size = 2) +
-  scale_color_gradient2()
+print(s$plot)
 ```
 
 ![](README-figs/plot-sim-1.png)
@@ -35,31 +40,25 @@ ggplot(s$dat, aes(x = lon, y = lat, colour = y)) +
 Fit the model:
 
 ``` r
-options(mc.cores = parallel::detectCores())
+options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- rrfield(y ~ 1, data = s$dat, time = "time",
-  lat = "lat", lon = "lon", nknots = 15, iter = 400, chains = 4)
+  lat = "lat", lon = "lon", nknots = 10, iter = 400, chains = 4)
 ```
 
 ``` r
-print(m, pars = c("df[1]", "gp_sigma", "sigma", "gp_scale", "lp__"))
+pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
+print(m$model, pars = pars)
 #> Inference for Stan model: rrfield.
 #> 4 chains, each with iter=400; warmup=200; thin=1; 
 #> post-warmup draws per chain=200, total post-warmup draws=800.
 #> 
-#>             mean se_mean    sd    2.5%     25%     50%     75%   97.5%
-#> df[1]       5.73    0.12  2.47    2.33    3.93    5.29    6.94   11.77
-#> gp_sigma    0.18    0.00  0.02    0.14    0.17    0.18    0.19    0.22
-#> sigma       0.10    0.00  0.00    0.10    0.10    0.10    0.10    0.11
-#> gp_scale    0.49    0.00  0.02    0.44    0.47    0.49    0.50    0.53
-#> lp__     2824.67    0.68 11.97 2801.19 2816.97 2824.89 2833.28 2847.63
-#>          n_eff Rhat
-#> df[1]      418 1.01
-#> gp_sigma   800 1.00
-#> sigma      800 1.00
-#> gp_scale   800 1.00
-#> lp__       313 1.00
+#>          mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat
+#> df[1]    4.15    0.07 1.88 2.16 2.86 3.62 4.88  9.17   800    1
+#> gp_sigma 0.24    0.00 0.04 0.17 0.21 0.24 0.27  0.32   800    1
+#> sigma[1] 0.11    0.00 0.00 0.10 0.10 0.11 0.11  0.11   800    1
+#> gp_scale 0.50    0.00 0.02 0.47 0.49 0.50 0.51  0.54   800    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Sat Nov 19 11:50:32 2016.
+#> Samples were drawn using NUTS(diag_e) at Sat Nov 19 19:01:26 2016.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -69,22 +68,22 @@ Plot:
 
 ``` r
 library(bayesplot)
-posterior <- rstan::extract(m, inc_warmup = FALSE, permuted = FALSE)
-mcmc_trace(posterior,  pars = c("df[1]", "gp_sigma", "sigma", "gp_scale"))
+posterior <- rstan::extract(m$model, inc_warmup = FALSE, permuted = FALSE)
+mcmc_trace(posterior,  pars = pars)
 ```
 
 ![](README-figs/plot-1.png)
 
 ``` r
 
-mm <- as.matrix(m)
-mcmc_areas(mm, pars = c("df[1]"))
+mm <- as.matrix(m$model)
+mcmc_areas(mm, pars = pars[ 1])
 ```
 
 ![](README-figs/plot-2.png)
 
 ``` r
-mcmc_areas(mm, pars = c("gp_sigma", "sigma", "gp_scale"))
+mcmc_areas(mm, pars = pars[-1])
 ```
 
 ![](README-figs/plot-3.png)

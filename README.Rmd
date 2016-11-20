@@ -35,16 +35,14 @@ Simulate data:
 
 ```{r simulate, cache=TRUE}
 library(rrfields)
-set.seed(999)
-s <- sim_rrfield(df = 3, n_draws = 15)
+set.seed(1)
+s <- sim_rrfield(df = 3, n_draws = 12, n_knots = 10, gp_scale = 0.5, 
+  gp_sigma = 0.2, sd_obs = 0.1)
+head(s$dat)
 ```
 
 ```{r plot-sim, cache=TRUE, dependson="simulate"}
-library(ggplot2)
-ggplot(s$dat, aes(x = lon, y = lat, colour = y)) +
-  facet_wrap(~time, nrow = 3) +
-  geom_point(size = 2) +
-  scale_color_gradient2()
+print(s$plot)
 ```
 
 Fit the model:
@@ -52,23 +50,24 @@ Fit the model:
 ```{r fit, cache=TRUE, warning=FALSE, message=FALSE, results='hide', dependson="simulate", cache.comments=FALSE}
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- rrfield(y ~ 1, data = s$dat, time = "time",
-  lat = "lat", lon = "lon", nknots = 15, iter = 400, chains = 4)
+  lat = "lat", lon = "lon", nknots = 10, iter = 400, chains = 4)
 ```
 
-```{r print, cache=TRUE, dependson="fit"}
-print(m, pars = c("df[1]", "gp_sigma", "sigma", "gp_scale", "lp__"))
+```{r print, cache=FALSE, dependson="fit"}
+pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
+print(m$model, pars = pars)
 ```
 
 Plot:
 
-```{r plot, cache=FALSE, dependson="fit", warning=FALSE, message=FALSE}
+```{r plot, cache=TRUE, dependson="fit", warning=FALSE, message=FALSE}
 library(bayesplot)
-posterior <- rstan::extract(m, inc_warmup = FALSE, permuted = FALSE)
-mcmc_trace(posterior,  pars = c("df[1]", "gp_sigma", "sigma", "gp_scale"))
+posterior <- rstan::extract(m$model, inc_warmup = FALSE, permuted = FALSE)
+mcmc_trace(posterior,  pars = pars)
 
-mm <- as.matrix(m)
-mcmc_areas(mm, pars = c("df[1]"))
-mcmc_areas(mm, pars = c("gp_sigma", "sigma", "gp_scale"))
+mm <- as.matrix(m$model)
+mcmc_areas(mm, pars = pars[ 1])
+mcmc_areas(mm, pars = pars[-1])
 ```
 
 # References

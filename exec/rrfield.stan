@@ -9,13 +9,14 @@ data {
   real prior_gp_scale[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
-//  real prior_ar[3];
   matrix[nKnots,nKnots] distKnotsSq;
   matrix[nLocs,nKnots] distKnots21Sq;
   int<lower=1> nCov;
   matrix[N,nCov] X;
   int<lower=0,upper=1> gauss_cor;
   int<lower=0,upper=1> est_df;
+  int<lower=0,upper=1> norm_params;
+  int<lower=0,upper=1> gamma_params;
   int<lower=0,upper=1> obs_model;
   real<lower=2> fixed_df_value;
 }
@@ -23,8 +24,8 @@ parameters {
   real<lower=0> gp_scale;
   real<lower=0> gp_sigma;
   real<lower=2> df[est_df];
-  real<lower=0> sigma;
-  real<lower=0> CV;
+  real<lower=0> sigma[norm_params];
+  real<lower=0> CV[gamma_params];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
 }
@@ -36,7 +37,7 @@ transformed parameters {
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
   real<lower=0> gp_sigmaSq;
-  real<lower=0> gammaA;
+  real<lower=0> gammaA[gamma_params];
 
   // allow user to switch between gaussian and exponential covariance
   if (gauss_cor == 1) {
@@ -64,9 +65,7 @@ transformed parameters {
 	}
 
 	if(obs_model==0) {
-	  gammaA = 0;
-	} else {
-	  gammaA = 1/(CV*CV);
+	  gammaA[1] = 1/(CV[1]*CV[1]);
 	}
 }
 model {
@@ -76,7 +75,8 @@ model {
 
   B ~ normal(0, 1);
 
-  // if est_df = 1 estimate degrees of freedom for MVT, otherwise fit MVT with fixed value
+  // if est_df == 1 estimate degrees of freedom for MVT,
+  // otherwise fit MVT with fixed value
   if (est_df == 1) {
     df ~ gamma(2, 0.1);
     for(t in 2:nT) {
@@ -88,16 +88,16 @@ model {
     }
   }
 
-  // switch between normal observation error (1) and gamma (2)
+  // switch between normal observation error (1) and gamma (0)
   if(obs_model == 1) {
-    sigma ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-    y ~ normal(y_hat, sigma);
+    sigma[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+    y ~ normal(y_hat, sigma[1]);
   } else {
     // prior on CV of gamma obs error, gamma shape 'a' is derived parameter
-    CV ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+    CV[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
     for(i in 1:N) {
        // STAN needs this to be done in loop, argument to gamma can't be vector
-       y ~ gamma(gammaA, gammaA/exp(y_hat[i]));
+       y ~ gamma(gammaA[1], gammaA[1]/exp(y_hat[i]));
     }
   }
 

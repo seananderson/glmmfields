@@ -35,14 +35,11 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
 stan_pars <- function(obs_error) {
   c(
     "df",
-#    "yearEffects",
     "gp_sigma",
     "gp_scale",
-#    "year_sigma",
-#    "ar",
     "B",
     "spatialEffectsKnots",
-    ifelse(obs_error==1,"sigma","CV")
+    ifelse(obs_error == 1, "sigma", "CV")
   )
 }
 
@@ -76,17 +73,17 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
-  gauss_cor <- switch(correlation[[1]], gaussian = 1L, exponential = 0L, 1L)
-
   obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, 1L)
 
   stan_data <- c(stan_data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale),
       prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
-      gauss_cor = gauss_cor,
+      gauss_cor = switch(correlation[[1]], gaussian = 1L, exponential = 0L, 1L),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
+      gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
+      norm_params = ifelse(obs_error[[1]] == "normal", 1L, 0L),
       fixed_df_value = fixed_df_value))
 
   sampling_args <- list(

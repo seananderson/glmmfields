@@ -42,6 +42,9 @@ private:
     matrix_d X;
     int gauss_cor;
     int est_df;
+    int norm_params;
+    int gamma_params;
+    int obs_model;
     double fixed_df_value;
 public:
     model_rrfield(stan::io::var_context& context__,
@@ -200,6 +203,21 @@ public:
         vals_i__ = context__.vals_i("est_df");
         pos__ = 0;
         est_df = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "norm_params", "int", context__.to_vec());
+        norm_params = int(0);
+        vals_i__ = context__.vals_i("norm_params");
+        pos__ = 0;
+        norm_params = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "gamma_params", "int", context__.to_vec());
+        gamma_params = int(0);
+        vals_i__ = context__.vals_i("gamma_params");
+        pos__ = 0;
+        gamma_params = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "obs_model", "int", context__.to_vec());
+        obs_model = int(0);
+        vals_i__ = context__.vals_i("obs_model");
+        pos__ = 0;
+        obs_model = vals_i__[pos__++];
         context__.validate_dims("data initialization", "fixed_df_value", "double", context__.to_vec());
         fixed_df_value = double(0);
         vals_r__ = context__.vals_r("fixed_df_value");
@@ -222,6 +240,12 @@ public:
         check_less_or_equal(function__,"gauss_cor",gauss_cor,1);
         check_greater_or_equal(function__,"est_df",est_df,0);
         check_less_or_equal(function__,"est_df",est_df,1);
+        check_greater_or_equal(function__,"norm_params",norm_params,0);
+        check_less_or_equal(function__,"norm_params",norm_params,1);
+        check_greater_or_equal(function__,"gamma_params",gamma_params,0);
+        check_less_or_equal(function__,"gamma_params",gamma_params,1);
+        check_greater_or_equal(function__,"obs_model",obs_model,0);
+        check_less_or_equal(function__,"obs_model",obs_model,1);
         check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
@@ -245,7 +269,8 @@ public:
         ++num_params_r__;
         ++num_params_r__;
         num_params_r__ += est_df;
-        ++num_params_r__;
+        num_params_r__ += norm_params;
+        num_params_r__ += gamma_params;
         num_params_r__ += nKnots * nT;
         num_params_r__ += nCov;
     }
@@ -308,13 +333,30 @@ public:
             throw std::runtime_error("variable sigma missing");
         vals_r__ = context__.vals_r("sigma");
         pos__ = 0U;
-        context__.validate_dims("initialization", "sigma", "double", context__.to_vec());
-        double sigma(0);
-        sigma = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,sigma);
+        context__.validate_dims("initialization", "sigma", "double", context__.to_vec(norm_params));
+        std::vector<double> sigma(norm_params,double(0));
+        for (int i0__ = 0U; i0__ < norm_params; ++i0__)
+            sigma[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < norm_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,sigma[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable sigma: ") + e.what());
+        }
+
+        if (!(context__.contains_r("CV")))
+            throw std::runtime_error("variable CV missing");
+        vals_r__ = context__.vals_r("CV");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "CV", "double", context__.to_vec(gamma_params));
+        std::vector<double> CV(gamma_params,double(0));
+        for (int i0__ = 0U; i0__ < gamma_params; ++i0__)
+            CV[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < gamma_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,CV[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable CV: ") + e.what());
         }
 
         if (!(context__.contains_r("spatialEffectsKnots")))
@@ -401,12 +443,25 @@ public:
                 df.push_back(in__.scalar_lb_constrain(2));
         }
 
-        T__ sigma;
-        (void) sigma;  // dummy to suppress unused var warning
-        if (jacobian__)
-            sigma = in__.scalar_lb_constrain(0,lp__);
-        else
-            sigma = in__.scalar_lb_constrain(0);
+        vector<T__> sigma;
+        size_t dim_sigma_0__ = norm_params;
+        sigma.reserve(dim_sigma_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_sigma_0__; ++k_0__) {
+            if (jacobian__)
+                sigma.push_back(in__.scalar_lb_constrain(0,lp__));
+            else
+                sigma.push_back(in__.scalar_lb_constrain(0));
+        }
+
+        vector<T__> CV;
+        size_t dim_CV_0__ = gamma_params;
+        CV.reserve(dim_CV_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_CV_0__; ++k_0__) {
+            if (jacobian__)
+                CV.push_back(in__.scalar_lb_constrain(0,lp__));
+            else
+                CV.push_back(in__.scalar_lb_constrain(0));
+        }
 
         vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
@@ -440,6 +495,7 @@ public:
         (void) y_hat;  // dummy to suppress unused var warning
         T__ gp_sigmaSq;
         (void) gp_sigmaSq;  // dummy to suppress unused var warning
+        vector<T__> gammaA(gamma_params);
 
         // initialize transformed variables to avoid seg fault on val access
         stan::math::fill(muZeros,DUMMY_VAR__);
@@ -449,6 +505,7 @@ public:
         stan::math::fill(invSigmaKnots,DUMMY_VAR__);
         stan::math::fill(y_hat,DUMMY_VAR__);
         stan::math::fill(gp_sigmaSq,DUMMY_VAR__);
+        stan::math::fill(gammaA,DUMMY_VAR__);
 
         try {
             if (as_bool(logical_eq(gauss_cor,1))) {
@@ -467,6 +524,9 @@ public:
             }
             for (int i = 1; i <= N; ++i) {
                 stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+            }
+            if (as_bool(logical_eq(obs_model,0))) {
+                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -530,16 +590,25 @@ public:
             msg__ << "Undefined transformed parameter: gp_sigmaSq";
             throw std::runtime_error(msg__.str());
         }
+        for (int i0__ = 0; i0__ < gamma_params; ++i0__) {
+            if (stan::math::is_uninitialized(gammaA[i0__])) {
+                std::stringstream msg__;
+                msg__ << "Undefined transformed parameter: gammaA" << '[' << i0__ << ']';
+                throw std::runtime_error(msg__.str());
+            }
+        }
 
         const char* function__ = "validate transformed params";
         (void) function__;  // dummy to suppress unused var warning
         check_greater_or_equal(function__,"gp_sigmaSq",gp_sigmaSq,0);
+        for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
+            check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
+        }
 
         // model body
         try {
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
-            lp_accum__.add(student_t_log<propto__>(sigma, get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
             lp_accum__.add(normal_log<propto__>(B, 0, 1));
             if (as_bool(logical_eq(est_df,1))) {
                 lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
@@ -551,7 +620,15 @@ public:
                     lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), fixed_df_value, muZeros, SigmaKnots));
                 }
             }
-            lp_accum__.add(normal_log<propto__>(y, y_hat, sigma));
+            if (as_bool(logical_eq(obs_model,1))) {
+                lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                lp_accum__.add(normal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
+            } else {
+                lp_accum__.add(student_t_log<propto__>(get_base1(CV,1,"CV",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                for (int i = 1; i <= N; ++i) {
+                    lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), (get_base1(gammaA,1,"gammaA",1) / exp(get_base1(y_hat,i,"y_hat",1)))));
+                }
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
             // Next line prevents compiler griping about no return
@@ -581,6 +658,7 @@ public:
         names__.push_back("gp_sigma");
         names__.push_back("df");
         names__.push_back("sigma");
+        names__.push_back("CV");
         names__.push_back("spatialEffectsKnots");
         names__.push_back("B");
         names__.push_back("muZeros");
@@ -590,6 +668,7 @@ public:
         names__.push_back("invSigmaKnots");
         names__.push_back("y_hat");
         names__.push_back("gp_sigmaSq");
+        names__.push_back("gammaA");
     }
 
 
@@ -604,6 +683,10 @@ public:
         dims__.push_back(est_df);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(norm_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(gamma_params);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nT);
@@ -636,6 +719,9 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(gamma_params);
+        dimss__.push_back(dims__);
     }
 
     template <typename RNG>
@@ -658,7 +744,16 @@ public:
         for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
             df.push_back(in__.scalar_lb_constrain(2));
         }
-        double sigma = in__.scalar_lb_constrain(0);
+        vector<double> sigma;
+        size_t dim_sigma_0__ = norm_params;
+        for (size_t k_0__ = 0; k_0__ < dim_sigma_0__; ++k_0__) {
+            sigma.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> CV;
+        size_t dim_CV_0__ = gamma_params;
+        for (size_t k_0__ = 0; k_0__ < dim_CV_0__; ++k_0__) {
+            CV.push_back(in__.scalar_lb_constrain(0));
+        }
         vector<vector_d> spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
         for (size_t k_0__ = 0; k_0__ < dim_spatialEffectsKnots_0__; ++k_0__) {
@@ -670,7 +765,12 @@ public:
         for (int k_0__ = 0; k_0__ < est_df; ++k_0__) {
             vars__.push_back(df[k_0__]);
         }
-        vars__.push_back(sigma);
+        for (int k_0__ = 0; k_0__ < norm_params; ++k_0__) {
+            vars__.push_back(sigma[k_0__]);
+        }
+        for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
+            vars__.push_back(CV[k_0__]);
+        }
         for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
             for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
                 vars__.push_back(spatialEffectsKnots[k_0__][k_1__]);
@@ -699,6 +799,7 @@ public:
         (void) y_hat;  // dummy to suppress unused var warning
         double gp_sigmaSq(0.0);
         (void) gp_sigmaSq;  // dummy to suppress unused var warning
+        vector<double> gammaA(gamma_params, 0.0);
 
         try {
             if (as_bool(logical_eq(gauss_cor,1))) {
@@ -718,6 +819,9 @@ public:
             for (int i = 1; i <= N; ++i) {
                 stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
             }
+            if (as_bool(logical_eq(obs_model,0))) {
+                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
             // Next line prevents compiler griping about no return
@@ -726,6 +830,9 @@ public:
 
         // validate transformed parameters
         check_greater_or_equal(function__,"gp_sigmaSq",gp_sigmaSq,0);
+        for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
+            check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
+        }
 
         // write transformed parameters
         for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
@@ -755,6 +862,9 @@ public:
             vars__.push_back(y_hat[k_0__]);
         }
         vars__.push_back(gp_sigmaSq);
+        for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
+            vars__.push_back(gammaA[k_0__]);
+        }
 
         if (!include_gqs__) return;
         // declare and define generated quantities
@@ -815,9 +925,16 @@ public:
             param_name_stream__ << "df" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "sigma";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= norm_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "sigma" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "CV" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
@@ -873,6 +990,11 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_sigmaSq";
         param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "gammaA" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__) return;
     }
@@ -893,9 +1015,16 @@ public:
             param_name_stream__ << "df" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "sigma";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= norm_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "sigma" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "CV" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
@@ -951,6 +1080,11 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_sigmaSq";
         param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "gammaA" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__) return;
     }

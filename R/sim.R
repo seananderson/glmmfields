@@ -1,8 +1,7 @@
 #' @export
 #' @importFrom ggplot2 ggplot aes facet_wrap geom_point scale_color_gradient2
-
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
-  sigma_t = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
+  gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
   sd_obs = 0.1) {
 
   g <- data.frame(lon = runif(nDataPoints, 0, 10),
@@ -18,7 +17,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   dist_knots_sq <- distKnots^2 # squared distances
 
   cor_knots <- exp(-gp_scale * dist_knots_sq)
-  sigma_knots <- sigma_t * sigma_t * cor_knots
+  sigma_knots <- gp_sigma * gp_sigma * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 
   # calculate distance from knots to grid
@@ -27,7 +26,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # this is the transpose of the lower left corner
   dist_knots21_sq <- t(
     dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-  sigma21 <- exp(-gp_scale * dist_knots21_sq) * sigma_t * sigma_t
+  sigma21 <- exp(-gp_scale * dist_knots21_sq) * gp_sigma * gp_sigma
 
   # generate vector of random effects
   # each 'draw' here is hypothetical draw from posterior
@@ -49,7 +48,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   out$lat <- rep(g$lat, n_draws)
 
   plot <- ggplot(out, aes(x = lon, y = lat, colour = y)) +
-    facet_wrap(~ time, ncol = n_draws) +
+    facet_wrap(~ time) +
     geom_point(size = 2) +
     scale_color_gradient2()
 
