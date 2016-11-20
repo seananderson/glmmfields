@@ -1,4 +1,5 @@
 #' @export
+#' @importFrom ggplot2 ggplot aes facet_wrap geom_point scale_color_gradient2
 
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   sigma_t = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
@@ -47,6 +48,11 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   out$lon <- rep(g$lon, n_draws)
   out$lat <- rep(g$lat, n_draws)
 
+  plot <- ggplot(out, aes(x = lon, y = lat, colour = y)) +
+    facet_wrap(~ time, ncol = n_draws) +
+    geom_point(size = 2) +
+    scale_color_gradient2()
+
   return(
     list(
       knots = knots,
@@ -56,6 +62,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
       dist_knots21_sq = dist_knots21_sq,
       sigma_knots = sigma_knots,
       g = g,
+      plot = plot,
       dat = out
     )
   )

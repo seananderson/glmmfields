@@ -62,7 +62,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   prior_sigma = student_t(3, 0, 2),
   fixed_df_value = 5,
   estimate_df = TRUE,
-  obs_error = c("normal","gamma"),
+  obs_error = c("normal", "gamma"),
   correlation = c("gaussian", "exponential"),
   ...) {
 

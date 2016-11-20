@@ -1,20 +1,26 @@
 Package: rrfields
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
-Date: 2016-11-11
+Title: Robust random fields for spatiotemporal modelling
+Version: 0.01
+Date: 2016-11-19
 Author: Who wrote it
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: GPL (>=3)
 Depends:
-    R (>= 3.0.2),
+    R (>= 3.3.0),
     Rcpp (>= 0.11.0)
 Imports:
     rstan (>= 2.8.1),
-    cluster
+    cluster,
+    ggplot,
+    rstanarm,
+    dplyr,
+    reshape2
 LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:
-    testthat
+    testthat,
+    parallel,
+    bayesplot
 RoxygenNote: 5.0.1
