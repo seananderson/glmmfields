@@ -57,7 +57,7 @@ parse_t_prior <- function(x) {
 #'
 #' @export
 #' @importFrom rstanarm student_t normal
-#' @importFrom rstan sampling
+#' @importFrom rstan sampling vb
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
