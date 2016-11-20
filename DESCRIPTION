@@ -13,7 +13,7 @@ Depends:
 Imports:
     rstan (>= 2.8.1),
     cluster,
-    ggplot,
+    ggplot2,
     rstanarm,
     dplyr,
     reshape2
