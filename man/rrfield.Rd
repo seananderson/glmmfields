@@ -5,10 +5,11 @@
 \title{Fit a robust spatiotemporal random fields model}
 \usage{
 rrfield(formula, data, time, lon, lat, nknots = 25L,
-  prior_gp_scale = student_t(3, 0, 10), prior_gp_sigma = student_t(3, 0, 2),
-  prior_sigma = student_t(3, 0, 2), fixed_df_value = 5,
+  prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
+  prior_sigma = student_t(3, 0, 5), fixed_df_value = 5,
   estimate_df = TRUE, obs_error = c("normal", "gamma"),
-  correlation = c("gaussian", "exponential"), ...)
+  correlation = c("gaussian", "exponential"), algorithm = c("sampling",
+  "meanfield"), ...)
 }
 \description{
 Fit a robust spatiotemporal random fields model
