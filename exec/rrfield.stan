@@ -42,14 +42,21 @@ transformed parameters {
   // allow user to switch between gaussian and exponential covariance
   if (gauss_cor == 1) {
     gp_sigmaSq = gp_sigma^2;
+    // cov matrix between knots:
+    SigmaKnots = gp_sigmaSq * exp(-gp_scale * distKnotsSq);
+    // cov matrix between knots and projected locs:
+    SigmaOffDiag = gp_sigmaSq * exp(-gp_scale * distKnots21Sq);
   } else {
     gp_sigmaSq = gp_sigma;
+    // cov matrix between knots, sqrt() added because raw distance used
+    SigmaKnots = gp_sigmaSq * exp(-gp_scale * sqrt(distKnotsSq));
+    // cov matrix between knots and projected locs, sqrt() added because raw distance used
+    SigmaOffDiag = gp_sigmaSq * exp(-gp_scale * sqrt(distKnots21Sq));
   }
 
-  // cov matrix between knots:
   SigmaKnots = gp_sigmaSq * exp(-gp_scale * distKnotsSq);
-  // cov matrix between knots and projected locs:
-  SigmaOffDiag = gp_sigmaSq * exp(-gp_scale * distKnots21Sq);
+
+
 	for(k in 1:nKnots) {
 		muZeros[k] = 0;
 	}

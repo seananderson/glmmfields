@@ -18,6 +18,7 @@ predict_rrfield <- function(fitted_model, new_data, mcmc_draws, time="time", lon
   dist_knots21_sq <- t(
     dist_all[-c(seq_len(n_locs)), -c((n_locs + 1):ncol(dist_all))])
 
+
   # extract mcmc pars
   pars = rstan::extract(fitted_model$model, permuted = TRUE)
 
