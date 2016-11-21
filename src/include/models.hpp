@@ -389,7 +389,7 @@ public:
         for (int i0__ = 0U; i0__ < nb2_params; ++i0__)
             try {
             writer__.scalar_lb_unconstrain(0,nb2_phi[i0__]);
-        } catch (const std::exception& e) {
+        } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable nb2_phi: ") + e.what());
         }
 

@@ -44,16 +44,22 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # add observation error:
   N <- ncol(proj) * nrow(proj)
   if (obs_error[[1]] == "normal") {
-    proj <- proj + matrix(data = stats::rnorm(N, b0, sd_obs),
+    y <- proj + b0 + matrix(data = stats::rnorm(N, 0, sd_obs),
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "nb2") {
     proj <- proj + b0
-    proj <- matrix(data = stats::rnbinom(N, mu = exp(proj), size = sd_obs),
+    y <- matrix(data = stats::rnbinom(N, mu = exp(proj), size = sd_obs),
+      ncol = ncol(proj), nrow = nrow(proj))
+  }
+  if (obs_error[[1]] == "gamma") {
+    gamma_a = 1/(sd_obs^2) # sd_obs means CV here
+    gamma_b = gamma_a/exp(proj + b0)
+    y <- matrix(data = stats::rgamma(N, shape = gamma_a, rate = gamma_b),
       ncol = ncol(proj), nrow = nrow(proj))
   }
 
-  out <- reshape2::melt(proj)
+  out <- reshape2::melt(y)
   names(out) <- c("time", "pt", "y")
   out <- dplyr::arrange_(out, "time", "pt")
   out$lon <- rep(g$lon, n_draws)
