@@ -5,7 +5,8 @@ data {
   int<lower=1> N;
   int<lower=1> stationID[N];
   int<lower=1> yearID[N];
-  real y[N];
+  real y[N]; // y for normal and gamma obs. model
+  int y_int[N]; // y for NB2 obs. model
   real prior_gp_scale[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
@@ -17,7 +18,8 @@ data {
   int<lower=0,upper=1> est_df;
   int<lower=0,upper=1> norm_params;
   int<lower=0,upper=1> gamma_params;
-  int<lower=0,upper=1> obs_model;
+  int<lower=0,upper=1> nb2_params;
+  int<lower=0,upper=2> obs_model;
   real<lower=2> fixed_df_value;
 }
 parameters {
@@ -26,6 +28,7 @@ parameters {
   real<lower=2> df[est_df];
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
+  real<lower=0> nb2_phi[nb2_params];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
 }
@@ -79,7 +82,7 @@ model {
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
-  B ~ normal(0, 1);
+  B ~ normal(0, 10);
 
   // if est_df == 1 estimate degrees of freedom for MVT,
   // otherwise fit MVT with fixed value
@@ -94,17 +97,19 @@ model {
     }
   }
 
-  // switch between normal observation error (1) and gamma (0)
+  // switch between observation error models: normal (1), gamma (0), NB2 (2)
+  if(obs_model == 2) {
+    nb2_phi[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+    y_int ~ neg_binomial_2_log(y_hat, nb2_phi[1]);
+  }
   if(obs_model == 1) {
     sigma[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
     y ~ normal(y_hat, sigma[1]);
-  } else {
+  }
+  if(obs_model == 0) {
     // prior on CV of gamma obs error, gamma shape 'a' is derived parameter
     CV[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-    for(i in 1:N) {
-       // STAN needs this to be done in loop, argument to gamma can't be vector
-       y ~ gamma(gammaA[1], gammaA[1]/exp(y_hat[i]));
-    }
+    y ~ gamma(gammaA[1], gammaA[1] ./ exp(y_hat));
   }
 
 }

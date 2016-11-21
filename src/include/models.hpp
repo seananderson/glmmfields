@@ -33,6 +33,7 @@ private:
     vector<int> stationID;
     vector<int> yearID;
     vector<double> y;
+    vector<int> y_int;
     vector<double> prior_gp_scale;
     vector<double> prior_gp_sigma;
     vector<double> prior_sigma;
@@ -44,6 +45,7 @@ private:
     int est_df;
     int norm_params;
     int gamma_params;
+    int nb2_params;
     int obs_model;
     double fixed_df_value;
 public:
@@ -121,6 +123,15 @@ public:
         size_t y_limit_0__ = N;
         for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
             y[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "y_int", "int", context__.to_vec(N));
+        validate_non_negative_index("y_int", "N", N);
+        y_int = std::vector<int>(N,int(0));
+        vals_i__ = context__.vals_i("y_int");
+        pos__ = 0;
+        size_t y_int_limit_0__ = N;
+        for (size_t i_0__ = 0; i_0__ < y_int_limit_0__; ++i_0__) {
+            y_int[i_0__] = vals_i__[pos__++];
         }
         context__.validate_dims("data initialization", "prior_gp_scale", "double", context__.to_vec(3));
         validate_non_negative_index("prior_gp_scale", "3", 3);
@@ -213,6 +224,11 @@ public:
         vals_i__ = context__.vals_i("gamma_params");
         pos__ = 0;
         gamma_params = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "nb2_params", "int", context__.to_vec());
+        nb2_params = int(0);
+        vals_i__ = context__.vals_i("nb2_params");
+        pos__ = 0;
+        nb2_params = vals_i__[pos__++];
         context__.validate_dims("data initialization", "obs_model", "int", context__.to_vec());
         obs_model = int(0);
         vals_i__ = context__.vals_i("obs_model");
@@ -244,8 +260,10 @@ public:
         check_less_or_equal(function__,"norm_params",norm_params,1);
         check_greater_or_equal(function__,"gamma_params",gamma_params,0);
         check_less_or_equal(function__,"gamma_params",gamma_params,1);
+        check_greater_or_equal(function__,"nb2_params",nb2_params,0);
+        check_less_or_equal(function__,"nb2_params",nb2_params,1);
         check_greater_or_equal(function__,"obs_model",obs_model,0);
-        check_less_or_equal(function__,"obs_model",obs_model,1);
+        check_less_or_equal(function__,"obs_model",obs_model,2);
         check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
@@ -271,6 +289,7 @@ public:
         num_params_r__ += est_df;
         num_params_r__ += norm_params;
         num_params_r__ += gamma_params;
+        num_params_r__ += nb2_params;
         num_params_r__ += nKnots * nT;
         num_params_r__ += nCov;
     }
@@ -357,6 +376,21 @@ public:
             writer__.scalar_lb_unconstrain(0,CV[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable CV: ") + e.what());
+        }
+
+        if (!(context__.contains_r("nb2_phi")))
+            throw std::runtime_error("variable nb2_phi missing");
+        vals_r__ = context__.vals_r("nb2_phi");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "nb2_phi", "double", context__.to_vec(nb2_params));
+        std::vector<double> nb2_phi(nb2_params,double(0));
+        for (int i0__ = 0U; i0__ < nb2_params; ++i0__)
+            nb2_phi[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < nb2_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,nb2_phi[i0__]);
+        } catch (const std::exception& e) {
+            throw std::runtime_error(std::string("Error transforming variable nb2_phi: ") + e.what());
         }
 
         if (!(context__.contains_r("spatialEffectsKnots")))
@@ -461,6 +495,16 @@ public:
                 CV.push_back(in__.scalar_lb_constrain(0,lp__));
             else
                 CV.push_back(in__.scalar_lb_constrain(0));
+        }
+
+        vector<T__> nb2_phi;
+        size_t dim_nb2_phi_0__ = nb2_params;
+        nb2_phi.reserve(dim_nb2_phi_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
+            if (jacobian__)
+                nb2_phi.push_back(in__.scalar_lb_constrain(0,lp__));
+            else
+                nb2_phi.push_back(in__.scalar_lb_constrain(0));
         }
 
         vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffectsKnots;
@@ -610,7 +654,7 @@ public:
         try {
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
-            lp_accum__.add(normal_log<propto__>(B, 0, 1));
+            lp_accum__.add(normal_log<propto__>(B, 0, 10));
             if (as_bool(logical_eq(est_df,1))) {
                 lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
                 for (int t = 2; t <= nT; ++t) {
@@ -621,14 +665,17 @@ public:
                     lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), fixed_df_value, muZeros, SigmaKnots));
                 }
             }
+            if (as_bool(logical_eq(obs_model,2))) {
+                lp_accum__.add(student_t_log<propto__>(get_base1(nb2_phi,1,"nb2_phi",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                lp_accum__.add(neg_binomial_2_log_log<propto__>(y_int, y_hat, get_base1(nb2_phi,1,"nb2_phi",1)));
+            }
             if (as_bool(logical_eq(obs_model,1))) {
                 lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
                 lp_accum__.add(normal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
-            } else {
+            }
+            if (as_bool(logical_eq(obs_model,0))) {
                 lp_accum__.add(student_t_log<propto__>(get_base1(CV,1,"CV",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-                for (int i = 1; i <= N; ++i) {
-                    lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), (get_base1(gammaA,1,"gammaA",1) / exp(get_base1(y_hat,i,"y_hat",1)))));
-                }
+                lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), elt_divide(get_base1(gammaA,1,"gammaA",1),exp(y_hat))));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -660,6 +707,7 @@ public:
         names__.push_back("df");
         names__.push_back("sigma");
         names__.push_back("CV");
+        names__.push_back("nb2_phi");
         names__.push_back("spatialEffectsKnots");
         names__.push_back("B");
         names__.push_back("muZeros");
@@ -688,6 +736,9 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(gamma_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nb2_params);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nT);
@@ -755,6 +806,11 @@ public:
         for (size_t k_0__ = 0; k_0__ < dim_CV_0__; ++k_0__) {
             CV.push_back(in__.scalar_lb_constrain(0));
         }
+        vector<double> nb2_phi;
+        size_t dim_nb2_phi_0__ = nb2_params;
+        for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
+            nb2_phi.push_back(in__.scalar_lb_constrain(0));
+        }
         vector<vector_d> spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
         for (size_t k_0__ = 0; k_0__ < dim_spatialEffectsKnots_0__; ++k_0__) {
@@ -771,6 +827,9 @@ public:
         }
         for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
             vars__.push_back(CV[k_0__]);
+        }
+        for (int k_0__ = 0; k_0__ < nb2_params; ++k_0__) {
+            vars__.push_back(nb2_phi[k_0__]);
         }
         for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
             for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
@@ -937,6 +996,11 @@ public:
             param_name_stream__ << "CV" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= nb2_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "nb2_phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
@@ -1025,6 +1089,11 @@ public:
         for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "CV" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= nb2_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "nb2_phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {

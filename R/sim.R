@@ -2,7 +2,8 @@
 #' @importFrom ggplot2 ggplot aes facet_wrap geom_point scale_color_gradient2
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
-  sd_obs = 0.1, correlation = "gaussian") {
+  sd_obs = 0.1, correlation = "gaussian",
+  obs_error = c("normal", "gamma", "nb2"), b0 = 0) {
 
   if (correlation != "gaussian") stop("only gaussian correlation implemented")
 
@@ -41,8 +42,17 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   proj <- t((sigma21 %*% invsigma_knots) %*% t(re_knots))
 
   # add observation error:
-  proj <- proj + matrix(data = rnorm(ncol(proj) * nrow(proj), 0, sd_obs),
-    ncol = ncol(proj), nrow = nrow(proj))
+  N <- ncol(proj) * nrow(proj)
+  if (obs_error[[1]] == "normal") {
+    proj <- proj + matrix(data = stats::rnorm(N, b0, sd_obs),
+      ncol = ncol(proj), nrow = nrow(proj))
+  }
+  if (obs_error[[1]] == "nb2") {
+    proj <- proj + b0
+    proj <- matrix(data = stats::rnbinom(N, mu = exp(proj), size = sd_obs),
+      ncol = ncol(proj), nrow = nrow(proj))
+  }
+
   out <- reshape2::melt(proj)
   names(out) <- c("time", "pt", "y")
   out <- dplyr::arrange_(out, "time", "pt")

@@ -7,7 +7,7 @@
 rrfield(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5), fixed_df_value = 5,
-  estimate_df = TRUE, obs_error = c("normal", "gamma"),
+  estimate_df = TRUE, obs_error = c("normal", "gamma", "nb2"),
   correlation = c("gaussian", "exponential"), algorithm = c("sampling",
   "meanfield"), ...)
 }
