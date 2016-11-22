@@ -10,6 +10,8 @@ data {
   real prior_gp_scale[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
+  real prior_intercept[3];
+  real prior_beta[3];
   matrix[nKnots,nKnots] distKnots;
   matrix[nLocs,nKnots] distKnots21;
   int<lower=1> nCov;
@@ -82,7 +84,12 @@ model {
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
-  B ~ normal(0, 10);
+  B[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
+  if (nCov >= 2) {
+    for (i in 2:nCov) {
+      B[i] ~ student_t(prior_beta[1], prior_beta[2], prior_beta[3]);
+    }
+  }
 
   // if est_df == 1 estimate degrees of freedom for MVT,
   // otherwise fit MVT with fixed value

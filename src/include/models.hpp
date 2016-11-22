@@ -37,6 +37,8 @@ private:
     vector<double> prior_gp_scale;
     vector<double> prior_gp_sigma;
     vector<double> prior_sigma;
+    vector<double> prior_intercept;
+    vector<double> prior_beta;
     matrix_d distKnots;
     matrix_d distKnots21;
     int nCov;
@@ -159,6 +161,24 @@ public:
         size_t prior_sigma_limit_0__ = 3;
         for (size_t i_0__ = 0; i_0__ < prior_sigma_limit_0__; ++i_0__) {
             prior_sigma[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "prior_intercept", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_intercept", "3", 3);
+        prior_intercept = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_intercept");
+        pos__ = 0;
+        size_t prior_intercept_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_intercept_limit_0__; ++i_0__) {
+            prior_intercept[i_0__] = vals_r__[pos__++];
+        }
+        context__.validate_dims("data initialization", "prior_beta", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_beta", "3", 3);
+        prior_beta = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_beta");
+        pos__ = 0;
+        size_t prior_beta_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_beta_limit_0__; ++i_0__) {
+            prior_beta[i_0__] = vals_r__[pos__++];
         }
         context__.validate_dims("data initialization", "distKnots", "matrix_d", context__.to_vec(nKnots,nKnots));
         validate_non_negative_index("distKnots", "nKnots", nKnots);
@@ -654,7 +674,12 @@ public:
         try {
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
-            lp_accum__.add(normal_log<propto__>(B, 0, 10));
+            lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+            if (as_bool(logical_gte(nCov,2))) {
+                for (int i = 2; i <= nCov; ++i) {
+                    lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
+                }
+            }
             if (as_bool(logical_eq(est_df,1))) {
                 lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
                 for (int t = 2; t <= nT; ++t) {

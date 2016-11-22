@@ -6,10 +6,61 @@
 \usage{
 rrfield(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
-  prior_sigma = student_t(3, 0, 5), fixed_df_value = 5,
-  estimate_df = TRUE, obs_error = c("normal", "gamma", "nb2"),
-  correlation = c("gaussian", "exponential"), algorithm = c("sampling",
-  "meanfield"), ...)
+  prior_sigma = student_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
+  prior_beta = student_t(3, 0, 2), fixed_df_value = 5, estimate_df = TRUE,
+  obs_error = c("normal", "gamma", "nb2"), correlation = c("gaussian",
+  "exponential"), algorithm = c("sampling", "meanfield"), ...)
+}
+\arguments{
+\item{formula}{The model formula}
+
+\item{data}{A data frame}
+
+\item{time}{A character object giving the name of the time column}
+
+\item{lon}{A character object giving the name of the longitude column}
+
+\item{lat}{A character object giving the name of the latitude column}
+
+\item{nknots}{The number of knots to use in the predictive process model}
+
+\item{prior_gp_scale}{The prior on the Gaussian Process scale parameter. Must
+be declared with \code{\link[rstanarm]{student_t}}.}
+
+\item{prior_gp_sigma}{The prior on the Gaussian Process sigma parameter. Must
+be declared with \code{\link[rstanarm]{student_t}}.}
+
+\item{prior_sigma}{The prior on the observation process scale parameter. Must
+be declared with \code{\link[rstanarm]{student_t}}. This acts as a
+substitute for the scale parameter in whatever observation distribution is
+being used. E.g. the CV for the Gamma.}
+
+\item{prior_intercept}{The prior on the intercept parameter. Must be declared
+with \code{\link[rstanarm]{student_t}}.}
+
+\item{prior_beta}{The prior on the slope parameters (if any). Must be
+declared with \code{\link[rstanarm]{student_t}}.}
+
+\item{fixed_df_value}{The fixed value for the student-t degrees of freedom
+parameter if the degrees of freedom parameter is fixed. If the degrees of
+freedom parameter is estimated then this argument is ignored.}
+
+\item{estimate_df}{Logical: should the degrees of freedom perimeter be
+estimated?}
+
+\item{obs_error}{Character object indicating the observation process
+distribution.}
+
+\item{correlation}{Character object describing the correlation or covariance
+function of the Gaussian Process.}
+
+\item{algorithm}{Character object describing whether the model should be fit
+with full NUTS MCMC or via the variational inference mean-field approach.
+See \code{\link[rstan]{vb}}. Note that the variational inference approach
+should not be trusted for final inference and is much more likely to give
+incorrect inference than MCMC.}
+
+\item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }
 \description{
 Fit a robust spatiotemporal random fields model

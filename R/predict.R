@@ -1,5 +1,12 @@
+#' Predict from a rrfield model
+#'
+#' @param object An object returned by \code{\link{rrfield}}.
+#' @param newdata A data frame to predict on
+#' @param mcmc_draws The number of MCMC samples to draw from the posterior
+#' @param ... Ignored currently
+#'
 #' @export
-predict.rrfield <- function(object, newdata, mcmc_draws) {
+predict.rrfield <- function(object, newdata, mcmc_draws, ...) {
 
   # newdata is df with time, y, lon, lat
 

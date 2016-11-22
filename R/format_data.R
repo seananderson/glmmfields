@@ -1,3 +1,14 @@
+#' Format data for fitting an rrfield model
+#'
+#' @param data A data frame to be formatted
+#' @param y A numeric vector of the response
+#' @param X A matrix of the predictors
+#' @param time A character object giving the name of the time column
+#' @param lon A character object giving the name of the longitude column
+#' @param lat A character object giving the name of the latitude column
+#' @param nknots The number of knots
+#' @param correlation The type of correlation or covariance function
+#'
 #' @export
 format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
   correlation = "gaussian") {

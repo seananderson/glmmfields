@@ -1,3 +1,8 @@
+#' Return a vector of parameters
+#'
+#' @param obs_error The observation error distribution
+#' @param estimate_df Logical indicating whether the degrees of freedom
+#'   parameter should be estimated
 stan_pars <- function(obs_error, estimate_df = TRUE) {
   p <- c("gp_sigma",
     "gp_scale",
@@ -9,21 +14,61 @@ stan_pars <- function(obs_error, estimate_df = TRUE) {
   p
 }
 
+#' Parse a student-t prior distribution
+#'
+#' @param x The prior object
 parse_t_prior <- function(x) {
   as.vector(unlist(x)[-1], mode = "numeric")
 }
 
 #' Fit a robust spatiotemporal random fields model
 #'
+#' @param formula The model formula
+#' @param data A data frame
+#' @param time A character object giving the name of the time column
+#' @param lon A character object giving the name of the longitude column
+#' @param lat A character object giving the name of the latitude column
+#' @param nknots The number of knots to use in the predictive process model
+#' @param prior_gp_scale The prior on the Gaussian Process scale parameter. Must
+#'   be declared with \code{\link[rstanarm]{student_t}}.
+#' @param prior_gp_sigma The prior on the Gaussian Process sigma parameter. Must
+#'   be declared with \code{\link[rstanarm]{student_t}}.
+#' @param prior_sigma The prior on the observation process scale parameter. Must
+#'   be declared with \code{\link[rstanarm]{student_t}}. This acts as a
+#'   substitute for the scale parameter in whatever observation distribution is
+#'   being used. E.g. the CV for the Gamma.
+#' @param prior_intercept The prior on the intercept parameter. Must be declared
+#'   with \code{\link[rstanarm]{student_t}}.
+#' @param prior_beta The prior on the slope parameters (if any). Must be
+#'   declared with \code{\link[rstanarm]{student_t}}.
+#' @param fixed_df_value The fixed value for the student-t degrees of freedom
+#'   parameter if the degrees of freedom parameter is fixed. If the degrees of
+#'   freedom parameter is estimated then this argument is ignored.
+#' @param estimate_df Logical: should the degrees of freedom perimeter be
+#'   estimated?
+#' @param obs_error Character object indicating the observation process
+#'   distribution.
+#' @param correlation Character object describing the correlation or covariance
+#'   function of the Gaussian Process.
+#' @param algorithm Character object describing whether the model should be fit
+#'   with full NUTS MCMC or via the variational inference mean-field approach.
+#'   See \code{\link[rstan]{vb}}. Note that the variational inference approach
+#'   should not be trusted for final inference and is much more likely to give
+#'   incorrect inference than MCMC.
+#' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
+#'
 #' @export
 #' @importFrom rstanarm student_t normal
 #' @importFrom rstan sampling vb
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
+
 rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5),
   prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5),
+  prior_intercept = student_t(3, 0, 10),
+  prior_beta = student_t(3, 0, 2),
   fixed_df_value = 5,
   estimate_df = TRUE,
   obs_error = c("normal", "gamma", "nb2"),
@@ -47,6 +92,8 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale),
       prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
+      prior_intercept = parse_t_prior(prior_intercept),
+      prior_beta = parse_t_prior(prior_beta),
       gauss_cor = switch(correlation[[1]], gaussian = 1L, exponential = 0L, 1L),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),

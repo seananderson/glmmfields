@@ -1,15 +1,15 @@
 #' @export
-print.rrfield <- function(object, ...) {
-  print(object$model, ...)
+#' @import methods
+print.rrfield <- function(x, ...) {
+  print(x$model, ...)
 }
 
-#' @export
-tidy <- function(object, ...){
+tidy <- function(x, ...){
   UseMethod("tidy")
 }
 
 #' @export
-tidy.rrfield <- function(object, ...) {
-  broom::tidyMCMC(object$model, ...)
+tidy.rrfield <- function(x, ...) {
+  broom::tidyMCMC(x$model, ...)
 }
 
