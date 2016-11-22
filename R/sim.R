@@ -1,3 +1,18 @@
+#' Simulate a random field with a MVT distribution
+#'
+#' @param n_knots The number of knots
+#' @param n_draws The number of draws (for example, the number of years)
+#' @param gp_scale The Gaussian Process scale parameter
+#' @param gp_sigma The Gaussian Process sigma parameter
+#' @param mvt Logical: MVT? (vs. MVN)
+#' @param df The degrees of freedom parameter for the MVT distribution
+#' @param seed The random seed value
+#' @param nDataPoints The number of data points
+#' @param sd_obs The observation process scale parameter
+#' @param correlation The correlation or covariance function
+#' @param obs_error The observation error distribution
+#' @param b0 The intercept parameter
+#'
 #' @export
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
