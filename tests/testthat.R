@@ -1,4 +1,4 @@
 library(testthat)
 library(rrfields)
 
-test_check("rrfields")
+# test_check("rrfields")
