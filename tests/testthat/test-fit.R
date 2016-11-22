@@ -3,6 +3,11 @@ if (interactive()) options(mc.cores = parallel::detectCores())
 ITER <- 400
 CHAINS <- 2
 SEED <- 123
+TOL <- 0.2 # %
+TOL_df <- .25 # %
+
+# ------------------------------------------------------
+# a basic fit
 
 gp_sigma <- 0.2
 sigma <- 0.1
@@ -10,8 +15,6 @@ df <- 4
 gp_scale <- 1.2
 n_draws <- 4
 nknots <- 9
-TOL <- 0.2 # %
-TOL_df <- .25 # %
 
 test_that("mvt-norm model fits", {
   skip_on_cran()
@@ -43,6 +46,9 @@ test_that("mvt-norm model fits", {
   # expect_equal(b[b$term == "df[1]", "estimate"], df, tol = df * TOL_df)
 })
 
+# ------------------------------------------------------
+# a negative binomial model
+
 test_that("mvt-nb2 model fits", {
   skip_on_cran()
   skip_on_travis()
@@ -72,6 +78,9 @@ test_that("mvt-nb2 model fits", {
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
   expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)
 })
+
+# ------------------------------------------------------
+# a Gamma observation model
 
 test_that("mvt-gamma model fits", {
   skip_on_cran()
@@ -104,20 +113,21 @@ test_that("mvt-gamma model fits", {
   expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)
 })
 
-
-gp_sigma <- 0.2
-sigma <- 0.1
-df <- 10
-gp_scale <- 1.2
-n_draws <- 5
-nknots <- 9
-B <- c(0.5, 2.2, 3.8, 2.6, -0.9)
-TOL <- 0.2 # %
+# ------------------------------------------------------
+# a Gaussian observation model with factor-level predictors for years
 
 test_that("mvt-norm estimates betas", {
   skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
+
+  gp_sigma <- 0.2
+  sigma <- 0.1
+  df <- 10
+  gp_scale <- 1.2
+  n_draws <- 5
+  nknots <- 9
+  B <- c(0.5, 2.2, 3.8, 2.6, -0.9)
 
   set.seed(SEED)
 
@@ -140,3 +150,4 @@ test_that("mvt-norm estimates betas", {
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
   expect_equal(b[grep("B\\[*", b$term), "estimate"], B, tol = B * TOL)
 })
+
