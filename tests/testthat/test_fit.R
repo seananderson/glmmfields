@@ -17,6 +17,7 @@ TOL <- 0.2 # %
 TOL_df <- .25 # %
 
 skip_on_cran()
+skip_on_travis()
 test_that("mvt-norm model fits", {
   set.seed(SEED)
 
@@ -46,6 +47,7 @@ test_that("mvt-norm model fits", {
 })
 
 skip_on_cran()
+skip_on_travis()
 test_that("mvt-nb2 model fits", {
   set.seed(SEED)
 
@@ -62,7 +64,7 @@ test_that("mvt-nb2 model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER * 1.5, chains = CHAINS, obs_error = "nb2",
+    iter = ITER * 2, chains = CHAINS, obs_error = "nb2",
     estimate_df = FALSE, fixed_df_value = df,
     control = list(adapt_delta = 0.9), seed = SEED)
 
@@ -75,6 +77,7 @@ test_that("mvt-nb2 model fits", {
 
 
 skip_on_cran()
+skip_on_travis()
 test_that("mvt-gamma model fits", {
   set.seed(SEED)
 
