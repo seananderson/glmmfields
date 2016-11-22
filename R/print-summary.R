@@ -4,6 +4,7 @@ print.rrfield <- function(x, ...) {
   print(x$model, ...)
 }
 
+#' @export
 tidy <- function(x, ...){
   UseMethod("tidy")
 }

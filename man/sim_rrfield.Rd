@@ -7,7 +7,7 @@
 sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
   mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100, sd_obs = 0.1,
   correlation = "gaussian", obs_error = c("normal", "gamma", "nb2"),
-  b0 = 0)
+  B = c(0), X = rep(1, n_draws * nDataPoints))
 }
 \arguments{
 \item{n_knots}{The number of knots}

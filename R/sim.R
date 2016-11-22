@@ -18,7 +18,8 @@
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
   sd_obs = 0.1, correlation = "gaussian",
-  obs_error = c("normal", "gamma", "nb2"), b0 = 0) {
+  obs_error = c("normal", "gamma", "nb2"), B = c(0),
+  X = rep(1, n_draws * nDataPoints)) {
 
   if (correlation != "gaussian") stop("only gaussian correlation implemented")
 
@@ -29,6 +30,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   if (!is.null(seed)) {
     set.seed(seed)
   }
+
   # cluster analysis to determine knot locations
   knots <- jitter(cluster::pam(g, n_knots)$medoids)
   distKnots <- as.matrix(dist(knots))
@@ -56,20 +58,23 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # project random effects to locations of the data
   proj <- t((sigma21 %*% invsigma_knots) %*% t(re_knots))
 
+  eta <- as.vector(B %*% t(X), mode = "double")
+  eta_mat <- matrix(eta, nrow = nrow(proj), byrow = TRUE)
+
   # add observation error:
   N <- ncol(proj) * nrow(proj)
   if (obs_error[[1]] == "normal") {
-    y <- proj + b0 + matrix(data = stats::rnorm(N, 0, sd_obs),
+    y <- proj + eta_mat + matrix(data = stats::rnorm(N, 0, sd_obs),
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "nb2") {
-    proj <- proj + b0
+    proj <- proj + eta_mat
     y <- matrix(data = stats::rnbinom(N, mu = exp(proj), size = sd_obs),
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "gamma") {
     gamma_a = 1/(sd_obs^2) # sd_obs means CV here
-    gamma_b = gamma_a/exp(proj + b0)
+    gamma_b = gamma_a/exp(proj + eta_mat)
     y <- matrix(data = stats::rgamma(N, shape = gamma_a, rate = gamma_b),
       ncol = ncol(proj), nrow = nrow(proj))
   }
