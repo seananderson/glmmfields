@@ -1,8 +1,8 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/rrfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/rrfields) [![codecov](https://codecov.io/github/seananderson/rrfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/rrfields)
+
 rrfields
 ========
-
-[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields) [![codecov](https://codecov.io/github/seananderson/rrfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/rrfields)
 
 The rrfields R package implements spatiotemporal models that allow for extreme spatial deviations through time. It uses a predictive process approach with random fields implemented through a multivariate-t distribution instead of a multivariate normal.
 

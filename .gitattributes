@@ -1,0 +1,9 @@
+* text=auto
+data/* binary
+src/* text=lf
+R/* text=lf
+man/* text=lf
+DESCRIPTION text=lf
+NAMESPACE text=lf
+tests/* text=lf
+.Rbuildignore text=lf

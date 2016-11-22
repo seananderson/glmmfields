@@ -4,3 +4,4 @@ cleanup*
 ^README-*
 ^README\.Rmd
 ^\.travis\.yml$
+^appveyor\.yml$
