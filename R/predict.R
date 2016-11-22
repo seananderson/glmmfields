@@ -1,18 +1,18 @@
 #' @export
-
-predict_rrfield <- function(fitted_model, new_data, mcmc_draws, time="time") {
+predict.rrfield <- function(object, newdata, mcmc_draws) {
 
   # newdata is df with time, y, lon, lat
 
-  knots = fitted_model$knots
+  time = object$time
+  knots = object$knots
   n_knots = nrow(knots)
 
   distKnots = as.matrix(dist(knots))
   distKnotsSq = distKnots^2 # squared distances
 
   # Calculate distance from knots to grid
-  dist_all = as.matrix(stats::dist(rbind(new_data[, c(fitted_model$lon, fitted_model$lat)], knots)))
-  n_locs = nrow(new_data)
+  dist_all = as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
+  n_locs = nrow(newdata)
 
   # this is the transpose of the lower left corner
   dist_knots21 <- t(
@@ -20,13 +20,13 @@ predict_rrfield <- function(fitted_model, new_data, mcmc_draws, time="time") {
 
 
   # extract mcmc pars
-  pars = rstan::extract(fitted_model$model, permuted = TRUE)
+  pars = rstan::extract(object$model, permuted = TRUE)
 
   mcmc.i = sample(1:length(pars$lp__), size=mcmc_draws, replace=F)
   pred_values = matrix(NA, n_locs, mcmc_draws)
   for(i in 1:mcmc_draws) {
     # create cov matrix @ knots
-    if(fitted_model$correlation=="exponential") {
+    if(object$correlation=="exponential") {
       covmat = pars$gp_sigma[mcmc.i[i]] * exp(-distKnots/pars$gp_scale[mcmc.i[i]])
       covmat21 = pars$gp_sigma[mcmc.i[i]] * exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
     } else {
@@ -38,7 +38,7 @@ predict_rrfield <- function(fitted_model, new_data, mcmc_draws, time="time") {
     spat_effects = covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
 
     rows = seq_len(n_locs)
-    cols = new_data[,time]
+    cols = newdata[,time]
     pred_values[,i] = pars$B[mcmc.i[i],1] + spat_effects[cbind(rows,cols)] # check this for > 1 year. B will also have to be modified
   }
 

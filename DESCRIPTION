@@ -22,7 +22,8 @@ Imports:
     cluster,
     dplyr,
     reshape2,
-    mvtnorm
+    mvtnorm,
+    broom
 LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:
