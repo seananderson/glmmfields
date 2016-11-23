@@ -39,8 +39,8 @@ Simulate data:
 
 ```{r simulate, cache=TRUE}
 library(rrfields)
-set.seed(1)
-s <- sim_rrfield(df = 3, n_draws = 12, n_knots = 10, gp_scale = 0.5, 
+set.seed(123)
+s <- sim_rrfield(df = 3, n_draws = 8, n_knots = 10, gp_scale = 2.5, 
   gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
 ```
