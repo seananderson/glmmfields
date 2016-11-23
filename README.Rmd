@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 The rrfields R package implements spatiotemporal models that allow for extreme
 spatial deviations through time. It uses a predictive process approach with
 random fields implemented through a multivariate-t distribution instead of a
-multivariate normal.
+multivariate normal. The models are fit with [Stan](http://mc-stan.org/).
 
 You can install the development version of the package with:
 
@@ -59,7 +59,7 @@ m <- rrfield(y ~ 1, data = s$dat, time = "time",
 
 ```{r print, cache=FALSE, dependson="fit"}
 pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
-print(m$model, pars = pars)
+print(m, pars = pars)
 ```
 
 Plot:
