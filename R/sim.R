@@ -21,8 +21,6 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   obs_error = c("normal", "gamma", "nb2"), B = c(0),
   X = rep(1, n_draws * nDataPoints)) {
 
-  if (correlation != "gaussian") stop("only gaussian correlation implemented")
-
   g <- data.frame(lon = runif(nDataPoints, 0, 10),
     lat = runif(nDataPoints, 0, 10))
   n_pts <- nrow(g)
@@ -34,19 +32,38 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # cluster analysis to determine knot locations
   knots <- jitter(cluster::pam(g, n_knots)$medoids)
   distKnots <- as.matrix(dist(knots))
-  dist_knots_sq <- distKnots^2 # squared distances
 
-  cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
+
+  if (!correlation[[1]] %in% c("gaussian", "exponential")) {
+    stop(paste(correlation[[1]], "not implemented"))
+  }
+  if (correlation[[1]] == "gaussian") {
+    dist_knots_sq <- distKnots^2 # squared distances
+    cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
+  }
+  if (correlation[[1]] == "exponential") {
+    dist_knots_sq <- distKnots # NOT squared distances despite name
+    cor_knots <- exp(-dist_knots_sq / (gp_scale))
+  }
+
   sigma_knots <- gp_sigma^2 * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 
-  # calculate distance from knots to grid
-  dist_all <- as.matrix(dist(rbind(g, knots)))^2
-
   # this is the transpose of the lower left corner
-  dist_knots21_sq <- t(
-    dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-  sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (2 * gp_scale^2))
+  if (correlation[[1]] == "gaussian") {
+    # calculate distance from knots to grid
+    dist_all <- as.matrix(dist(rbind(g, knots)))^2
+    dist_knots21_sq <- t(
+      dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
+    sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (2 * gp_scale^2))
+  }
+  if (correlation[[1]] == "exponential") {
+    # calculate distance from knots to grid
+    dist_all <- as.matrix(dist(rbind(g, knots)))
+    dist_knots21_sq <- t( # NOT squared distances despite name
+      dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
+    sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (gp_scale))
+  }
 
   # generate vector of random effects
   # each 'draw' here is hypothetical draw from posterior
@@ -58,10 +75,11 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   # project random effects to locations of the data
   proj <- t((sigma21 %*% invsigma_knots) %*% t(re_knots))
 
+  # multiply coefficients by the design matrix
   eta <- as.vector(B %*% t(X), mode = "double")
   eta_mat <- matrix(eta, nrow = nrow(proj), byrow = TRUE)
 
-  # add observation error:
+  # add the observation process:
   N <- ncol(proj) * nrow(proj)
   if (obs_error[[1]] == "normal") {
     y <- proj + eta_mat + matrix(data = stats::rnorm(N, 0, sd_obs),
@@ -79,6 +97,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
       ncol = ncol(proj), nrow = nrow(proj))
   }
 
+  # Reshape for output
   out <- reshape2::melt(y)
   names(out) <- c("time", "pt", "y")
   out <- dplyr::arrange_(out, "time", "pt")
@@ -90,17 +109,14 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     geom_point(size = 2) +
     scale_color_gradient2()
 
-  return(
-    list(
-      knots = knots,
-      re_knots = re_knots,
-      proj = proj,
-      dist_knots_sq = dist_knots_sq,
-      dist_knots21_sq = dist_knots21_sq,
-      sigma_knots = sigma_knots,
-      g = g,
-      plot = plot,
-      dat = out
-    )
-  )
+  list(
+    knots = knots,
+    re_knots = re_knots,
+    proj = proj,
+    dist_knots_sq = dist_knots_sq,
+    dist_knots21_sq = dist_knots21_sq,
+    sigma_knots = sigma_knots,
+    g = g,
+    plot = plot,
+    dat = out)
 }
