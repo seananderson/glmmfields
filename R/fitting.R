@@ -48,7 +48,7 @@ parse_t_prior <- function(x) {
 #'   estimated?
 #' @param obs_error Character object indicating the observation process
 #'   distribution.
-#' @param correlation Character object describing the correlation or covariance
+#' @param covariance Character object describing the covariance 
 #'   function of the Gaussian Process.
 #' @param algorithm Character object describing whether the model should be fit
 #'   with full NUTS MCMC or via the variational inference mean-field approach.
@@ -72,7 +72,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   fixed_df_value = 5,
   estimate_df = TRUE,
   obs_error = c("normal", "gamma", "nb2"),
-  correlation = c("gaussian", "exponential"),
+  covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
   ...) {
 
@@ -82,7 +82,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   # user inputs raw data. this function formats it for STAN
   data_list <- format_data(data = data, y = y, X = X, time = time,
-    lon = lon, lat = lat, nknots = nknots, correlation = correlation)
+    lon = lon, lat = lat, nknots = nknots, covariance = covariance)
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
@@ -94,7 +94,8 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
       prior_sigma = parse_t_prior(prior_sigma),
       prior_intercept = parse_t_prior(prior_intercept),
       prior_beta = parse_t_prior(prior_beta),
-      gauss_cor = switch(correlation[[1]], gaussian = 1L, exponential = 0L, 1L),
+      sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L, 
+        exponential = 0L, 1L),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
       gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
@@ -122,6 +123,6 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   }
 
   out <- list(model = m, knots = data_knots, y = y, X = X,
-    correlation = correlation[[1]], lon = lon, lat = lat, time = time)
+    covariance = covariance[[1]], lon = lon, lat = lat, time = time)
   out <- structure(out, class = "rrfield")
 }

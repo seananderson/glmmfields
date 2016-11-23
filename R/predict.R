@@ -33,12 +33,16 @@ predict.rrfield <- function(object, newdata, mcmc_draws, ...) {
   pred_values = matrix(NA, n_locs, mcmc_draws)
   for(i in 1:mcmc_draws) {
     # create cov matrix @ knots
-    if(object$correlation=="exponential") {
-      covmat = pars$gp_sigma[mcmc.i[i]] * exp(-distKnots/pars$gp_scale[mcmc.i[i]])
-      covmat21 = pars$gp_sigma[mcmc.i[i]] * exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
+    if(object$covariance=="exponential") {
+      covmat = pars$gp_sigma[mcmc.i[i]] *
+        exp(-distKnots/pars$gp_scale[mcmc.i[i]])
+      covmat21 = pars$gp_sigma[mcmc.i[i]] *
+        exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
     } else {
-      covmat = pars$gp_sigma[mcmc.i[i]] * exp(-2*(distKnots^2)/(pars$gp_scale[mcmc.i[i]]^2))
-      covmat21 = pars$gp_sigma[mcmc.i[i]] * exp(-2*(dist_knots21^2)/(pars$gp_scale[mcmc.i[i]]^2))
+      covmat = pars$gp_sigma[mcmc.i[i]] *
+        exp(-2*(distKnots^2)/(pars$gp_scale[mcmc.i[i]]^2))
+      covmat21 = pars$gp_sigma[mcmc.i[i]] *
+        exp(-2*(dist_knots21^2)/(pars$gp_scale[mcmc.i[i]]^2))
     }
 
     # these are projected spatial effects, dim = new data points x time
@@ -46,7 +50,8 @@ predict.rrfield <- function(object, newdata, mcmc_draws, ...) {
 
     rows = seq_len(n_locs)
     cols = newdata[,time]
-    pred_values[,i] = pars$B[mcmc.i[i],1] + spat_effects[cbind(rows,cols)] # check this for > 1 year. B will also have to be modified
+    # check this for > 1 year. B will also have to be modified
+    pred_values[,i] = pars$B[mcmc.i[i],1] + spat_effects[cbind(rows,cols)]
   }
 
   pred_values

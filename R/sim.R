@@ -7,22 +7,23 @@
 #' @param mvt Logical: MVT? (vs. MVN)
 #' @param df The degrees of freedom parameter for the MVT distribution
 #' @param seed The random seed value
-#' @param nDataPoints The number of data points
+#' @param n_data_points The number of data points per draw
 #' @param sd_obs The observation process scale parameter
-#' @param correlation The correlation or covariance function
+#' @param covariance The covariance function
 #' @param obs_error The observation error distribution
-#' @param b0 The intercept parameter
+#' @param B A vector of parameters. The first element is the intercept.
+#' @param X The model matrix
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
-  gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100,
-  sd_obs = 0.1, correlation = "gaussian",
+  gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
+  sd_obs = 0.1, covariance = "squared-exponential",
   obs_error = c("normal", "gamma", "nb2"), B = c(0),
-  X = rep(1, n_draws * nDataPoints)) {
+  X = rep(1, n_draws * n_data_points)) {
 
-  g <- data.frame(lon = runif(nDataPoints, 0, 10),
-    lat = runif(nDataPoints, 0, 10))
+  g <- data.frame(lon = runif(n_data_points, 0, 10),
+    lat = runif(n_data_points, 0, 10))
   n_pts <- nrow(g)
 
   if (!is.null(seed)) {
@@ -34,14 +35,14 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   distKnots <- as.matrix(dist(knots))
 
 
-  if (!correlation[[1]] %in% c("gaussian", "exponential")) {
-    stop(paste(correlation[[1]], "not implemented"))
+  if (!covariance[[1]] %in% c("squared-exponential", "exponential")) {
+    stop(paste(covariance[[1]], "not implemented"))
   }
-  if (correlation[[1]] == "gaussian") {
+  if (covariance[[1]] == "squared-exponential") {
     dist_knots_sq <- distKnots^2 # squared distances
     cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
   }
-  if (correlation[[1]] == "exponential") {
+  if (covariance[[1]] == "exponential") {
     dist_knots_sq <- distKnots # NOT squared distances despite name
     cor_knots <- exp(-dist_knots_sq / (gp_scale))
   }
@@ -50,14 +51,14 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   invsigma_knots <- base::solve(sigma_knots)
 
   # this is the transpose of the lower left corner
-  if (correlation[[1]] == "gaussian") {
+  if (covariance[[1]] == "squared-exponential") {
     # calculate distance from knots to grid
     dist_all <- as.matrix(dist(rbind(g, knots)))^2
     dist_knots21_sq <- t(
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
     sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (2 * gp_scale^2))
   }
-  if (correlation[[1]] == "exponential") {
+  if (covariance[[1]] == "exponential") {
     # calculate distance from knots to grid
     dist_all <- as.matrix(dist(rbind(g, knots)))
     dist_knots21_sq <- t( # NOT squared distances despite name

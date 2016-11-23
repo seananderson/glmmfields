@@ -5,7 +5,7 @@
 \title{Format data for fitting an rrfield model}
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
-  correlation = "gaussian")
+  covariance = "squared-exponential")
 }
 \arguments{
 \item{data}{A data frame to be formatted}
@@ -22,7 +22,7 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
 
 \item{nknots}{The number of knots}
 
-\item{correlation}{The type of correlation or covariance function}
+\item{covariance}{The type of covariance function}
 }
 \description{
 Format data for fitting an rrfield model

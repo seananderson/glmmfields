@@ -43,7 +43,7 @@ private:
     matrix_d distKnots21;
     int nCov;
     matrix_d X;
-    int gauss_cor;
+    int sqexp_cov;
     int est_df;
     int norm_params;
     int gamma_params;
@@ -224,11 +224,11 @@ public:
                 X(m_mat__,n_mat__) = vals_r__[pos__++];
             }
         }
-        context__.validate_dims("data initialization", "gauss_cor", "int", context__.to_vec());
-        gauss_cor = int(0);
-        vals_i__ = context__.vals_i("gauss_cor");
+        context__.validate_dims("data initialization", "sqexp_cov", "int", context__.to_vec());
+        sqexp_cov = int(0);
+        vals_i__ = context__.vals_i("sqexp_cov");
         pos__ = 0;
-        gauss_cor = vals_i__[pos__++];
+        sqexp_cov = vals_i__[pos__++];
         context__.validate_dims("data initialization", "est_df", "int", context__.to_vec());
         est_df = int(0);
         vals_i__ = context__.vals_i("est_df");
@@ -272,8 +272,8 @@ public:
             check_greater_or_equal(function__,"yearID[k0__]",yearID[k0__],1);
         }
         check_greater_or_equal(function__,"nCov",nCov,1);
-        check_greater_or_equal(function__,"gauss_cor",gauss_cor,0);
-        check_less_or_equal(function__,"gauss_cor",gauss_cor,1);
+        check_greater_or_equal(function__,"sqexp_cov",sqexp_cov,0);
+        check_less_or_equal(function__,"sqexp_cov",sqexp_cov,1);
         check_greater_or_equal(function__,"est_df",est_df,0);
         check_less_or_equal(function__,"est_df",est_df,1);
         check_greater_or_equal(function__,"norm_params",norm_params,0);
@@ -573,7 +573,7 @@ public:
 
         try {
             stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
-            if (as_bool(logical_eq(gauss_cor,1))) {
+            if (as_bool(logical_eq(sqexp_cov,1))) {
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
                 stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
             } else {
@@ -888,7 +888,7 @@ public:
 
         try {
             stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
-            if (as_bool(logical_eq(gauss_cor,1))) {
+            if (as_bool(logical_eq(sqexp_cov,1))) {
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
                 stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
             } else {

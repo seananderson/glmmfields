@@ -8,8 +8,9 @@ rrfield(formula, data, time, lon, lat, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 2), fixed_df_value = 5, estimate_df = TRUE,
-  obs_error = c("normal", "gamma", "nb2"), correlation = c("gaussian",
-  "exponential"), algorithm = c("sampling", "meanfield"), ...)
+  obs_error = c("normal", "gamma", "nb2"),
+  covariance = c("squared-exponential", "exponential"),
+  algorithm = c("sampling", "meanfield"), ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -51,7 +52,7 @@ estimated?}
 \item{obs_error}{Character object indicating the observation process
 distribution.}
 
-\item{correlation}{Character object describing the correlation or covariance
+\item{covariance}{Character object describing the covariance 
 function of the Gaussian Process.}
 
 \item{algorithm}{Character object describing whether the model should be fit

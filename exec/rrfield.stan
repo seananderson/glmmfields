@@ -16,7 +16,7 @@ data {
   matrix[nLocs,nKnots] distKnots21;
   int<lower=1> nCov;
   matrix[N,nCov] X;
-  int<lower=0,upper=1> gauss_cor;
+  int<lower=0,upper=1> sqexp_cov;
   int<lower=0,upper=1> est_df;
   int<lower=0,upper=1> norm_params;
   int<lower=0,upper=1> gamma_params;
@@ -46,8 +46,8 @@ transformed parameters {
 
   gp_sigma_sq = pow(gp_sigma, 2.0);
 
-  // allow user to switch between gaussian and exponential covariance
-  if (gauss_cor == 1) {
+  // allow user to switch between squared-exponential and exponential covariance
+  if (sqexp_cov == 1) {
     // cov matrix between knots:
     SigmaKnots = gp_sigma_sq *
       exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots); // dist^2 as data

@@ -5,9 +5,9 @@
 \title{Simulate a random field with a MVT distribution}
 \usage{
 sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
-  mvt = TRUE, df = 4, seed = NULL, nDataPoints = 100, sd_obs = 0.1,
-  correlation = "gaussian", obs_error = c("normal", "gamma", "nb2"),
-  B = c(0), X = rep(1, n_draws * nDataPoints))
+  mvt = TRUE, df = 4, seed = NULL, n_data_points = 100, sd_obs = 0.1,
+  covariance = "squared-exponential", obs_error = c("normal", "gamma",
+  "nb2"), B = c(0), X = rep(1, n_draws * n_data_points))
 }
 \arguments{
 \item{n_knots}{The number of knots}
@@ -24,15 +24,17 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
 
 \item{seed}{The random seed value}
 
-\item{nDataPoints}{The number of data points}
+\item{n_data_points}{The number of data points per draw}
 
 \item{sd_obs}{The observation process scale parameter}
 
-\item{correlation}{The correlation or covariance function}
+\item{covariance}{The covariance function}
 
 \item{obs_error}{The observation error distribution}
 
-\item{b0}{The intercept parameter}
+\item{B}{A vector of parameters. The first element is the intercept.}
+
+\item{X}{The model matrix}
 }
 \description{
 Simulate a random field with a MVT distribution

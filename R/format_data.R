@@ -7,11 +7,11 @@
 #' @param lon A character object giving the name of the longitude column
 #' @param lat A character object giving the name of the latitude column
 #' @param nknots The number of knots
-#' @param correlation The type of correlation or covariance function
+#' @param covariance The type of covariance function
 #'
 #' @export
 format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
-  correlation = "gaussian") {
+  covariance = "squared-exponential") {
 
   knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
 
@@ -21,7 +21,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
   distAll = as.matrix(stats::dist(rbind(data[, c(lon, lat)], knots)))
   nLocs = nrow(data)
 
-  if (correlation[[1]] == "gaussian") {
+  if (covariance[[1]] == "squared-exponential") {
     distKnots = distKnots^2 # squared distances
     distAll = distAll^2 # squared distances
   }

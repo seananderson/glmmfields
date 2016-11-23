@@ -169,14 +169,14 @@ test_that("mvt-norm model fits", {
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    correlation = "exponential")
+    covariance = "exponential")
   # print(s$plot)
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    correlation = "exponential")
+    covariance = "exponential")
   m
 
   b <- tidy(m, estimate.method = "median")
