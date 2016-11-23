@@ -14,3 +14,5 @@ notifications:
 
 after_success:
   - Rscript -e 'covr::codecov()'
+
+warnings_are_errors: false
