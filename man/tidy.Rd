@@ -8,6 +8,8 @@ tidy(x, ...)
 }
 \arguments{
 \item{x}{Output from \code{\link{rrfield}}}
+
+\item{...}{Other arguments}
 }
 \description{
 Tidy model output

@@ -85,11 +85,6 @@ transformed parameters {
 	  gammaA[1] = 1/(CV[1]*CV[1]);
 	}
 
-  // the whole point of this block is to zero out the first element of estimated year effects
-	// yearEffects[1] = 0;
-	// for(t in 2:nT) {
-	//   yearEffects[t] = yearEffects_est[t];
-	// }
 }
 model {
   // priors:

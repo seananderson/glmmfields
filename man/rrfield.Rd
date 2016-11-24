@@ -26,21 +26,22 @@ rrfield(formula, data, time, lon, lat, nknots = 25L,
 \item{nknots}{The number of knots to use in the predictive process model}
 
 \item{prior_gp_scale}{The prior on the Gaussian Process scale parameter. Must
-be declared with \code{\link[rstanarm]{student_t}}.}
+be declared with \code{\link{half_t}}.}
 
 \item{prior_gp_sigma}{The prior on the Gaussian Process sigma parameter. Must
-be declared with \code{\link[rstanarm]{student_t}}.}
+be declared with \code{\link{half_t}}.}
 
 \item{prior_sigma}{The prior on the observation process scale parameter. Must
-be declared with \code{\link[rstanarm]{student_t}}. This acts as a
+be declared with \code{\link{half_t}}. This acts as a
 substitute for the scale parameter in whatever observation distribution is
-being used. E.g. the CV for the Gamma.}
+being used. I.e. the CV for the Gamma or the dispersion parameter for
+the negative binomial.}
 
 \item{prior_intercept}{The prior on the intercept parameter. Must be declared
-with \code{\link[rstanarm]{student_t}}.}
+with \code{\link{student_t}}.}
 
 \item{prior_beta}{The prior on the slope parameters (if any). Must be
-declared with \code{\link[rstanarm]{student_t}}.}
+declared with \code{\link{student_t}}.}
 
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
 parameter if the degrees of freedom parameter is fixed. If the degrees of
@@ -60,6 +61,9 @@ with full NUTS MCMC or via the variational inference mean-field approach.
 See \code{\link[rstan]{vb}}. Note that the variational inference approach
 should not be trusted for final inference and is much more likely to give
 incorrect inference than MCMC.}
+
+\item{year_re}{Logical: estimate a random walk for the time variable? If
+\code{TRUE}, then no fixed effects (B coefficients) will be estimated.}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

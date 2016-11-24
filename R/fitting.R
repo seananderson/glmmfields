@@ -3,23 +3,16 @@
 #' @param obs_error The observation error distribution
 #' @param estimate_df Logical indicating whether the degrees of freedom
 #'   parameter should be estimated
+#' @param est_temporalRE Logical: estimate a random walk for the time variable?
 stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
   p <- c("gp_sigma",
     "gp_scale",
     "B",
-    "spatialEffectsKnots",
-    switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi")
-  )
+    switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi"),
+    "spatialEffectsKnots")
   if (estimate_df) p <- c("df", p)
-  if(est_temporalRE) p = c("year_sigma", "yearEffects", p)
+  if (est_temporalRE) p <- c("year_sigma", "yearEffects", p)
   p
-}
-
-#' Parse a student-t prior distribution
-#'
-#' @param x The prior object
-parse_t_prior <- function(x) {
-  as.vector(unlist(x)[-1], mode = "numeric")
 }
 
 #' Fit a robust spatiotemporal random fields model
@@ -31,17 +24,18 @@ parse_t_prior <- function(x) {
 #' @param lat A character object giving the name of the latitude column
 #' @param nknots The number of knots to use in the predictive process model
 #' @param prior_gp_scale The prior on the Gaussian Process scale parameter. Must
-#'   be declared with \code{\link[rstanarm]{student_t}}.
+#'   be declared with \code{\link{half_t}}.
 #' @param prior_gp_sigma The prior on the Gaussian Process sigma parameter. Must
-#'   be declared with \code{\link[rstanarm]{student_t}}.
+#'   be declared with \code{\link{half_t}}.
 #' @param prior_sigma The prior on the observation process scale parameter. Must
-#'   be declared with \code{\link[rstanarm]{student_t}}. This acts as a
+#'   be declared with \code{\link{half_t}}. This acts as a
 #'   substitute for the scale parameter in whatever observation distribution is
-#'   being used. E.g. the CV for the Gamma.
+#'   being used. I.e. the CV for the Gamma or the dispersion parameter for
+#'   the negative binomial.
 #' @param prior_intercept The prior on the intercept parameter. Must be declared
-#'   with \code{\link[rstanarm]{student_t}}.
+#'   with \code{\link{student_t}}.
 #' @param prior_beta The prior on the slope parameters (if any). Must be
-#'   declared with \code{\link[rstanarm]{student_t}}.
+#'   declared with \code{\link{student_t}}.
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
 #'   parameter if the degrees of freedom parameter is fixed. If the degrees of
 #'   freedom parameter is estimated then this argument is ignored.
@@ -56,10 +50,11 @@ parse_t_prior <- function(x) {
 #'   See \code{\link[rstan]{vb}}. Note that the variational inference approach
 #'   should not be trusted for final inference and is much more likely to give
 #'   incorrect inference than MCMC.
+#' @param year_re Logical: estimate a random walk for the time variable? If
+#'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
-#' @importFrom rstanarm student_t normal
 #' @importFrom rstan sampling vb
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif

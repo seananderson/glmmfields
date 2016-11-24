@@ -11,6 +11,8 @@ stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE)
 
 \item{estimate_df}{Logical indicating whether the degrees of freedom
 parameter should be estimated}
+
+\item{est_temporalRE}{Logical: estimate a random walk for the time variable?}
 }
 \description{
 Return a vector of parameters

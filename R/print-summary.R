@@ -7,6 +7,7 @@ print.rrfield <- function(x, ...) {
 #' Tidy model output
 #'
 #' @param x Output from \code{\link{rrfield}}
+#' @param ... Other arguments
 #' @export
 tidy <- function(x, ...){
   UseMethod("tidy")
@@ -15,6 +16,7 @@ tidy <- function(x, ...){
 #' Tidy model output
 #'
 #' @param x Output from \code{\link{rrfield}}
+#' @param ... Other arguments
 #' @export
 tidy.rrfield <- function(x, ...) {
   broom::tidyMCMC(x$model, ...)
