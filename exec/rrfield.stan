@@ -88,8 +88,8 @@ transformed parameters {
 
   // the whole point of this block is to zero out the first element of estimated year effects
 	yearEffects[1] = 0;
-	for(i in 2:nT) {
-	  yearEffects[i] = yearEffects_est[i];
+	for(t in 2:nT) {
+	  yearEffects[t] = yearEffects_est[t];
 	}
 }
 model {
@@ -107,8 +107,9 @@ model {
   // temporal random effects, if estimated global intercept = effect in first year
   if(est_temporalRE == 1) {
     year_sigma ~ student_t(3, 0, 2);
-    # random walk / random effects in year terms
-    #yearEffects[1] = B[1]; # confounded with intercept, so yearEffects[1] = 0
+    // random walk / random effects in year terms
+    //yearEffects[1] = B[1]; # confounded with intercept, so yearEffects[1] = 0
+    yearEffects_est[1] ~ normal(0, year_sigma);
     yearEffects_est[2] ~ normal(0, year_sigma);
     for(t in 3:nT) {
       yearEffects_est[t] ~ normal(yearEffects_est[t-1], year_sigma);

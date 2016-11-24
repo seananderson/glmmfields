@@ -655,8 +655,8 @@ public:
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
             }
             stan::math::assign(get_base1_lhs(yearEffects,1,"yearEffects",1), 0);
-            for (int i = 2; i <= nT; ++i) {
-                stan::math::assign(get_base1_lhs(yearEffects,i,"yearEffects",1), get_base1(yearEffects_est,i,"yearEffects_est",1));
+            for (int t = 2; t <= nT; ++t) {
+                stan::math::assign(get_base1_lhs(yearEffects,t,"yearEffects",1), get_base1(yearEffects_est,t,"yearEffects_est",1));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -754,6 +754,7 @@ public:
             }
             if (as_bool(logical_eq(est_temporalRE,1))) {
                 lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
+                lp_accum__.add(normal_log<propto__>(get_base1(yearEffects_est,1,"yearEffects_est",1), 0, year_sigma));
                 lp_accum__.add(normal_log<propto__>(get_base1(yearEffects_est,2,"yearEffects_est",1), 0, year_sigma));
                 for (int t = 3; t <= nT; ++t) {
                     lp_accum__.add(normal_log<propto__>(get_base1(yearEffects_est,t,"yearEffects_est",1), get_base1(yearEffects_est,(t - 1),"yearEffects_est",1), year_sigma));
@@ -1014,8 +1015,8 @@ public:
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
             }
             stan::math::assign(get_base1_lhs(yearEffects,1,"yearEffects",1), 0);
-            for (int i = 2; i <= nT; ++i) {
-                stan::math::assign(get_base1_lhs(yearEffects,i,"yearEffects",1), get_base1(yearEffects_est,i,"yearEffects_est",1));
+            for (int t = 2; t <= nT; ++t) {
+                stan::math::assign(get_base1_lhs(yearEffects,t,"yearEffects",1), get_base1(yearEffects_est,t,"yearEffects_est",1));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);

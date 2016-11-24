@@ -53,7 +53,13 @@ predict.rrfield <- function(object, newdata=NULL, mcmc_draws, ...) {
     rows = seq_len(n_locs)
     cols = newdata[,time]
     # check this for > 1 year. B will also have to be modified
-    pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) + spat_effects[cbind(rows,cols)]
+    if(object$year_re == FALSE) {
+      pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) +
+        spat_effects[cbind(rows,cols)]
+    } else {
+      pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) +
+        spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][time]
+    }
   }
 
   pred_values
