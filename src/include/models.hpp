@@ -50,6 +50,7 @@ private:
     int nb2_params;
     int obs_model;
     double fixed_df_value;
+    int est_temporalRE;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -259,6 +260,11 @@ public:
         vals_r__ = context__.vals_r("fixed_df_value");
         pos__ = 0;
         fixed_df_value = vals_r__[pos__++];
+        context__.validate_dims("data initialization", "est_temporalRE", "int", context__.to_vec());
+        est_temporalRE = int(0);
+        vals_i__ = context__.vals_i("est_temporalRE");
+        pos__ = 0;
+        est_temporalRE = vals_i__[pos__++];
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -285,6 +291,8 @@ public:
         check_greater_or_equal(function__,"obs_model",obs_model,0);
         check_less_or_equal(function__,"obs_model",obs_model,2);
         check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
+        check_greater_or_equal(function__,"est_temporalRE",est_temporalRE,0);
+        check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -310,6 +318,8 @@ public:
         num_params_r__ += norm_params;
         num_params_r__ += gamma_params;
         num_params_r__ += nb2_params;
+        num_params_r__ += nT;
+        ++num_params_r__;
         num_params_r__ += nKnots * nT;
         num_params_r__ += nCov;
     }
@@ -411,6 +421,34 @@ public:
             writer__.scalar_lb_unconstrain(0,nb2_phi[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable nb2_phi: ") + e.what());
+        }
+
+        if (!(context__.contains_r("yearEffects")))
+            throw std::runtime_error("variable yearEffects missing");
+        vals_r__ = context__.vals_r("yearEffects");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "yearEffects", "double", context__.to_vec(nT));
+        std::vector<double> yearEffects(nT,double(0));
+        for (int i0__ = 0U; i0__ < nT; ++i0__)
+            yearEffects[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < nT; ++i0__)
+            try {
+            writer__.scalar_unconstrain(yearEffects[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable yearEffects: ") + e.what());
+        }
+
+        if (!(context__.contains_r("year_sigma")))
+            throw std::runtime_error("variable year_sigma missing");
+        vals_r__ = context__.vals_r("year_sigma");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "year_sigma", "double", context__.to_vec());
+        double year_sigma(0);
+        year_sigma = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,year_sigma);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable year_sigma: ") + e.what());
         }
 
         if (!(context__.contains_r("spatialEffectsKnots")))
@@ -527,6 +565,23 @@ public:
                 nb2_phi.push_back(in__.scalar_lb_constrain(0));
         }
 
+        vector<T__> yearEffects;
+        size_t dim_yearEffects_0__ = nT;
+        yearEffects.reserve(dim_yearEffects_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
+            if (jacobian__)
+                yearEffects.push_back(in__.scalar_constrain(lp__));
+            else
+                yearEffects.push_back(in__.scalar_constrain());
+        }
+
+        T__ year_sigma;
+        (void) year_sigma;  // dummy to suppress unused var warning
+        if (jacobian__)
+            year_sigma = in__.scalar_lb_constrain(0,lp__);
+        else
+            year_sigma = in__.scalar_lb_constrain(0);
+
         vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
         spatialEffectsKnots.reserve(dim_spatialEffectsKnots_0__);
@@ -588,7 +643,11 @@ public:
                 stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
             }
             for (int i = 1; i <= N; ++i) {
-                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                if (as_bool(logical_eq(est_temporalRE,0))) {
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                } else {
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                }
             }
             if (as_bool(logical_eq(obs_model,0))) {
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
@@ -680,6 +739,13 @@ public:
                     lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
                 }
             }
+            if (as_bool(logical_eq(est_temporalRE,1))) {
+                lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2));
+                lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,2,"yearEffects",1), 0, year_sigma));
+                for (int t = 3; t <= nT; ++t) {
+                    lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
+                }
+            }
             if (as_bool(logical_eq(est_df,1))) {
                 lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
                 for (int t = 2; t <= nT; ++t) {
@@ -733,6 +799,8 @@ public:
         names__.push_back("sigma");
         names__.push_back("CV");
         names__.push_back("nb2_phi");
+        names__.push_back("yearEffects");
+        names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
         names__.push_back("B");
         names__.push_back("muZeros");
@@ -764,6 +832,11 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nb2_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nT);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nT);
@@ -836,6 +909,12 @@ public:
         for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
             nb2_phi.push_back(in__.scalar_lb_constrain(0));
         }
+        vector<double> yearEffects;
+        size_t dim_yearEffects_0__ = nT;
+        for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
+            yearEffects.push_back(in__.scalar_constrain());
+        }
+        double year_sigma = in__.scalar_lb_constrain(0);
         vector<vector_d> spatialEffectsKnots;
         size_t dim_spatialEffectsKnots_0__ = nT;
         for (size_t k_0__ = 0; k_0__ < dim_spatialEffectsKnots_0__; ++k_0__) {
@@ -856,6 +935,10 @@ public:
         for (int k_0__ = 0; k_0__ < nb2_params; ++k_0__) {
             vars__.push_back(nb2_phi[k_0__]);
         }
+        for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
+            vars__.push_back(yearEffects[k_0__]);
+        }
+        vars__.push_back(year_sigma);
         for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
             for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
                 vars__.push_back(spatialEffectsKnots[k_0__][k_1__]);
@@ -903,7 +986,11 @@ public:
                 stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
             }
             for (int i = 1; i <= N; ++i) {
-                stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                if (as_bool(logical_eq(est_temporalRE,0))) {
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                } else {
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                }
             }
             if (as_bool(logical_eq(obs_model,0))) {
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
@@ -1026,6 +1113,14 @@ public:
             param_name_stream__ << "nb2_phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "yearEffects" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "year_sigma";
+        param_names__.push_back(param_name_stream__.str());
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
@@ -1121,6 +1216,14 @@ public:
             param_name_stream__ << "nb2_phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "yearEffects" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "year_sigma";
+        param_names__.push_back(param_name_stream__.str());
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());

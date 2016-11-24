@@ -4,7 +4,7 @@
 \alias{stan_pars}
 \title{Return a vector of parameters}
 \usage{
-stan_pars(obs_error, estimate_df = TRUE)
+stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE)
 }
 \arguments{
 \item{obs_error}{The observation error distribution}

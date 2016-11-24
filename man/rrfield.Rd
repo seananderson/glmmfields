@@ -10,7 +10,7 @@ rrfield(formula, data, time, lon, lat, nknots = 25L,
   prior_beta = student_t(3, 0, 2), fixed_df_value = 5, estimate_df = TRUE,
   obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
-  algorithm = c("sampling", "meanfield"), ...)
+  algorithm = c("sampling", "meanfield"), year_re = FALSE, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -52,7 +52,7 @@ estimated?}
 \item{obs_error}{Character object indicating the observation process
 distribution.}
 
-\item{covariance}{Character object describing the covariance 
+\item{covariance}{Character object describing the covariance
 function of the Gaussian Process.}
 
 \item{algorithm}{Character object describing whether the model should be fit

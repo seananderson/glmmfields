@@ -23,6 +23,7 @@ data {
   int<lower=0,upper=1> nb2_params;
   int<lower=0,upper=2> obs_model;
   real<lower=2> fixed_df_value;
+  int<lower=0,upper=1> est_temporalRE;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -31,6 +32,8 @@ parameters {
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
+  real yearEffects_est[nT];
+  real<lower=0> year_sigma;
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
 }
@@ -43,7 +46,7 @@ transformed parameters {
   vector[N] y_hat;
   real<lower=0> gammaA[gamma_params];
   real<lower=0> gp_sigma_sq;
-
+  real yearEffects[nT];
   gp_sigma_sq = pow(gp_sigma, 2.0);
 
   // allow user to switch between squared-exponential and exponential covariance
@@ -56,7 +59,7 @@ transformed parameters {
       exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
   } else {
     // cov matrix between knots
-    SigmaKnots =   gp_sigma_sq * exp(-distKnots / gp_scale);
+    SigmaKnots = gp_sigma_sq * exp(-distKnots / gp_scale);
     // cov matrix between knots and projected locs
     SigmaOffDiag = gp_sigma_sq * exp(-distKnots21 / gp_scale);
   }
@@ -72,11 +75,21 @@ transformed parameters {
 
 	// calculate predicted value of each observation
 	for(i in 1:N) {
-	  y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
+	  if(est_temporalRE == 0) {
+	    y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
+	  } else {
+	    y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+	  }
 	}
 
 	if(obs_model==0) {
 	  gammaA[1] = 1/(CV[1]*CV[1]);
+	}
+
+  // the whole point of this block is to zero out the first element of estimated year effects
+	yearEffects[1] = 0;
+	for(i in 2:nT) {
+	  yearEffects[i] = yearEffects_est[i];
 	}
 }
 model {
@@ -88,6 +101,17 @@ model {
   if (nCov >= 2) {
     for (i in 2:nCov) {
       B[i] ~ student_t(prior_beta[1], prior_beta[2], prior_beta[3]);
+    }
+  }
+
+  // temporal random effects, if estimated global intercept = effect in first year
+  if(est_temporalRE == 1) {
+    year_sigma ~ student_t(3, 0, 2);
+    # random walk / random effects in year terms
+    #yearEffects[1] = B[1]; # confounded with intercept, so yearEffects[1] = 0
+    yearEffects_est[2] ~ normal(0, year_sigma);
+    for(t in 3:nT) {
+      yearEffects_est[t] ~ normal(yearEffects_est[t-1], year_sigma);
     }
   }
 

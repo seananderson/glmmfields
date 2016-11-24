@@ -3,7 +3,7 @@
 #' @param obs_error The observation error distribution
 #' @param estimate_df Logical indicating whether the degrees of freedom
 #'   parameter should be estimated
-stan_pars <- function(obs_error, estimate_df = TRUE) {
+stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
   p <- c("gp_sigma",
     "gp_scale",
     "B",
@@ -11,6 +11,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE) {
     switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi")
   )
   if (estimate_df) p <- c("df", p)
+  if(est_temporalRE) p = c("year_sigma", "yearEffects", p)
   p
 }
 
@@ -48,7 +49,7 @@ parse_t_prior <- function(x) {
 #'   estimated?
 #' @param obs_error Character object indicating the observation process
 #'   distribution.
-#' @param covariance Character object describing the covariance 
+#' @param covariance Character object describing the covariance
 #'   function of the Gaussian Process.
 #' @param algorithm Character object describing whether the model should be fit
 #'   with full NUTS MCMC or via the variational inference mean-field approach.
@@ -74,6 +75,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
+  year_re = FALSE,
   ...) {
 
   mf <- model.frame(formula, data)
@@ -88,20 +90,23 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, 1L)
 
+  est_temporalRE = ifelse(year_re == FALSE, 0, 1)
+
   stan_data <- c(stan_data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale),
       prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
       prior_intercept = parse_t_prior(prior_intercept),
       prior_beta = parse_t_prior(prior_beta),
-      sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L, 
+      sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L,
         exponential = 0L, 1L),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
       gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
       norm_params = ifelse(obs_error[[1]] == "normal", 1L, 0L),
       nb2_params = ifelse(obs_error[[1]] == "nb2", 1L, 0L),
-      fixed_df_value = fixed_df_value))
+      fixed_df_value = fixed_df_value,
+      est_temporalRE = est_temporalRE))
 
   if (obs_model == 2) { # NB2 obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
@@ -112,7 +117,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   sampling_args <- list(
     object = stanmodels$rrfield,
     data = stan_data,
-    pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df),
+    pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df, est_temporalRE = est_temporalRE),
     ...)
 
   if (algorithm[[1]] == "meanfield") {
