@@ -6,16 +6,19 @@
 #' @param ... Ignored currently
 #'
 #' @export
-predict.rrfield <- function(object, newdata, mcmc_draws, ...) {
+predict.rrfield <- function(object, newdata=NULL, mcmc_draws, ...) {
 
   # newdata is df with time, y, lon, lat
+  # if null, defaults to data used to fit model
+  if(is.null(newdata)) newdata = object$data
+  # create model.matrix() as in fitting function, only with newdata
+  X = model.matrix(object$formula, model.frame(object$formula, newdata))
 
   time = object$time
   knots = object$knots
   n_knots = nrow(knots)
 
   distKnots = as.matrix(dist(knots))
-  distKnotsSq = distKnots^2 # squared distances
 
   # Calculate distance from knots to grid
   dist_all = as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
@@ -24,7 +27,6 @@ predict.rrfield <- function(object, newdata, mcmc_draws, ...) {
   # this is the transpose of the lower left corner
   dist_knots21 <- t(
     dist_all[-c(seq_len(n_locs)), -c((n_locs + 1):ncol(dist_all))])
-
 
   # extract mcmc pars
   pars = rstan::extract(object$model, permuted = TRUE)
@@ -51,7 +53,7 @@ predict.rrfield <- function(object, newdata, mcmc_draws, ...) {
     rows = seq_len(n_locs)
     cols = newdata[,time]
     # check this for > 1 year. B will also have to be modified
-    pred_values[,i] = pars$B[mcmc.i[i],1] + spat_effects[cbind(rows,cols)]
+    pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) + spat_effects[cbind(rows,cols)]
   }
 
   pred_values
