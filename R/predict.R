@@ -57,8 +57,7 @@ predict.rrfield <- function(object, newdata = NULL, mcmc_draws, ...) {
       pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) +
         spat_effects[cbind(rows,cols)]
     } else {
-      pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) +
-        spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][time]
+      pred_values[,i] = spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][time]
     }
   }
 
