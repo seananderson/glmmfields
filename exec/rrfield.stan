@@ -24,6 +24,7 @@ data {
   int<lower=0,upper=2> obs_model;
   real<lower=2> fixed_df_value;
   int<lower=0,upper=1> est_temporalRE;
+  int<lower=0> n_year_effects;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -32,8 +33,8 @@ parameters {
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
-  vector[nT] yearEffects;
-  real<lower=0> year_sigma;
+  real yearEffects[n_year_effects];
+  real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
 }

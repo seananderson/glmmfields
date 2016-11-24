@@ -11,7 +11,10 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
     switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi"),
     "spatialEffectsKnots")
   if (estimate_df) p <- c("df", p)
-  if (est_temporalRE) p <- c("year_sigma", "yearEffects", p)
+  if (est_temporalRE) {
+    p <- c("year_sigma", "yearEffects", p)
+    p <- p[!p=="B"] # no main effects if random walk for now
+  }
   p
 }
 
@@ -85,7 +88,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, 1L)
 
-  est_temporalRE = ifelse(year_re == FALSE, 0, 1)
+  est_temporalRE <- ifelse(year_re, 1L, 0L)
 
   stan_data <- c(stan_data,
     list(prior_gp_scale = parse_t_prior(prior_gp_scale),
@@ -101,7 +104,8 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
       norm_params = ifelse(obs_error[[1]] == "normal", 1L, 0L),
       nb2_params = ifelse(obs_error[[1]] == "nb2", 1L, 0L),
       fixed_df_value = fixed_df_value,
-      est_temporalRE = est_temporalRE))
+      est_temporalRE = est_temporalRE,
+      n_year_effects = ifelse(year_re, stan_data$nT, 0L)))
 
   if (obs_model == 2) { # NB2 obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))

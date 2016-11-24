@@ -10,7 +10,7 @@
 student_t <- function(df = 3, location = 0, scale = 1) {
   stopifnot(is.numeric(df), is.numeric(location), is.numeric(scale),
     df >= 1, scale > 0)
-  list(dist = "half-t", df = df, location = location, scale = scale)
+  list(dist = "t", df = df, location = location, scale = scale)
 }
 
 #' Half-t prior
@@ -21,7 +21,9 @@ student_t <- function(df = 3, location = 0, scale = 1) {
 #' half_t(3, 0, 1)
 half_t <- function(df = 3, location = 0, scale = 1) {
   if(location != 0) warning("half-t location != 0")
-  student_t(df, location, scale)
+  ht <- student_t(df, location, scale)
+  ht[[1]] <- "half-t"
+  ht
 }
 
 parse_t_prior <- function(x) {

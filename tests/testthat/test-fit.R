@@ -154,19 +154,19 @@ test_that("mvt-norm estimates betas", {
 # ------------------------------------------------------
 # a Gaussian observation model exponential covariance function
 
-test_that("mvt-norm model fits", {
+test_that("mvt-norm model fits with an exponential covariance function", {
   skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
 
   gp_sigma <- 0.2
   sigma <- 0.1
-  df <- 10
+  df <- 4
   gp_scale <- 1.2
-  n_draws <- 5
-  nknots <- 15
-  set.seed(SEED)
+  n_draws <- 4
+  nknots <- 9
 
+  set.seed(SEED)
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     covariance = "exponential")
