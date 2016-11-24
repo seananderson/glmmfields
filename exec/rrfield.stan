@@ -103,7 +103,7 @@ model {
   if(est_temporalRE == 1) {
     year_sigma ~ student_t(3, 0, 2.5);
     // random walk in year terms
-    yearEffects[1] ~ normal(0, year_sigma);
+    yearEffects[1] ~ normal(0, 200);
     for(t in 2:nT) {
       yearEffects[t] ~ normal(yearEffects[t-1], year_sigma);
     }

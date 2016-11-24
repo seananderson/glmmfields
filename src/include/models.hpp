@@ -753,7 +753,7 @@ public:
             }
             if (as_bool(logical_eq(est_temporalRE,1))) {
                 lp_accum__.add(student_t_log<propto__>(year_sigma, 3, 0, 2.5));
-                lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 0, year_sigma));
+                lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), 0, 200));
                 for (int t = 2; t <= nT; ++t) {
                     lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
                 }
