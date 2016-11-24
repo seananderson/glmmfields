@@ -128,6 +128,6 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   }
 
   out <- list(model = m, knots = data_knots, y = y, X = X, data = data, formula = formula,
-    covariance = covariance[[1]], lon = lon, lat = lat, time = time)
+    covariance = covariance[[1]], lon = lon, lat = lat, time = time, year_re = year_re)
   out <- structure(out, class = "rrfield")
 }
