@@ -28,7 +28,8 @@ test_that("mvt-norm model fits", {
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
+    estimate_df = FALSE, fixed_df_value = df,
+    year_re = FALSE)
 
   print(m)
   p <- predict(m, newdata = s$dat, mcmc_draws = 200)
@@ -70,7 +71,8 @@ test_that("mvt-nb2 model fits", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER * 2, chains = CHAINS, obs_error = "nb2",
     estimate_df = FALSE, fixed_df_value = df,
-    control = list(adapt_delta = 0.9), seed = SEED)
+    control = list(adapt_delta = 0.9), seed = SEED,
+    year_re = FALSE)
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
@@ -103,7 +105,8 @@ test_that("mvt-gamma model fits", {
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER * 1.5, chains = CHAINS, obs_error = "gamma",
-    estimate_df = FALSE, fixed_df_value = df, seed = SEED)
+    estimate_df = FALSE, fixed_df_value = df, seed = SEED,
+    year_re = FALSE)
   print(m)
 
   b <- tidy(m, estimate.method = "median")
@@ -141,7 +144,8 @@ test_that("mvt-norm estimates betas", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    prior_beta = rstanarm::student_t(3, 0, 10))
+    prior_beta = rstanarm::student_t(3, 0, 10),
+    year_re = FALSE)
   m
 
   b <- tidy(m, estimate.method = "median")
@@ -176,7 +180,8 @@ test_that("mvt-norm model fits", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    covariance = "exponential")
+    covariance = "exponential",
+    year_re = FALSE)
   m
 
   b <- tidy(m, estimate.method = "median")
