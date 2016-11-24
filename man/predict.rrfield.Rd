@@ -4,12 +4,12 @@
 \alias{predict.rrfield}
 \title{Predict from a rrfield model}
 \usage{
-\method{predict}{rrfield}(object, newdata, mcmc_draws, ...)
+\method{predict}{rrfield}(object, newdata = NULL, mcmc_draws, ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link{rrfield}}.}
 
-\item{newdata}{A data frame to predict on}
+\item{newdata}{Optionally, a data frame to predict on}
 
 \item{mcmc_draws}{The number of MCMC samples to draw from the posterior}
 

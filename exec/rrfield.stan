@@ -32,7 +32,7 @@ parameters {
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
-  real yearEffects_est[nT];
+  vector[nT] yearEffects;
   real<lower=0> year_sigma;
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
@@ -46,7 +46,6 @@ transformed parameters {
   vector[N] y_hat;
   real<lower=0> gammaA[gamma_params];
   real<lower=0> gp_sigma_sq;
-  real yearEffects[nT];
   gp_sigma_sq = pow(gp_sigma, 2.0);
 
   // allow user to switch between squared-exponential and exponential covariance
@@ -78,7 +77,7 @@ transformed parameters {
 	  if(est_temporalRE == 0) {
 	    y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
 	  } else {
-	    y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+	    y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
 	  }
 	}
 
@@ -87,10 +86,10 @@ transformed parameters {
 	}
 
   // the whole point of this block is to zero out the first element of estimated year effects
-	yearEffects[1] = 0;
-	for(t in 2:nT) {
-	  yearEffects[t] = yearEffects_est[t];
-	}
+	// yearEffects[1] = 0;
+	// for(t in 2:nT) {
+	//   yearEffects[t] = yearEffects_est[t];
+	// }
 }
 model {
   // priors:
@@ -106,18 +105,15 @@ model {
 
   // temporal random effects, if estimated global intercept = effect in first year
   if(est_temporalRE == 1) {
-    year_sigma ~ student_t(3, 0, 2);
-    // random walk / random effects in year terms
-    //yearEffects[1] = B[1]; # confounded with intercept, so yearEffects[1] = 0
-    yearEffects_est[1] ~ normal(0, year_sigma);
-    yearEffects_est[2] ~ normal(0, year_sigma);
-    for(t in 3:nT) {
-      yearEffects_est[t] ~ normal(yearEffects_est[t-1], year_sigma);
+    year_sigma ~ student_t(3, 0, 2.5);
+    // random walk in year terms
+    yearEffects[1] ~ normal(0, year_sigma);
+    for(t in 2:nT) {
+      yearEffects[t] ~ normal(yearEffects[t-1], year_sigma);
     }
   }
 
-  // if est_df == 1 estimate degrees of freedom for MVT,
-  // otherwise fit MVT with fixed value
+  // if est_df == 1 estimate MVT degrees of freedom, otherwise use fixed df
   if (est_df == 1) {
     df ~ gamma(2, 0.1);
     for(t in 2:nT) {

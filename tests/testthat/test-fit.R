@@ -28,8 +28,7 @@ test_that("mvt-norm model fits", {
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df,
-    year_re = FALSE)
+    estimate_df = FALSE, fixed_df_value = df)
 
   print(m)
   p <- predict(m, newdata = s$dat, mcmc_draws = 200)
@@ -71,8 +70,7 @@ test_that("mvt-nb2 model fits", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER * 2, chains = CHAINS, obs_error = "nb2",
     estimate_df = FALSE, fixed_df_value = df,
-    control = list(adapt_delta = 0.9), seed = SEED,
-    year_re = FALSE)
+    control = list(adapt_delta = 0.9), seed = SEED)
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
@@ -105,8 +103,7 @@ test_that("mvt-gamma model fits", {
   m <- rrfield(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER * 1.5, chains = CHAINS, obs_error = "gamma",
-    estimate_df = FALSE, fixed_df_value = df, seed = SEED,
-    year_re = FALSE)
+    estimate_df = FALSE, fixed_df_value = df, seed = SEED)
   print(m)
 
   b <- tidy(m, estimate.method = "median")
@@ -144,8 +141,7 @@ test_that("mvt-norm estimates betas", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    prior_beta = rstanarm::student_t(3, 0, 10),
-    year_re = FALSE)
+    prior_beta = rstanarm::student_t(3, 0, 10))
   m
 
   b <- tidy(m, estimate.method = "median")
@@ -180,12 +176,56 @@ test_that("mvt-norm model fits", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    covariance = "exponential",
-    year_re = FALSE)
+    covariance = "exponential")
   m
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+})
+
+# ------------------------------------------------------
+# a Gaussian observation model with random walk year effects
+
+test_that("mvt-norm estimates random walk year effects", {
+  skip_on_cran()
+  skip_on_travis()
+  skip_on_appveyor()
+
+  set.seed(SEED)
+
+  gp_sigma <- 0.2
+  sigma <- 0.1
+  df <- 10
+  gp_scale <- 1.2
+  n_draws <- 7
+  nknots <- 11
+  year_sigma <- 0.9
+  B <- vector(mode = "double", length = n_draws)
+  B[1] <- 0.5
+  for (i in 2:length(B)) {
+    B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
+  }
+
+  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
+    X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
+  # print(s$plot)
+  # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
+
+  m <- rrfield(y ~ 1, data = s$dat, time = "time",
+    lat = "lat", lon = "lon", nknots = nknots,
+    iter = ITER, chains = CHAINS, seed = SEED,
+    estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
+    # TODO fake tight prior until I disable the intercept:
+    prior_intercept = rstanarm::student_t(999, 0, 0.3))
+  m
+
+  b <- tidy(m, estimate.method = "median")
+  expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+  expect_equal(b[grep("yearEffects\\[*", b$term), "estimate"], B, tol = B * TOL)
+  expect_equal(b[grep("year_sigma", b$term), "estimate"], year_sigma, tol = B * TOL)
 })
