@@ -29,8 +29,8 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station="", 
     distKnots = as.matrix(dist(knots))
 
     # Calculate distance from knots to grid
-    distAll = as.matrix(stats::dist(rbind(data[first_instance, c(lon, lat)], knots)))
-    nLocs = length(first_instance)
+    distAll = as.matrix(stats::dist(rbind(data[which(first_instance == TRUE), c(lon, lat)], knots)))
+    nLocs = length(which(first_instance==TRUE))
   } else {
     knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
     distKnots = as.matrix(dist(knots))
