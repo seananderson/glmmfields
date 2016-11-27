@@ -14,13 +14,32 @@
 format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station="", nknots = 25L,
   covariance = "squared-exponential") {
 
-  knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
+  yearID = as.numeric(as.factor(data[,time]))
+  if(station == "") {
+    stationID = seq(1, nrow(data))
+  } else {
+    stationID = as.numeric(data[,station])
+  }
 
-  distKnots = as.matrix(dist(knots))
+  # if stationID is duplicated, perform clustering on the subset of data
+  if(length(unique(stationID)) < length(stationID)) {
+    first_instance = !duplicated(stationID) # see http://stackoverflow.com/questions/11546684/how-can-i-find-the-first-and-last-occurrences-of-an-element-in-a-data-frame
 
-  # Calculate distance from knots to grid
-  distAll = as.matrix(stats::dist(rbind(data[, c(lon, lat)], knots)))
-  nLocs = nrow(data)
+    knots = cluster::pam(data[which(first_instance == TRUE), c(lon, lat)], nknots)$medoids
+    distKnots = as.matrix(dist(knots))
+
+    # Calculate distance from knots to grid
+    distAll = as.matrix(stats::dist(rbind(data[first_instance, c(lon, lat)], knots)))
+    nLocs = length(first_instance)
+  } else {
+    knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
+    distKnots = as.matrix(dist(knots))
+
+    # Calculate distance from knots to grid
+    distAll = as.matrix(stats::dist(rbind(data[, c(lon, lat)], knots)))
+    nLocs = nrow(data)
+  }
+
 
   if (covariance[[1]] == "squared-exponential") {
     distKnots = distKnots^2 # squared distances
@@ -29,13 +48,6 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station="", 
 
   # this is the transpose of the lower left corner
   distKnots21 = t(distAll[-c(1:nLocs), -c((nLocs + 1):ncol(distAll))])
-
-  yearID = as.numeric(as.factor(data[,time]))
-  if(station == "") {
-    stationID = seq(1, nrow(data))
-  } else {
-    stationID = as.numeric(data[,station])
-  }
 
   # create list for STAN
   spatglm_data = list(
