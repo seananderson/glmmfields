@@ -25,6 +25,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
 #' @param time A character object giving the name of the time column
 #' @param lon A character object giving the name of the longitude column
 #' @param lat A character object giving the name of the latitude column
+#' @param station A numeric vector giving the integer ID of the station
 #' @param nknots The number of knots to use in the predictive process model
 #' @param prior_gp_scale The prior on the Gaussian Process scale parameter. Must
 #'   be declared with \code{\link{half_t}}.
@@ -62,7 +63,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 
-rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
+rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5),
   prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5),
@@ -82,7 +83,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
 
   # user inputs raw data. this function formats it for STAN
   data_list <- format_data(data = data, y = y, X = X, time = time,
-    lon = lon, lat = lat, nknots = nknots, covariance = covariance)
+    lon = lon, lat = lat, station=station, nknots = nknots, covariance = covariance)
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
@@ -127,6 +128,7 @@ rrfield <- function(formula, data, time, lon, lat, nknots = 25L,
   }
 
   out <- list(model = m, knots = data_knots, y = y, X = X, data = data, formula = formula,
-    covariance = covariance[[1]], lon = lon, lat = lat, time = time, year_re = year_re)
+    covariance = covariance[[1]], lon = lon, lat = lat, time = time, year_re = year_re,
+    station=data_list$stationID)
   out <- structure(out, class = "rrfield")
 }

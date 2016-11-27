@@ -6,11 +6,12 @@
 #' @param time A character object giving the name of the time column
 #' @param lon A character object giving the name of the longitude column
 #' @param lat A character object giving the name of the latitude column
+#' @param station A numeric vector giving the integer ID of the station
 #' @param nknots The number of knots
 #' @param covariance The type of covariance function
 #'
 #' @export
-format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
+format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station="", nknots = 25L,
   covariance = "squared-exponential") {
 
   knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
@@ -30,7 +31,11 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L
   distKnots21 = t(distAll[-c(1:nLocs), -c((nLocs + 1):ncol(distAll))])
 
   yearID = as.numeric(as.factor(data[,time]))
-  stationID = seq(1, nrow(data))
+  if(station == "") {
+    stationID = seq(1, nrow(data))
+  } else {
+    stationID = as.numeric(data[,station])
+  }
 
   # create list for STAN
   spatglm_data = list(
