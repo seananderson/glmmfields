@@ -4,7 +4,7 @@
 \alias{rrfield}
 \title{Fit a robust spatiotemporal random fields model}
 \usage{
-rrfield(formula, data, time, lon, lat, nknots = 25L,
+rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 2), fixed_df_value = 5, estimate_df = TRUE,
@@ -22,6 +22,8 @@ rrfield(formula, data, time, lon, lat, nknots = 25L,
 \item{lon}{A character object giving the name of the longitude column}
 
 \item{lat}{A character object giving the name of the latitude column}
+
+\item{station}{A numeric vector giving the integer ID of the station}
 
 \item{nknots}{The number of knots to use in the predictive process model}
 

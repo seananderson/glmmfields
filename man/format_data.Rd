@@ -4,8 +4,8 @@
 \alias{format_data}
 \title{Format data for fitting an rrfield model}
 \usage{
-format_data(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
-  covariance = "squared-exponential")
+format_data(data, y, X, time, lon = "lon", lat = "lat", station = "",
+  nknots = 25L, covariance = "squared-exponential")
 }
 \arguments{
 \item{data}{A data frame to be formatted}
@@ -19,6 +19,8 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", nknots = 25L,
 \item{lon}{A character object giving the name of the longitude column}
 
 \item{lat}{A character object giving the name of the latitude column}
+
+\item{station}{A numeric vector giving the integer ID of the station}
 
 \item{nknots}{The number of knots}
 
