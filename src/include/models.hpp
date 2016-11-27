@@ -283,7 +283,7 @@ public:
         for (int k0__ = 0; k0__ < N; ++k0__) {
             check_greater_or_equal(function__,"yearID[k0__]",yearID[k0__],1);
         }
-        check_greater_or_equal(function__,"nCov",nCov,1);
+        check_greater_or_equal(function__,"nCov",nCov,0);
         check_greater_or_equal(function__,"sqexp_cov",sqexp_cov,0);
         check_less_or_equal(function__,"sqexp_cov",sqexp_cov,1);
         check_greater_or_equal(function__,"est_df",est_df,0);

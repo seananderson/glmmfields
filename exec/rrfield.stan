@@ -14,7 +14,7 @@ data {
   real prior_beta[3];
   matrix[nKnots,nKnots] distKnots;
   matrix[nLocs,nKnots] distKnots21;
-  int<lower=1> nCov;
+  int<lower=0> nCov;
   matrix[N,nCov] X;
   int<lower=0,upper=1> sqexp_cov;
   int<lower=0,upper=1> est_df;
