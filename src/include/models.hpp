@@ -745,7 +745,9 @@ public:
         try {
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
-            lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+            if (as_bool(logical_gte(nCov,1))) {
+                lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+            }
             if (as_bool(logical_gte(nCov,2))) {
                 for (int i = 2; i <= nCov; ++i) {
                     lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));

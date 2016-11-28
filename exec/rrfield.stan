@@ -92,9 +92,13 @@ model {
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
-  B[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
+  if(nCov >= 1) {
+    // global intercept, absorbed into year re [1] if those estimated
+    B[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
+  }
   if (nCov >= 2) {
     for (i in 2:nCov) {
+      // coefficients associated with non-intercept covariates
       B[i] ~ student_t(prior_beta[1], prior_beta[2], prior_beta[3]);
     }
   }
