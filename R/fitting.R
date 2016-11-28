@@ -6,7 +6,7 @@
 #' @param est_temporalRE Logical: estimate a random walk for the time variable?
 #' @param estimate_ar Logical indicating whether the ar
 #'   parameter should be estimated
-stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE, est_ar = FALSE) {
+stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE, estimate_ar = FALSE) {
   p <- c("gp_sigma",
     "gp_scale",
     "B",
