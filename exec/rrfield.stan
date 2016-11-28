@@ -94,7 +94,10 @@ model {
   // priors:
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
+
+  if(est_ar == 1) {
   ar ~ normal(0, 1);
+  }
 
   if(nCov >= 1) {
     // global intercept, absorbed into year re [1] if those estimated
