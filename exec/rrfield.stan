@@ -18,11 +18,13 @@ data {
   matrix[N,nCov] X;
   int<lower=0,upper=1> sqexp_cov;
   int<lower=0,upper=1> est_df;
+  int<lower=0,upper=1> est_ar;
   int<lower=0,upper=1> norm_params;
   int<lower=0,upper=1> gamma_params;
   int<lower=0,upper=1> nb2_params;
   int<lower=0,upper=2> obs_model;
   real<lower=2> fixed_df_value;
+  real fixed_ar_value;
   int<lower=0,upper=1> est_temporalRE;
   int<lower=0> n_year_effects;
 }
@@ -37,6 +39,7 @@ parameters {
   real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
+  real ar[est_ar];
 }
 transformed parameters {
 	vector[nKnots] muZeros;
@@ -91,6 +94,7 @@ model {
   // priors:
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
+  ar ~ normal(0, 1);
 
   if(nCov >= 1) {
     // global intercept, absorbed into year re [1] if those estimated
@@ -116,12 +120,22 @@ model {
   // if est_df == 1 estimate MVT degrees of freedom, otherwise use fixed df
   if (est_df == 1) {
     df ~ gamma(2, 0.1);
+    spatialEffectsKnots[1] ~ multi_student_t(df[1], muZeros, SigmaKnots);
     for(t in 2:nT) {
-      spatialEffectsKnots[t] ~ multi_student_t(df[1], muZeros, SigmaKnots);
+      if(est_ar == 1) {
+        spatialEffectsKnots[t] ~ multi_student_t(df[1], ar[1]*spatialEffectsKnots[t-1], SigmaKnots);
+      } else {
+        spatialEffectsKnots[t] ~ multi_student_t(df[1], fixed_ar_value*spatialEffectsKnots[t-1], SigmaKnots);
+      }
     }
   } else {
+    spatialEffectsKnots[1] ~ multi_student_t(fixed_df_value, muZeros, SigmaKnots);
     for(t in 2:nT) {
-      spatialEffectsKnots[t] ~ multi_student_t(fixed_df_value, muZeros, SigmaKnots);
+      if(est_ar == 1) {
+        spatialEffectsKnots[t] ~ multi_student_t(fixed_df_value, ar[1]*spatialEffectsKnots[t-1], SigmaKnots);
+      } else {
+        spatialEffectsKnots[t] ~ multi_student_t(fixed_df_value, fixed_ar_value*spatialEffectsKnots[t-1], SigmaKnots);
+      }
     }
   }
 

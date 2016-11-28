@@ -45,11 +45,13 @@ private:
     matrix_d X;
     int sqexp_cov;
     int est_df;
+    int est_ar;
     int norm_params;
     int gamma_params;
     int nb2_params;
     int obs_model;
     double fixed_df_value;
+    double fixed_ar_value;
     int est_temporalRE;
     int n_year_effects;
 public:
@@ -236,6 +238,11 @@ public:
         vals_i__ = context__.vals_i("est_df");
         pos__ = 0;
         est_df = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "est_ar", "int", context__.to_vec());
+        est_ar = int(0);
+        vals_i__ = context__.vals_i("est_ar");
+        pos__ = 0;
+        est_ar = vals_i__[pos__++];
         context__.validate_dims("data initialization", "norm_params", "int", context__.to_vec());
         norm_params = int(0);
         vals_i__ = context__.vals_i("norm_params");
@@ -261,6 +268,11 @@ public:
         vals_r__ = context__.vals_r("fixed_df_value");
         pos__ = 0;
         fixed_df_value = vals_r__[pos__++];
+        context__.validate_dims("data initialization", "fixed_ar_value", "double", context__.to_vec());
+        fixed_ar_value = double(0);
+        vals_r__ = context__.vals_r("fixed_ar_value");
+        pos__ = 0;
+        fixed_ar_value = vals_r__[pos__++];
         context__.validate_dims("data initialization", "est_temporalRE", "int", context__.to_vec());
         est_temporalRE = int(0);
         vals_i__ = context__.vals_i("est_temporalRE");
@@ -288,6 +300,8 @@ public:
         check_less_or_equal(function__,"sqexp_cov",sqexp_cov,1);
         check_greater_or_equal(function__,"est_df",est_df,0);
         check_less_or_equal(function__,"est_df",est_df,1);
+        check_greater_or_equal(function__,"est_ar",est_ar,0);
+        check_less_or_equal(function__,"est_ar",est_ar,1);
         check_greater_or_equal(function__,"norm_params",norm_params,0);
         check_less_or_equal(function__,"norm_params",norm_params,1);
         check_greater_or_equal(function__,"gamma_params",gamma_params,0);
@@ -329,6 +343,7 @@ public:
         num_params_r__ += est_temporalRE;
         num_params_r__ += nKnots * nT;
         num_params_r__ += nCov;
+        num_params_r__ += est_ar;
     }
 
     ~model_rrfield() { }
@@ -490,6 +505,21 @@ public:
             throw std::runtime_error(std::string("Error transforming variable B: ") + e.what());
         }
 
+        if (!(context__.contains_r("ar")))
+            throw std::runtime_error("variable ar missing");
+        vals_r__ = context__.vals_r("ar");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "ar", "double", context__.to_vec(est_ar));
+        std::vector<double> ar(est_ar,double(0));
+        for (int i0__ = 0U; i0__ < est_ar; ++i0__)
+            ar[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < est_ar; ++i0__)
+            try {
+            writer__.scalar_unconstrain(ar[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable ar: ") + e.what());
+        }
+
         params_r__ = writer__.data_r();
         params_i__ = writer__.data_i();
     }
@@ -610,6 +640,16 @@ public:
             B = in__.vector_constrain(nCov,lp__);
         else
             B = in__.vector_constrain(nCov);
+
+        vector<T__> ar;
+        size_t dim_ar_0__ = est_ar;
+        ar.reserve(dim_ar_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
+            if (jacobian__)
+                ar.push_back(in__.scalar_constrain(lp__));
+            else
+                ar.push_back(in__.scalar_constrain());
+        }
 
 
         // transformed parameters
@@ -745,6 +785,7 @@ public:
         try {
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            lp_accum__.add(normal_log<propto__>(ar, 0, 1));
             if (as_bool(logical_gte(nCov,1))) {
                 lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
             }
@@ -762,12 +803,22 @@ public:
             }
             if (as_bool(logical_eq(est_df,1))) {
                 lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
+                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), get_base1(df,1,"df",1), muZeros, SigmaKnots));
                 for (int t = 2; t <= nT; ++t) {
-                    lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), get_base1(df,1,"df",1), muZeros, SigmaKnots));
+                    if (as_bool(logical_eq(est_ar,1))) {
+                        lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), get_base1(df,1,"df",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                    } else {
+                        lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), get_base1(df,1,"df",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                    }
                 }
             } else {
+                lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), fixed_df_value, muZeros, SigmaKnots));
                 for (int t = 2; t <= nT; ++t) {
-                    lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), fixed_df_value, muZeros, SigmaKnots));
+                    if (as_bool(logical_eq(est_ar,1))) {
+                        lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), fixed_df_value, multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                    } else {
+                        lp_accum__.add(multi_student_t_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), fixed_df_value, multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                    }
                 }
             }
             if (as_bool(logical_eq(obs_model,2))) {
@@ -817,6 +868,7 @@ public:
         names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
         names__.push_back("B");
+        names__.push_back("ar");
         names__.push_back("muZeros");
         names__.push_back("spatialEffects");
         names__.push_back("SigmaKnots");
@@ -859,6 +911,9 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nCov);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(est_ar);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nKnots);
@@ -940,6 +995,11 @@ public:
             spatialEffectsKnots.push_back(in__.vector_constrain(nKnots));
         }
         vector_d B = in__.vector_constrain(nCov);
+        vector<double> ar;
+        size_t dim_ar_0__ = est_ar;
+        for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
+            ar.push_back(in__.scalar_constrain());
+        }
         vars__.push_back(gp_scale);
         vars__.push_back(gp_sigma);
         for (int k_0__ = 0; k_0__ < est_df; ++k_0__) {
@@ -967,6 +1027,9 @@ public:
         }
         for (int k_0__ = 0; k_0__ < nCov; ++k_0__) {
             vars__.push_back(B[k_0__]);
+        }
+        for (int k_0__ = 0; k_0__ < est_ar; ++k_0__) {
+            vars__.push_back(ar[k_0__]);
         }
 
         if (!include_tparams__) return;
@@ -1156,6 +1219,11 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= est_ar; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "ar" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__ && !include_tparams__) return;
         for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
@@ -1259,6 +1327,11 @@ public:
         for (int k_0__ = 1; k_0__ <= nCov; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "B" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_ar; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "ar" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
 

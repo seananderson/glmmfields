@@ -4,7 +4,8 @@
 \alias{stan_pars}
 \title{Return a vector of parameters}
 \usage{
-stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE)
+stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
+  est_ar = FALSE)
 }
 \arguments{
 \item{obs_error}{The observation error distribution}
@@ -13,6 +14,9 @@ stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE)
 parameter should be estimated}
 
 \item{est_temporalRE}{Logical: estimate a random walk for the time variable?}
+
+\item{estimate_ar}{Logical indicating whether the ar
+parameter should be estimated}
 }
 \description{
 Return a vector of parameters

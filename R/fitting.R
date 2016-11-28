@@ -4,13 +4,16 @@
 #' @param estimate_df Logical indicating whether the degrees of freedom
 #'   parameter should be estimated
 #' @param est_temporalRE Logical: estimate a random walk for the time variable?
-stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
+#' @param estimate_ar Logical indicating whether the ar
+#'   parameter should be estimated
+stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE, est_ar = FALSE) {
   p <- c("gp_sigma",
     "gp_scale",
     "B",
     switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi"),
     "spatialEffectsKnots")
   if (estimate_df) p <- c("df", p)
+  if (estimate_ar) p <- c("ar", p)
   if (est_temporalRE) {
     p <- c("year_sigma", "yearEffects", p)
     p <- p[!p=="B"] # no main effects if random walk for now
@@ -43,7 +46,9 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE) {
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
 #'   parameter if the degrees of freedom parameter is fixed. If the degrees of
 #'   freedom parameter is estimated then this argument is ignored.
-#' @param estimate_df Logical: should the degrees of freedom perimeter be
+#' @param estimate_df Logical: should the degrees of freedom perameter be
+#'   estimated?
+#' @param estimate_ar Logical: should the ar parameter be
 #'   estimated?
 #' @param obs_error Character object indicating the observation process
 #'   distribution.
@@ -70,7 +75,9 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
   prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 2),
   fixed_df_value = 5,
+  fixed_ar_value = 0,
   estimate_df = TRUE,
+  estimate_ar = FALSE,
   obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
@@ -101,10 +108,12 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
         exponential = 0L, 1L),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
+      est_ar = as.integer(estimate_ar),
       gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
       norm_params = ifelse(obs_error[[1]] == "normal", 1L, 0L),
       nb2_params = ifelse(obs_error[[1]] == "nb2", 1L, 0L),
       fixed_df_value = fixed_df_value,
+      fixed_ar_value = fixed_ar_value,
       est_temporalRE = est_temporalRE,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L)))
 
@@ -117,7 +126,8 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
   sampling_args <- list(
     object = stanmodels$rrfield,
     data = stan_data,
-    pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df, est_temporalRE = est_temporalRE),
+    pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df,
+      est_temporalRE = est_temporalRE, estimate_ar = estimate_ar),
     ...)
 
   if (algorithm[[1]] == "meanfield") {

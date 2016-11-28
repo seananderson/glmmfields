@@ -7,9 +7,9 @@
 rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
-  prior_beta = student_t(3, 0, 2), fixed_df_value = 5, estimate_df = TRUE,
-  obs_error = c("normal", "gamma", "nb2"),
-  covariance = c("squared-exponential", "exponential"),
+  prior_beta = student_t(3, 0, 2), fixed_df_value = 5, fixed_ar_value = 0,
+  estimate_df = TRUE, estimate_ar = FALSE, obs_error = c("normal",
+  "gamma", "nb2"), covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"), year_re = FALSE, ...)
 }
 \arguments{
@@ -49,7 +49,10 @@ declared with \code{\link{student_t}}.}
 parameter if the degrees of freedom parameter is fixed. If the degrees of
 freedom parameter is estimated then this argument is ignored.}
 
-\item{estimate_df}{Logical: should the degrees of freedom perimeter be
+\item{estimate_df}{Logical: should the degrees of freedom perameter be
+estimated?}
+
+\item{estimate_ar}{Logical: should the ar parameter be
 estimated?}
 
 \item{obs_error}{Character object indicating the observation process
