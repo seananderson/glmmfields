@@ -50,6 +50,9 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE, est
 #'   estimated?
 #' @param estimate_ar Logical: should the ar parameter be
 #'   estimated?
+#' @param fixed_ar_value The fixed value for temporal autoregressive parameter,
+#'   between random fields at time(t) and time(t-1). If the ar parameter
+#'   is estimated then this argument is ignored.
 #' @param obs_error Character object indicating the observation process
 #'   distribution.
 #' @param covariance Character object describing the covariance
