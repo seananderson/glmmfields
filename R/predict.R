@@ -3,10 +3,11 @@
 #' @param object An object returned by \code{\link{rrfield}}.
 #' @param newdata Optionally, a data frame to predict on
 #' @param mcmc_draws The number of MCMC samples to draw from the posterior
+#' @param obs_model The observation error (0 = gamma, 1 = normal, 2 = neg bin)
 #' @param ... Ignored currently
 #'
 #' @export
-predict.rrfield <- function(object, newdata = NULL, mcmc_draws, ...) {
+predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, ...) {
 
   # newdata is df with time, y, lon, lat
   # if null, defaults to data used to fit model
@@ -61,5 +62,15 @@ predict.rrfield <- function(object, newdata = NULL, mcmc_draws, ...) {
     }
   }
 
-  pred_values
+  if(obs_model %in% c(0,2)) {
+    pred_values = exp(pred_values)
+  }
+
+  summary_mat = data.frame("mean" = apply(pred_values, 1, mean),
+    "median" = apply(pred_values, 1, median),
+    "lower2.5" = apply(pred_values, 1, quantile, 0.025),
+    "upper97.5" = apply(pred_values, 1, quantile, 0.975))
+
+  return(list(predictions = pred_values, summary = summary_mat))
+
 }
