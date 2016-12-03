@@ -4,7 +4,8 @@
 \alias{predict.rrfield}
 \title{Predict from a rrfield model}
 \usage{
-\method{predict}{rrfield}(object, newdata = NULL, mcmc_draws, ...)
+\method{predict}{rrfield}(object, newdata = NULL, mcmc_draws, obs_model = 0,
+  ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link{rrfield}}.}
@@ -12,6 +13,8 @@
 \item{newdata}{Optionally, a data frame to predict on}
 
 \item{mcmc_draws}{The number of MCMC samples to draw from the posterior}
+
+\item{obs_model}{The observation error (0 = gamma, 1 = normal, 2 = neg bin)}
 
 \item{...}{Ignored currently}
 }

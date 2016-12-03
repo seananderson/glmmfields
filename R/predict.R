@@ -6,6 +6,8 @@
 #' @param obs_model The observation error (0 = gamma, 1 = normal, 2 = neg bin)
 #' @param ... Ignored currently
 #'
+#' @importFrom stats median quantile
+#'
 #' @export
 predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, ...) {
 

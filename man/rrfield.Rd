@@ -49,6 +49,10 @@ declared with \code{\link{student_t}}.}
 parameter if the degrees of freedom parameter is fixed. If the degrees of
 freedom parameter is estimated then this argument is ignored.}
 
+\item{fixed_ar_value}{The fixed value for temporal autoregressive parameter,
+between random fields at time(t) and time(t-1). If the ar parameter
+is estimated then this argument is ignored.}
+
 \item{estimate_df}{Logical: should the degrees of freedom perameter be
 estimated?}
 
