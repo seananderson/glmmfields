@@ -24,6 +24,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
 
   g <- data.frame(lon = runif(n_data_points, 0, 10),
     lat = runif(n_data_points, 0, 10))
+  station_id <- seq_len(n_data_points)
   n_pts <- nrow(g)
 
   if (!is.null(seed)) {
@@ -104,6 +105,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   out <- dplyr::arrange_(out, "time", "pt")
   out$lon <- rep(g$lon, n_draws)
   out$lat <- rep(g$lat, n_draws)
+  out$station_id <- rep(station_id, n_draws)
 
   plot <- ggplot(out, aes_string(x = "lon", y = "lat", colour = "y")) +
     facet_wrap(~ time) +

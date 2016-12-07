@@ -11,14 +11,14 @@
 #' @param covariance The type of covariance function
 #'
 #' @export
-format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station="", nknots = 25L,
+format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NULL, nknots = 25L,
   covariance = "squared-exponential") {
 
   yearID = as.numeric(as.factor(data[,time]))
-  if(station == "") {
-    stationID = seq(1, nrow(data))
+  if(is.null(station)) {
+    stationID <- seq(1, nrow(data))
   } else {
-    stationID = as.numeric(data[,station])
+    stationID <- as.numeric(data[,station])
   }
 
   # if stationID is duplicated, perform clustering on the subset of data
