@@ -86,6 +86,11 @@ predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, .
   }
   if(obs_model == 2) {
     # negative binomial
+    pred_values_obs = pred_values
+    for(i in 1:mcmc_draws) {
+      pred_values_obs[,i] = rnbinom(nrow(pred_values), mu = pred_values[,i],
+        phi = pars$nb2_phi[mcmc.i[i]])
+    }
   }
 
   summary_mat = data.frame("mean" = apply(pred_values, 1, mean),
