@@ -77,7 +77,12 @@ predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, .
     }
   }
   if(obs_model == 1) {
-    # normal
+    # normal, sigma is returned
+    pred_values_obs = pred_values
+    for(i in 1:mcmc_draws) {
+      pred_values_obs[,i] = rnorm(nrow(pred_values), mean = pred_values[,i],
+        sd = pars$sigma[mcmc.i[i]])
+    }
   }
   if(obs_model == 2) {
     # negative binomial
