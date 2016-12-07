@@ -68,10 +68,27 @@ predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, .
     pred_values = exp(pred_values)
   }
 
+  if(obs_model == 0) {
+    # gamma, CV is returned. gammaA = 1/(CV*CV)
+    pred_values_obs = pred_values
+    for(i in 1:mcmc_draws) {
+    pred_values_obs[,i] = rgamma(nrow(pred_values), shape = 1/(pars$CV[mcmc.i[i]]^2),
+      rate = 1/(pars$CV[mcmc.i[i]]^2)/pred_values[,i])
+    }
+  }
+  if(obs_model == 1) {
+    # normal
+  }
+  if(obs_model == 2) {
+    # negative binomial
+  }
+
   summary_mat = data.frame("mean" = apply(pred_values, 1, mean),
     "median" = apply(pred_values, 1, median),
-    "lower2.5" = apply(pred_values, 1, quantile, 0.025),
-    "upper97.5" = apply(pred_values, 1, quantile, 0.975))
+    "predictive_lower2.5" = apply(pred_values, 1, quantile, 0.025),
+    "predictive_upper97.5" = apply(pred_values, 1, quantile, 0.975),
+    "confint_lower2.5" = apply(pred_values_obs, 1, quantile, 0.025),
+    "confint_upper97.5" = apply(pred_values_obs, 1, quantile, 0.975))
 
   return(list(predictions = pred_values, summary = summary_mat))
 
