@@ -4,12 +4,13 @@
 #' @param newdata Optionally, a data frame to predict on
 #' @param mcmc_draws The number of MCMC samples to draw from the posterior
 #' @param obs_model The observation error (0 = gamma, 1 = normal, 2 = neg bin)
+#' @param quantiles The 2-element vector defining quantiles to return for predictions, default to (0.025,0.975)
 #' @param ... Ignored currently
 #'
 #' @importFrom stats median quantile
 #'
 #' @export
-predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, ...) {
+predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, quantiles = c(0.025,0.975), ...) {
 
   # newdata is df with time, y, lon, lat
   # if null, defaults to data used to fit model
@@ -95,11 +96,11 @@ predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, .
 
   summary_mat = data.frame("mean" = apply(pred_values, 1, mean),
     "median" = apply(pred_values, 1, median),
-    "predictive_lower2.5" = apply(pred_values, 1, quantile, 0.025),
-    "predictive_upper97.5" = apply(pred_values, 1, quantile, 0.975),
-    "confint_lower2.5" = apply(pred_values_obs, 1, quantile, 0.025),
-    "confint_upper97.5" = apply(pred_values_obs, 1, quantile, 0.975))
+    "predictive_lower" = apply(pred_values, 1, quantile, quantiles[1]),
+    "predictive_upper" = apply(pred_values, 1, quantile, quantiles[2]),
+    "confint_lower" = apply(pred_values_obs, 1, quantile, quantiles[1]),
+    "confint_upper" = apply(pred_values_obs, 1, quantile, quantiles[2]))
 
-  return(list(predictions = pred_values, summary = summary_mat))
+  return(list(predictions = pred_values, summary = summary_mat, quantiles = quantiles))
 
 }
