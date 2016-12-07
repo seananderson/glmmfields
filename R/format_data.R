@@ -25,7 +25,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
   if(length(unique(stationID)) < length(stationID)) {
     first_instance = !duplicated(stationID) # see http://stackoverflow.com/questions/11546684/how-can-i-find-the-first-and-last-occurrences-of-an-element-in-a-data-frame
 
-    knots = cluster::pam(data[which(first_instance == TRUE), c(lon, lat)], nknots)$medoids
+    knots = cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     distKnots = as.matrix(dist(knots))
 
     # Calculate distance from knots to grid
