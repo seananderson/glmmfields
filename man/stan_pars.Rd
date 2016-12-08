@@ -17,6 +17,8 @@ parameter should be estimated}
 
 \item{estimate_ar}{Logical indicating whether the ar
 parameter should be estimated}
+
+\item{fixed_intercept}{Should the intercept be fixed?}
 }
 \description{
 Return a vector of parameters

@@ -4,10 +4,10 @@
 \alias{plot.rrfield}
 \title{Plot predictions from an rrfield model}
 \usage{
-\method{plot}{rrfield}(object, ...)
+\method{plot}{rrfield}(x, ...)
 }
 \arguments{
-\item{object}{An object returned by \code{\link{rrfield}}}
+\item{x}{An object returned by \code{\link{rrfield}}}
 
 \item{...}{Other arguments passed to \code{\link{predict.rrfield}}}
 }

@@ -6,6 +6,7 @@
 #' @param est_temporalRE Logical: estimate a random walk for the time variable?
 #' @param estimate_ar Logical indicating whether the ar
 #'   parameter should be estimated
+#' @param fixed_intercept Should the intercept be fixed?
 stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
   estimate_ar = FALSE, fixed_intercept = FALSE) {
   p <- c("gp_sigma",
@@ -71,8 +72,6 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
 #' @param lower_truncation For NB2: lower truncation value. E.g. 0 for no
 #'   truncation, 1 for 1 and all values above
-#' @param fixed_intercept Logical: should the intercept be fixed at 0?
-#'   \code{fixed_intercept = TRUE}
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
@@ -80,7 +79,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 
-rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
+rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5),
   prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5),
@@ -96,14 +95,12 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
   lower_truncation = 0,
-  fixed_intercept = FALSE,
   ...) {
 
   mf <- model.frame(formula, data)
   X <- model.matrix(formula, mf)
-  # if (fixed_intercept) X[,1] <- 0
   y <- model.response(mf, "numeric")
-  # browser()
+  fixed_intercept <- ifelse(ncol(X) == 0, TRUE, FALSE)
 
   # user inputs raw data. this function formats it for STAN
   data_list <- format_data(data = data, y = y, X = X, time = time,

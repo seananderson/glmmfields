@@ -7,7 +7,7 @@
 #' @param conf_level Probability level for CI
 #' @param ... Ignored currently
 #'
-#' @importFrom stats median quantile
+#' @importFrom stats median quantile predict rgamma rnbinom
 #'
 #' @export
 predict.rrfield <- function(object, newdata = NULL,
