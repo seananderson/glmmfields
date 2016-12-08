@@ -7,6 +7,11 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
+```{r set-knitr-options, cache=FALSE, echo=FALSE}
+library("knitr")
+opts_chunk$set(message=FALSE, fig.width=7, fig.height=5)
+```
   
 ```{r}
 library(rrfields)
@@ -38,7 +43,7 @@ print(s$plot)
 
 Let's fit a model where we estimate the degrees of freedom parameter. 
 
-```{r}
+```{r, message=FALSE}
 m1 <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS, estimate_df = TRUE)
@@ -60,7 +65,7 @@ abline(a = 0, b = 1, lty = 2)
 
 Now let's fit a model where we force the random field to be multivariate normal by fixing the degrees of freedom parameter at a large value. 
 
-```{r}
+```{r, message=FALSE}
 m_wrong <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS,
@@ -88,7 +93,7 @@ sum((pp$estimate - s$dat$y)^2)
 sum((pp_wrong$estimate - s$dat$y)^2)
 ```
 
-Let's plot of the true data, and the spatial productions from the correct and incorrect models.
+Let's plot the true data, and the spatial productions from the correct and incorrect models.
 
 ```{r}
 print(s$plot)
@@ -104,7 +109,7 @@ d_wrong <- data.frame(s$dat, pp_wrong)
 d_combined <- data.frame(d, select(d_wrong, estimate) %>% rename(est_wrong = estimate))
 ```
 
-The following plot looks at the differences in the predictions of spatially 
+The following plot looks at the differences in the predictions spatially 
 
 ```{r}
 ggplot(d_combined, aes(lon, lat, colour = estimate - est_wrong)) +
