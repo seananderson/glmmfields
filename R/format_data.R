@@ -9,10 +9,11 @@
 #' @param station A numeric vector giving the integer ID of the station
 #' @param nknots The number of knots
 #' @param covariance The type of covariance function
+#' @param fixed_intercept Should the intercept be fixed?
 #'
 #' @export
 format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NULL, nknots = 25L,
-  covariance = "squared-exponential") {
+  covariance = "squared-exponential", fixed_intercept = FALSE) {
 
   yearID = as.numeric(as.factor(data[,time]))
   if(is.null(station)) {
@@ -61,6 +62,6 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
     distKnots = distKnots,
     distKnots21 = distKnots21,
     X = X,
-    nCov = ncol(X))
+    nCov = ifelse(fixed_intercept, 0, ncol(X)))
   list(spatglm_data = spatglm_data, knots = knots)
 }

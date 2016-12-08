@@ -56,6 +56,7 @@ private:
     int est_temporalRE;
     int n_year_effects;
     int lower_truncation;
+    int fixed_intercept;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -299,6 +300,11 @@ public:
         vals_i__ = context__.vals_i("lower_truncation");
         pos__ = 0;
         lower_truncation = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "fixed_intercept", "int", context__.to_vec());
+        fixed_intercept = int(0);
+        vals_i__ = context__.vals_i("fixed_intercept");
+        pos__ = 0;
+        fixed_intercept = vals_i__[pos__++];
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -331,6 +337,8 @@ public:
         check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);
         check_greater_or_equal(function__,"n_year_effects",n_year_effects,0);
         check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
+        check_greater_or_equal(function__,"fixed_intercept",fixed_intercept,0);
+        check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -713,7 +721,11 @@ public:
             }
             for (int i = 1; i <= N; ++i) {
                 if (as_bool(logical_eq(est_temporalRE,0))) {
-                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                    if (as_bool(logical_eq(fixed_intercept,0))) {
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                    } else {
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2));
+                    }
                 } else {
                     stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
                 }
@@ -1098,7 +1110,11 @@ public:
             }
             for (int i = 1; i <= N; ++i) {
                 if (as_bool(logical_eq(est_temporalRE,0))) {
-                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                    if (as_bool(logical_eq(fixed_intercept,0))) {
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                    } else {
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2));
+                    }
                 } else {
                     stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
                 }

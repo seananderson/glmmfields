@@ -12,7 +12,7 @@ rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"), year_re = FALSE,
-  lower_truncation = 0, ...)
+  lower_truncation = 0, fixed_intercept = FALSE, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -81,7 +81,10 @@ incorrect inference than MCMC.}
 \code{TRUE}, then no fixed effects (B coefficients) will be estimated.}
 
 \item{lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
-truncation, 1 for 1 and all values above that}
+truncation, 1 for 1 and all values above}
+
+\item{fixed_intercept}{Logical: should the intercept be fixed at 0?
+\code{fixed_intercept = TRUE}}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

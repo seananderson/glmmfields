@@ -27,10 +27,10 @@ test_that("mvt-norm model fits with repeat stations", {
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
   # s$plot
 
-  m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
+    estimate_df = FALSE, fixed_df_value = df, fixed_intercept = TRUE)
 
   expect_output(print(m), "Inference for Stan model")
 
@@ -63,10 +63,10 @@ test_that("mvt-norm model fits without station argument", {
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
   # print(s$plot)
 
-  m1 <- rrfield(y ~ 1, data = s$dat, time = "time",
+  m1 <- rrfield(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
+    estimate_df = FALSE, fixed_df_value = df, fixed_intercept = TRUE)
 
   b1 <- broom::tidyMCMC(m1$model, estimate.method = "median")
   expect_equal(b1[b1$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)

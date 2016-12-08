@@ -29,6 +29,7 @@ data {
   int<lower=0,upper=1> est_temporalRE;
   int<lower=0> n_year_effects;
   int<lower=0> lower_truncation;
+  int<lower=0,upper=1> fixed_intercept;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -81,7 +82,11 @@ transformed parameters {
 	// calculate predicted value of each observation
 	for(i in 1:N) {
 	  if(est_temporalRE == 0) {
-	    y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
+	    if(fixed_intercept == 0) {
+	      y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
+	    } else {
+	      y_hat[i] = spatialEffects[yearID[i], stationID[i]];
+	    }
 	  } else {
 	    y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
 	  }

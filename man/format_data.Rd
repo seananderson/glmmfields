@@ -5,7 +5,8 @@
 \title{Format data for fitting an rrfield model}
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
-  nknots = 25L, covariance = "squared-exponential")
+  nknots = 25L, covariance = "squared-exponential",
+  fixed_intercept = FALSE)
 }
 \arguments{
 \item{data}{A data frame to be formatted}
@@ -25,6 +26,8 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 \item{nknots}{The number of knots}
 
 \item{covariance}{The type of covariance function}
+
+\item{fixed_intercept}{Should the intercept be fixed?}
 }
 \description{
 Format data for fitting an rrfield model
