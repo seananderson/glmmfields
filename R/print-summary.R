@@ -1,7 +1,7 @@
 #' @export
 #' @import methods
-print.rrfield <- function(x, ...) {
-  print(x$model, ...)
+print.rrfield <- function(x, pars = "spatialEffectsKnots", include = FALSE, ...) {
+  print(x$model, pars = pars, include = include, ...)
 }
 
 #' Tidy model output
