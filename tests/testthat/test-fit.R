@@ -218,13 +218,13 @@ test_that("mvt-norm estimates random walk year effects", {
   skip_on_travis()
   skip_on_appveyor()
 
-  set.seed(SEED)
+  set.seed(SEED*2)
 
   gp_sigma <- 0.2
   sigma <- 0.1
   df <- 10
   gp_scale <- 1.8
-  n_draws <- 22
+  n_draws <- 15
   nknots <- 10
   year_sigma <- 0.5
   B <- vector(mode = "double", length = n_draws)
@@ -243,14 +243,14 @@ test_that("mvt-norm estimates random walk year effects", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
-    prior_intercept = student_t(999, 0, 5), control = list(adapt_delta = 0.9))
+    prior_intercept = student_t(999, 0, 5), control = list(adapt_delta = 0.9),
+    prior_rw_sigma = half_t(1e6, 0, 1))
   m
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
-  expect_equal(b[grep("yearEffects\\[*", b$term), "estimate"], B, tol = B * TOL)
-  # TODO! consistently overestimated:
-  # expect_equal(b[grep("year_sigma", b$term), "estimate"], year_sigma, tol = B * TOL)
+  expect_equal(b[grep("yearEffects\\[*", b$term), "estimate"], B, tol = 0.1)
+  expect_equal(b[grep("year_sigma", b$term), "estimate"], year_sigma, tol = 0.1)
 })
