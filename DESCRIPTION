@@ -29,7 +29,10 @@ LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
 Suggests:
     testthat,
     parallel,
-    bayesplot
+    bayesplot,
+    knitr,
+    rmarkdown
 URL: https://github.com/seananderson/rrfields
 BugReports: https://github.com/seananderson/rrfields/issues
 RoxygenNote: 5.0.1
+VignetteBuilder: knitr

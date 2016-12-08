@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{predict.rrfield}
 \alias{predict.rrfield}
-\title{Predict from a rrfield model}
+\title{Predict from an rrfield model}
 \usage{
 \method{predict}{rrfield}(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
@@ -22,6 +22,6 @@
 \item{...}{Ignored currently}
 }
 \description{
-Predict from a rrfield model
+Predict from an rrfield model
 }
 

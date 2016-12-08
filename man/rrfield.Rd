@@ -11,7 +11,8 @@ rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
   fixed_df_value = 5, fixed_ar_value = 0, estimate_df = TRUE,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
-  algorithm = c("sampling", "meanfield"), year_re = FALSE, ...)
+  algorithm = c("sampling", "meanfield"), year_re = FALSE,
+  lower_truncation = 0, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -78,6 +79,9 @@ incorrect inference than MCMC.}
 
 \item{year_re}{Logical: estimate a random walk for the time variable? If
 \code{TRUE}, then no fixed effects (B coefficients) will be estimated.}
+
+\item{lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
+truncation, 1 for 1 and all values above that}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

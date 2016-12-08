@@ -6,3 +6,6 @@
 .DS_Store
 .Rapp.history
 README-cache/
+inst/doc
+vignettes/*.R
+vignettes/*.html

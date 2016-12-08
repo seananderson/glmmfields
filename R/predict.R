@@ -1,4 +1,4 @@
-#' Predict from a rrfield model
+#' Predict from an rrfield model
 #'
 #' @param object An object returned by \code{\link{rrfield}}.
 #' @param newdata Optionally, a data frame to predict on
