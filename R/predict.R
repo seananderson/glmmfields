@@ -70,13 +70,10 @@ predict.rrfield <- function(object, newdata = NULL,
     }
   }
 
-  if(obs_model %in% c(0, 2)) {
-    pred_values <- exp(pred_values)
-  }
+  if(obs_model %in% c(0, 2)) pred_values <- exp(pred_values)
 
   if(obs_model == 0) {
-    # gamma, CV is returned. gammaA = 1/(CV*CV)
-    pred_values <- exp(pred_values)
+    # gamma, CV is returned; gammaA = 1/(CV*CV)
     pp <- t(apply(pred_values, 1, function(x) rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
         rate = 1/(pars$CV[,1]^2)/x)))
   }
