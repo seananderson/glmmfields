@@ -20,7 +20,7 @@ nknots <- 10
 # with repeat stations
 
 test_that("mvt-norm model fits with repeat stations", {
-  skip_on_cran()
+  # skip_on_cran()
   set.seed(SEED)
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
@@ -102,6 +102,8 @@ test_that("mvt-nb2 model fits", {
     estimate_df = FALSE, fixed_df_value = df,
     control = list(adapt_delta = 0.9), seed = SEED)
 
+  p <- predict(m)
+
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
@@ -134,7 +136,8 @@ test_that("mvt-gamma model fits", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, obs_error = "gamma",
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
-  print(m)
+
+  p <- predict(m)
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "CV[1]", "estimate"], sigma, tol = sigma * TOL)

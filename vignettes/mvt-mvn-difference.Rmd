@@ -50,7 +50,7 @@ Let's fit a model where we estimate the degrees of freedom parameter.
 m1 <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS, estimate_df = TRUE)
-print(m1, pars = "spatialEffectsKnots", include = FALSE)
+print(m1)
 ```
 
 Let's look at the coverage of our correct model. 
@@ -73,7 +73,7 @@ m_wrong <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS,
   estimate_df = FALSE, fixed_df_value = 1e6)
-print(m_wrong, pars = "spatialEffectsKnots", include = FALSE)
+print(m_wrong)
 ```
 
 ```{r}

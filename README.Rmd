@@ -39,8 +39,8 @@ Simulate data:
 
 ```{r simulate, cache=TRUE}
 library(rrfields)
-set.seed(123)
-s <- sim_rrfield(df = 3, n_draws = 8, n_knots = 10, gp_scale = 2.5, 
+set.seed(1)
+s <- sim_rrfield(df = 2, n_draws = 15, n_knots = 12, gp_scale = 2.5, 
   gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
 ```
@@ -54,24 +54,27 @@ Fit the model:
 ```{r fit, cache=TRUE, warning=FALSE, message=FALSE, results='hide', dependson="simulate", cache.comments=FALSE}
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- rrfield(y ~ 1, data = s$dat, time = "time",
-  lat = "lat", lon = "lon", nknots = 10, iter = 400, chains = 4)
+  lat = "lat", lon = "lon", station = "station_id", nknots = 12, iter = 600)
 ```
 
 ```{r print, cache=FALSE, dependson="fit"}
-pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
-print(m, pars = pars)
+print(m)
 ```
 
 Plot:
 
+```{r plot-predictions, dependson="fit"}
+plot(m)
+```
+
 ```{r plot, cache=TRUE, dependson="fit", warning=FALSE, message=FALSE}
 library(bayesplot)
 posterior <- rstan::extract(m$model, inc_warmup = FALSE, permuted = FALSE)
+pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
 mcmc_trace(posterior,  pars = pars)
 
 mm <- as.matrix(m$model)
-mcmc_areas(mm, pars = pars[ 1])
-mcmc_areas(mm, pars = pars[-1])
+mcmc_areas(mm, pars = pars)
 ```
 
 # References

@@ -2,8 +2,7 @@
 rrfields
 ========
 
-[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/rrfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/rrfields) 
-<!-- [![codecov](https://codecov.io/github/seananderson/rrfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/rrfields) -->
+[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/rrfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/rrfields) <!-- [![codecov](https://codecov.io/github/seananderson/rrfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/rrfields) -->
 
 The rrfields R package implements spatiotemporal models that allow for extreme spatial deviations through time. It uses a predictive process approach with random fields implemented through a multivariate-t distribution instead of a multivariate normal. The models are fit with [Stan](http://mc-stan.org/).
 
@@ -21,17 +20,17 @@ Simulate data:
 
 ``` r
 library(rrfields)
-set.seed(123)
-s <- sim_rrfield(df = 3, n_draws = 8, n_knots = 10, gp_scale = 2.5, 
+set.seed(1)
+s <- sim_rrfield(df = 2, n_draws = 15, n_knots = 12, gp_scale = 2.5, 
   gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
-#>   time pt           y      lon      lat
-#> 1    1  1 -0.09253272 2.875775 5.999890
-#> 2    1  2  0.15315838 7.883051 3.328235
-#> 3    1  3 -0.49238502 4.089769 4.886130
-#> 4    1  4 -0.04127106 8.830174 9.544738
-#> 5    1  5  0.12187644 9.404673 4.829024
-#> 6    1  6  0.01634340 0.455565 8.903502
+#>   time pt           y      lon      lat station_id
+#> 1    1  1 0.562277290 2.655087 6.547239          1
+#> 2    1  2 0.226782328 3.721239 3.531973          2
+#> 3    1  3 0.024898812 5.728534 2.702601          3
+#> 4    1  4 0.004810619 9.082078 9.926841          4
+#> 5    1  5 0.440714012 2.016819 6.334933          5
+#> 6    1  6 0.172293349 8.983897 2.132081          6
 ```
 
 ``` r
@@ -45,23 +44,31 @@ Fit the model:
 ``` r
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- rrfield(y ~ 1, data = s$dat, time = "time",
-  lat = "lat", lon = "lon", nknots = 10, iter = 400, chains = 4)
+  lat = "lat", lon = "lon", station = "station_id", nknots = 12, iter = 600)
 ```
 
 ``` r
-pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
-print(m, pars = pars)
+print(m)
 #> Inference for Stan model: rrfield.
-#> 4 chains, each with iter=400; warmup=200; thin=1; 
-#> post-warmup draws per chain=200, total post-warmup draws=800.
+#> 4 chains, each with iter=600; warmup=300; thin=1; 
+#> post-warmup draws per chain=300, total post-warmup draws=1200.
 #> 
-#>          mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat
-#> df[1]    3.49    0.13 1.83 2.03 2.37 2.96 3.95  8.37   193 1.02
-#> gp_sigma 0.22    0.00 0.05 0.13 0.18 0.21 0.25  0.31   280 1.01
-#> sigma[1] 0.10    0.00 0.00 0.10 0.10 0.10 0.10  0.11   800 1.00
-#> gp_scale 2.48    0.00 0.11 2.28 2.40 2.47 2.56  2.70   502 1.01
+#>             mean se_mean    sd    2.5%     25%     50%     75%   97.5%
+#> df[1]       2.85    0.02  0.72    2.03    2.31    2.66    3.18    4.69
+#> gp_sigma    0.22    0.00  0.03    0.16    0.20    0.22    0.24    0.29
+#> gp_scale    2.45    0.00  0.07    2.33    2.41    2.45    2.50    2.60
+#> B[1]       -0.03    0.01  0.02   -0.07   -0.04   -0.03   -0.01    0.02
+#> sigma[1]    0.10    0.00  0.00    0.10    0.10    0.10    0.10    0.11
+#> lp__     2773.45    0.55 10.20 2751.60 2766.96 2774.10 2780.34 2792.45
+#>          n_eff Rhat
+#> df[1]     1200 1.00
+#> gp_sigma  1200 1.00
+#> gp_scale  1200 1.00
+#> B[1]        20 1.21
+#> sigma[1]  1200 1.00
+#> lp__       347 1.01
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Nov 23 14:30:18 2016.
+#> Samples were drawn using NUTS(diag_e) at Thu Dec  8 14:31:14 2016.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -70,8 +77,15 @@ print(m, pars = pars)
 Plot:
 
 ``` r
+plot(m)
+```
+
+![](README-figs/plot-predictions-1.png)
+
+``` r
 library(bayesplot)
 posterior <- rstan::extract(m$model, inc_warmup = FALSE, permuted = FALSE)
+pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
 mcmc_trace(posterior,  pars = pars)
 ```
 
@@ -80,16 +94,10 @@ mcmc_trace(posterior,  pars = pars)
 ``` r
 
 mm <- as.matrix(m$model)
-mcmc_areas(mm, pars = pars[ 1])
+mcmc_areas(mm, pars = pars)
 ```
 
 ![](README-figs/plot-2.png)
-
-``` r
-mcmc_areas(mm, pars = pars[-1])
-```
-
-![](README-figs/plot-3.png)
 
 References
 ==========
