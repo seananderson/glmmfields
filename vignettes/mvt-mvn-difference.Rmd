@@ -7,63 +7,129 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
-```{r, eval=FALSE}
-m_wrong <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
-    lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = 1e6)
-  pp_wrong <- predict(m_wrong, newdata = s$dat, interval = "prediction")
-
-  mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high)
-  mean(s$dat$y > pp_wrong$conf_low & s$dat$y < pp_wrong$conf_high)
-  hist((pp_wrong$conf_high - pp_wrong$conf_low) / (pp$conf_high - pp$conf_low))
-
-  sum((pp$estimate - s$dat$y)^2)
-  sum((pp_wrong$estimate - s$dat$y)^2)
-
-  d <- s$dat;d <- data.frame(d, pp)
-  library(ggplot2)
-  ggplot(d, aes(lon, lat, colour = estimate)) +
-    geom_point(size = 2) +
-    scale_color_gradient2() +
-    facet_wrap(~time)
-
-  d_wrong <- s$dat;d_wrong <- data.frame(d_wrong, pp_wrong)
-  ggplot(d_wrong, aes(lon, lat, colour = estimate)) +
-    geom_point(size = 2) +
-    scale_color_gradient2() +
-    facet_wrap(~time)
-
-
-  ggplot(d, aes(lon, lat, colour = y)) +
-    geom_point(size = 2) +
-    scale_color_gradient2() +
-    facet_wrap(~time)
-
-  library(dplyr)
-  q <- data.frame(d, select(d_wrong, estimate) %>% rename(est_wrong = estimate))
-  ggplot(q, aes(lon, lat, colour = estimate - est_wrong)) +
-    geom_point(size = 2) +
-    scale_color_gradient2() +
-    facet_wrap(~time)
-
-  ggplot(d, aes(lon, lat, colour = estimate - y)) +
-    geom_point(size = 2) +
-    scale_color_gradient2() +
-    facet_wrap(~time)
-
-  ggplot(d_wrong, aes(lon, lat, colour = estimate - y)) +
-    geom_point(size = 2) +
-    scale_color_gradient2() +
-    facet_wrap(~time)
-
-max(d_wrong$estimate - d_wrong$y)
-max(d$estimate - d$y)
-b <- broom::tidyMCMC(m$model, estimate.method = "median")
-head(b)
-b_wrong <- broom::tidyMCMC(m_wrong$model, estimate.method = "median")
-head(b_wrong)
-
+  
+```{r}
+library(rrfields)
+library(dplyr)
+library(ggplot2)
 ```
 
+```{r setup}
+if (interactive()) options(mc.cores = parallel::detectCores())
+ITER <- 600
+CHAINS <- 2
+SEED <- 1
+gp_sigma <- 0.2
+sigma <- 0.1
+df <- 2.5
+gp_scale <- 1.2
+n_draws <- 12
+nknots <- 12
+```
+
+Let's simulate some data that has heavy tails. 
+
+```{r simulate-data}
+set.seed(SEED)
+s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
+print(s$plot)
+```
+
+Let's fit a model where we estimate the degrees of freedom parameter. 
+
+```{r}
+m1 <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  lat = "lat", lon = "lon", nknots = nknots,
+  iter = ITER, chains = CHAINS, estimate_df = TRUE)
+print(m1, pars = "spatialEffectsKnots", include = FALSE)
+```
+
+Let's look at the coverage of our correct model. 
+
+```{r}
+p <- predict(m1)
+pp <- predict(m1, interval = "prediction")
+plot(s$dat$y, p$estimate, col = "#00000060")
+segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000090")
+segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1.5)
+abline(a = 0, b = 1, lty = 2)
+
+(coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high) %>% round(2))
+```
+
+Now let's fit a model where we force the random field to be multivariate normal by fixing the degrees of freedom parameter at a large value. 
+
+```{r}
+m_wrong <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  lat = "lat", lon = "lon", nknots = nknots,
+  iter = ITER, chains = CHAINS,
+  estimate_df = FALSE, fixed_df_value = 1e6)
+print(m_wrong, pars = "spatialEffectsKnots", include = FALSE)
+```
+
+```{r}
+p_wrong <- predict(m_wrong)
+pp_wrong <- predict(m_wrong, interval = "prediction")
+mean(s$dat$y > pp_wrong$conf_low & s$dat$y < pp_wrong$conf_high) %>% round(2)
+```
+
+Let's look at the ratio of the confidence intervals. The objects starting with `p` contain the confidence intervals on the mean and the objects starting with `pp` contain the prediction confidence intervals (i.e. posterior predictive checks).
+
+```{r}
+hist(log((pp_wrong$conf_high - pp_wrong$conf_low) / (pp$conf_high - pp$conf_low)))
+hist(log((p_wrong$conf_high - p_wrong$conf_low) / (p$conf_high - p$conf_low)))
+```
+
+Let's look at the sum of the squared residuals:
+
+```{r}
+sum((pp$estimate - s$dat$y)^2)
+sum((pp_wrong$estimate - s$dat$y)^2)
+```
+
+Let's plot of the true data, and the spatial productions from the correct and incorrect models.
+
+```{r}
+print(s$plot)
+plot(m1)
+plot(m_wrong)
+```
+
+Now let's combine the predictions to compare them:
+
+```{r}
+d <- data.frame(s$dat, pp)
+d_wrong <- data.frame(s$dat, pp_wrong)
+d_combined <- data.frame(d, select(d_wrong, estimate) %>% rename(est_wrong = estimate))
+```
+
+The following plot looks at the differences in the predictions of spatially 
+
+```{r}
+ggplot(d_combined, aes(lon, lat, colour = estimate - est_wrong)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+```
+
+These plots look at the residuals spatially 
+
+```{r}
+ggplot(d, aes(lon, lat, colour = estimate - y)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+
+ggplot(d_wrong, aes(lon, lat, colour = estimate - y)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+```
+
+What about looking at the maximum absolute residuals?
+
+```{r}
+max(abs(d_wrong$estimate - d_wrong$y))
+max(abs(d$estimate - d$y))
+```
