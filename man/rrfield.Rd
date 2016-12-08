@@ -4,7 +4,7 @@
 \alias{rrfield}
 \title{Fit a robust spatiotemporal random fields model}
 \usage{
-rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
+rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5), prior_rw_sigma = student_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 2),
@@ -12,7 +12,7 @@ rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"), year_re = FALSE,
-  lower_truncation = 0, fixed_intercept = FALSE, ...)
+  lower_truncation = 0, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -82,9 +82,6 @@ incorrect inference than MCMC.}
 
 \item{lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
 truncation, 1 for 1 and all values above}
-
-\item{fixed_intercept}{Logical: should the intercept be fixed at 0?
-\code{fixed_intercept = TRUE}}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

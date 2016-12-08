@@ -87,7 +87,7 @@ predict.rrfield <- function(object, newdata = NULL,
   }
   if(obs_model == 2) {
     # negative binomial, phi returned
-    pp <- t(apply(pred_values, 1, function(x) rnbinom(mcmc_draws, mu = x, phi = pars$nb2_phi[,1])))
+    pp <- t(apply(pred_values, 1, function(x) rnbinom(mcmc_draws, mu = x, size = pars$nb2_phi[,1])))
   }
 
   est_method <- switch(estimate_method[[1]], median = median, mean = mean)
