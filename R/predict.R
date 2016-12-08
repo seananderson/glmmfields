@@ -51,9 +51,9 @@ predict.rrfield <- function(object, newdata = NULL,
         exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
     } else {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-2*(distKnots^2)/(pars$gp_scale[mcmc.i[i]]^2))
+        exp(-(distKnots)/(2 * pars$gp_scale[mcmc.i[i]]^2))
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-2*(dist_knots21^2)/(pars$gp_scale[mcmc.i[i]]^2))
+        exp(-(dist_knots21)/(2 * pars$gp_scale[mcmc.i[i]]^2))
     }
 
     # these are projected spatial effects, dim = new data points x time
