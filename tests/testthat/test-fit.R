@@ -1,6 +1,6 @@
 if (interactive()) options(mc.cores = parallel::detectCores())
 
-ITER <- 600
+ITER <- 500
 CHAINS <- 2
 SEED <- 999
 TOL <- 0.2 # %
@@ -25,19 +25,24 @@ test_that("mvt-norm model fits with repeat stations", {
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
+  # s$plot
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
 
-  print(m)
-  p <- predict(m, newdata = s$dat)
-  pp <- predict(m, newdata = s$dat, interval = "prediction")
+  expect_output(print(m), "Inference for Stan model")
+
+  p <- predict(m)
+  pp <- predict(m, interval = "prediction")
   plot(s$dat$y, p$estimate)
   segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5)
-  segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1.5)
+  segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 2)
   abline(a = 0, b = 1)
+
+  coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high)
+  expect_equal(coverage, 0.95, tol = 0.05)
 
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
