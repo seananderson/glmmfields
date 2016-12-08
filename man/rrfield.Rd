@@ -5,8 +5,8 @@
 \title{Fit a robust spatiotemporal random fields model}
 \usage{
 rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
-  prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
-  prior_sigma = student_t(3, 0, 5), prior_rw_sigma = student_t(3, 0, 5),
+  prior_gp_scale = half_t(3, 0, 5), prior_gp_sigma = half_t(3, 0, 5),
+  prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 2),
   fixed_df_value = 5, fixed_ar_value = 0, estimate_df = TRUE,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
