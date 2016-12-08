@@ -4,17 +4,20 @@
 \alias{predict.rrfield}
 \title{Predict from a rrfield model}
 \usage{
-\method{predict}{rrfield}(object, newdata = NULL, mcmc_draws, obs_model = 0,
-  ...)
+\method{predict}{rrfield}(object, newdata = NULL,
+  estimate_method = c("median", "mean"), conf_level = 0.95,
+  interval = c("confidence", "prediction"), ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link{rrfield}}.}
 
 \item{newdata}{Optionally, a data frame to predict on}
 
-\item{mcmc_draws}{The number of MCMC samples to draw from the posterior}
+\item{estimate_method}{Method for computing point estimate ("mean" or median")}
 
-\item{obs_model}{The observation error (0 = gamma, 1 = normal, 2 = neg bin)}
+\item{conf_level}{Probability level for CI}
+
+\item{interval}{Type of interval calculation. Same as \code{\link[stats]{predict.lm}}}
 
 \item{...}{Ignored currently}
 }

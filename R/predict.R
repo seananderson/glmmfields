@@ -2,77 +2,99 @@
 #'
 #' @param object An object returned by \code{\link{rrfield}}.
 #' @param newdata Optionally, a data frame to predict on
-#' @param mcmc_draws The number of MCMC samples to draw from the posterior
-#' @param obs_model The observation error (0 = gamma, 1 = normal, 2 = neg bin)
+#' @param interval Type of interval calculation. Same as \code{\link[stats]{predict.lm}}
+#' @param estimate_method Method for computing point estimate ("mean" or median")
+#' @param conf_level Probability level for CI
 #' @param ... Ignored currently
 #'
 #' @importFrom stats median quantile
 #'
 #' @export
-predict.rrfield <- function(object, newdata = NULL, mcmc_draws, obs_model = 0, ...) {
+predict.rrfield <- function(object, newdata = NULL,
+  estimate_method = c("median", "mean"), conf_level = 0.95,
+  interval = c("confidence", "prediction"), ...) {
+
+  obs_model <- object$obs_model
 
   # newdata is df with time, y, lon, lat
   # if null, defaults to data used to fit model
-  if(is.null(newdata)) newdata = object$data
+  if(is.null(newdata)) newdata <- object$data
   # create model.matrix() as in fitting function, only with newdata
-  X = model.matrix(object$formula, model.frame(object$formula, newdata))
+  X <- model.matrix(object$formula, model.frame(object$formula, newdata))
 
-  time = object$time
-  knots = object$knots
-  n_knots = nrow(knots)
+  time <- object$time
+  knots <- object$knots
+  n_knots <- nrow(knots)
 
-  distKnots = as.matrix(dist(knots))
+  distKnots <- as.matrix(dist(knots))
 
   # Calculate distance from knots to grid
-  dist_all = as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
-  n_locs = nrow(newdata)
+  dist_all <- as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
+  n_locs <- nrow(newdata)
 
   # this is the transpose of the lower left corner
   dist_knots21 <- t(
     dist_all[-c(seq_len(n_locs)), -c((n_locs + 1):ncol(dist_all))])
 
   # extract mcmc pars
-  pars = rstan::extract(object$model, permuted = TRUE)
+  pars <- rstan::extract(object$model, permuted = TRUE)
 
-  mcmc.i = sample(1:length(pars$lp__), size=mcmc_draws, replace=F)
-  pred_values = matrix(NA, n_locs, mcmc_draws)
+  mcmc.i <- seq_len(length(pars$lp__))
+  mcmc_draws <- max(mcmc.i)
+  pred_values <- matrix(NA, n_locs, mcmc_draws)
   for(i in 1:mcmc_draws) {
     # create cov matrix @ knots
-    if(object$covariance=="exponential") {
-      covmat = pars$gp_sigma[mcmc.i[i]] *
+    if(object$covariance == "exponential") {
+      covmat <- pars$gp_sigma[mcmc.i[i]] *
         exp(-distKnots/pars$gp_scale[mcmc.i[i]])
-      covmat21 = pars$gp_sigma[mcmc.i[i]] *
+      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
         exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
     } else {
-      covmat = pars$gp_sigma[mcmc.i[i]] *
+      covmat <- pars$gp_sigma[mcmc.i[i]] *
         exp(-2*(distKnots^2)/(pars$gp_scale[mcmc.i[i]]^2))
-      covmat21 = pars$gp_sigma[mcmc.i[i]] *
+      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
         exp(-2*(dist_knots21^2)/(pars$gp_scale[mcmc.i[i]]^2))
     }
 
     # these are projected spatial effects, dim = new data points x time
-    spat_effects = covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
+    spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
 
-    rows = seq_len(n_locs)
-    cols = as.numeric(as.factor(newdata[,time]))
+    rows <- seq_len(n_locs)
+    cols <- as.numeric(as.factor(newdata[,time]))
     # check this for > 1 year. B will also have to be modified
     if(object$year_re == FALSE) {
-      pred_values[,i] = X %*% matrix(pars$B[mcmc.i[i],], nrow=1) +
+      pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], nrow = 1) +
         spat_effects[cbind(rows,cols)]
     } else {
-      pred_values[,i] = spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][cols]
+      pred_values[,i] <- spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][cols]
     }
   }
 
-  if(obs_model %in% c(0,2)) {
-    pred_values = exp(pred_values)
+  if(obs_model == 0) {
+    pred_values <- exp(pred_values)
+    pp <- pred_values
+    warning("prediction intervals not implimented yet for gamma obs model")
+  }
+  if(obs_model == 1) {
+    pp <- t(apply(pred_values, 1, function(x) rnorm(mcmc_draws, x, pars$sigma[,1])))
+  }
+  if(obs_model == 2) {
+    pred_values <- exp(pred_values)
+    pp <- pred_values
+    warning("prediction intervals not implimented yet for NB2 obs model")
   }
 
-  summary_mat = data.frame("mean" = apply(pred_values, 1, mean),
-    "median" = apply(pred_values, 1, median),
-    "lower2.5" = apply(pred_values, 1, quantile, 0.025),
-    "upper97.5" = apply(pred_values, 1, quantile, 0.975))
+  est_method <- switch(estimate_method[[1]], median = median, mean = mean)
+  out <- data.frame(estimate = apply(pred_values, 1, est_method))
 
-  return(list(predictions = pred_values, summary = summary_mat))
+  if (interval[[1]] == "confidence") {
+    out$conf_low <- apply(pred_values, 1, quantile, probs = (1 - conf_level) / 2)
+    out$conf_high <- apply(pred_values, 1, quantile, probs = 1 - (1 - conf_level) / 2)
+  }
+  if (interval[[1]] == "prediction") {
+    out$conf_low <- apply(pp, 1, quantile, probs = (1 - conf_level) / 2)
+    out$conf_high <- apply(pp, 1, quantile, probs = 1 - (1 - conf_level) / 2)
+  }
 
+  dplyr::as.tbl(out)
 }

@@ -10,6 +10,7 @@ data {
   real prior_gp_scale[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
+  real prior_rw_sigma[3];
   real prior_intercept[3];
   real prior_beta[3];
   matrix[nKnots,nKnots] distKnots;
@@ -96,7 +97,7 @@ model {
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
   if(est_ar == 1) {
-  ar ~ normal(0, 1);
+    ar ~ normal(0, 1);
   }
 
   if(nCov >= 1) {
@@ -112,9 +113,9 @@ model {
 
   // temporal random effects, if estimated global intercept = effect in first year
   if(est_temporalRE == 1) {
-    year_sigma ~ student_t(3, 0, 2.5);
+    year_sigma ~ student_t(prior_rw_sigma[1], prior_rw_sigma[2], prior_rw_sigma[3]);
     // random walk in year terms
-    yearEffects[1] ~ normal(0, 200);
+    yearEffects[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
     for(t in 2:nT) {
       yearEffects[t] ~ normal(yearEffects[t-1], year_sigma);
     }

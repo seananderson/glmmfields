@@ -31,6 +31,14 @@ test_that("mvt-norm model fits with repeat stations", {
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
 
+  print(m)
+  p <- predict(m, newdata = s$dat)
+  pp <- predict(m, newdata = s$dat, interval = "prediction")
+  plot(s$dat$y, p$estimate)
+  segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5)
+  segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1.5)
+  abline(a = 0, b = 1)
+
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
@@ -54,9 +62,6 @@ test_that("mvt-norm model fits without station argument", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
-
-  print(m)
-  p <- predict(m, newdata = s$dat, mcmc_draws = 200)
 
   b1 <- broom::tidyMCMC(m1$model, estimate.method = "median")
   expect_equal(b1[b1$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)

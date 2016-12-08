@@ -4,7 +4,7 @@
 \alias{format_data}
 \title{Format data for fitting an rrfield model}
 \usage{
-format_data(data, y, X, time, lon = "lon", lat = "lat", station = "",
+format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
   nknots = 25L, covariance = "squared-exponential")
 }
 \arguments{

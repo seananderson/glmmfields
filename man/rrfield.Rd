@@ -6,10 +6,11 @@
 \usage{
 rrfield(formula, data, time, lon, lat, station = "", nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5), prior_gp_sigma = student_t(3, 0, 5),
-  prior_sigma = student_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
-  prior_beta = student_t(3, 0, 2), fixed_df_value = 5, fixed_ar_value = 0,
-  estimate_df = TRUE, estimate_ar = FALSE, obs_error = c("normal",
-  "gamma", "nb2"), covariance = c("squared-exponential", "exponential"),
+  prior_sigma = student_t(3, 0, 5), prior_rw_sigma = student_t(3, 0, 5),
+  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 2),
+  fixed_df_value = 5, fixed_ar_value = 0, estimate_df = TRUE,
+  estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
+  covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"), year_re = FALSE, ...)
 }
 \arguments{
@@ -38,6 +39,10 @@ be declared with \code{\link{half_t}}. This acts as a
 substitute for the scale parameter in whatever observation distribution is
 being used. I.e. the CV for the Gamma or the dispersion parameter for
 the negative binomial.}
+
+\item{prior_rw_sigma}{The prior on the standard deviation parameter of the
+random walk process (if specified). Must be declared with
+\code{\link{half_t}}.}
 
 \item{prior_intercept}{The prior on the intercept parameter. Must be declared
 with \code{\link{student_t}}.}

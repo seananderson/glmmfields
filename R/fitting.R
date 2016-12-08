@@ -39,6 +39,9 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE, est
 #'   substitute for the scale parameter in whatever observation distribution is
 #'   being used. I.e. the CV for the Gamma or the dispersion parameter for
 #'   the negative binomial.
+#' @param prior_rw_sigma The prior on the standard deviation parameter of the
+#'   random walk process (if specified). Must be declared with
+#'   \code{\link{half_t}}.
 #' @param prior_intercept The prior on the intercept parameter. Must be declared
 #'   with \code{\link{student_t}}.
 #' @param prior_beta The prior on the slope parameters (if any). Must be
@@ -75,6 +78,7 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
   prior_gp_scale = student_t(3, 0, 5),
   prior_gp_sigma = student_t(3, 0, 5),
   prior_sigma = student_t(3, 0, 5),
+  prior_rw_sigma = student_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 2),
   fixed_df_value = 5,
@@ -106,6 +110,7 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
       prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
       prior_intercept = parse_t_prior(prior_intercept),
+      prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
       sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L,
         exponential = 0L, 1L),
@@ -140,8 +145,9 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
     m <- do.call(sampling, sampling_args)
   }
 
-  out <- list(model = m, knots = data_knots, y = y, X = X, data = data, formula = formula,
+  out <- list(model = m, knots = dplyr::as.tbl(as.data.frame(data_knots)), y = y, X = X,
+    data = dplyr::as.tbl(data), formula = formula,
     covariance = covariance[[1]], lon = lon, lat = lat, time = time, year_re = year_re,
-    station=data_list$stationID, obs_model = obs_model)
+    station = data_list$stationID, obs_model = obs_model)
   out <- structure(out, class = "rrfield")
 }
