@@ -60,7 +60,7 @@ predict.rrfield <- function(object, newdata = NULL,
     spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
 
     rows <- seq_len(n_locs)
-    cols <- as.numeric(as.factor(newdata[,time]))
+    cols <- as.numeric(as.factor(newdata[, time][[1]]))
     # check this for > 1 year. B will also have to be modified
     if(object$year_re == FALSE) {
       pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], nrow = 1) +
