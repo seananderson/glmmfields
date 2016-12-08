@@ -70,18 +70,23 @@ predict.rrfield <- function(object, newdata = NULL,
     }
   }
 
-  if(obs_model == 0) {
+  if(obs_model %in% c(0, 2)) {
     pred_values <- exp(pred_values)
-    pp <- pred_values
-    warning("prediction intervals not implimented yet for gamma obs model")
+  }
+
+  if(obs_model == 0) {
+    # gamma, CV is returned. gammaA = 1/(CV*CV)
+    pred_values <- exp(pred_values)
+    pp <- t(apply(pred_values, 1, function(x) rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
+        rate = 1/(pars$CV[,1]^2)/x)))
   }
   if(obs_model == 1) {
-    pp <- t(apply(pred_values, 1, function(x) rnorm(mcmc_draws, x, pars$sigma[,1])))
+    # normal, sigma is returned
+    pp <- t(apply(pred_values, 1, function(x) rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
   }
   if(obs_model == 2) {
-    pred_values <- exp(pred_values)
-    pp <- pred_values
-    warning("prediction intervals not implimented yet for NB2 obs model")
+    # negative binomial, phi returned
+    pp <- t(apply(pred_values, 1, function(x) rnbinom(mcmc_draws, mu = x, phi = pars$nb2_phi[,1])))
   }
 
   est_method <- switch(estimate_method[[1]], median = median, mean = mean)
