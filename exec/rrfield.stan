@@ -28,6 +28,7 @@ data {
   real fixed_ar_value;
   int<lower=0,upper=1> est_temporalRE;
   int<lower=0> n_year_effects;
+  int<lower=0> lower_truncation;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -146,7 +147,13 @@ model {
   // switch between observation error models: normal (1), gamma (0), NB2 (2)
   if(obs_model == 2) {
     nb2_phi[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-    y_int ~ neg_binomial_2_log(y_hat, nb2_phi[1]);
+    if (lower_truncation == 0) {
+      y_int ~ neg_binomial_2_log(y_hat, nb2_phi[1]);
+    } else {
+     for (i in 1:N) {
+      y_int[i] ~ neg_binomial_2(exp(y_hat[i]), nb2_phi[1]) T[lower_truncation, ];
+     }
+    }
   }
   if(obs_model == 1) {
     sigma[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);

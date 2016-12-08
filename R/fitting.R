@@ -67,6 +67,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE, est
 #'   incorrect inference than MCMC.
 #' @param year_re Logical: estimate a random walk for the time variable? If
 #'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
+#' @param lower_truncation For NB2: lower truncation value. E.g. 0 for no
+#'   truncation, 1 for 1 and all values above that
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
@@ -89,6 +91,7 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
+  lower_truncation = 0,
   ...) {
 
   mf <- model.frame(formula, data)
@@ -123,7 +126,8 @@ rrfield <- function(formula, data, time, lon, lat, station = "", nknots = 25L,
       fixed_df_value = fixed_df_value,
       fixed_ar_value = fixed_ar_value,
       est_temporalRE = est_temporalRE,
-      n_year_effects = ifelse(year_re, stan_data$nT, 0L)))
+      n_year_effects = ifelse(year_re, stan_data$nT, 0L),
+      lower_truncation = lower_truncation))
 
   if (obs_model == 2) { # NB2 obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))

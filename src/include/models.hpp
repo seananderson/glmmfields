@@ -55,6 +55,7 @@ private:
     double fixed_ar_value;
     int est_temporalRE;
     int n_year_effects;
+    int lower_truncation;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -293,6 +294,11 @@ public:
         vals_i__ = context__.vals_i("n_year_effects");
         pos__ = 0;
         n_year_effects = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "lower_truncation", "int", context__.to_vec());
+        lower_truncation = int(0);
+        vals_i__ = context__.vals_i("lower_truncation");
+        pos__ = 0;
+        lower_truncation = vals_i__[pos__++];
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -324,6 +330,7 @@ public:
         check_greater_or_equal(function__,"est_temporalRE",est_temporalRE,0);
         check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);
         check_greater_or_equal(function__,"n_year_effects",n_year_effects,0);
+        check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -835,7 +842,15 @@ public:
             }
             if (as_bool(logical_eq(obs_model,2))) {
                 lp_accum__.add(student_t_log<propto__>(get_base1(nb2_phi,1,"nb2_phi",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-                lp_accum__.add(neg_binomial_2_log_log<propto__>(y_int, y_hat, get_base1(nb2_phi,1,"nb2_phi",1)));
+                if (as_bool(logical_eq(lower_truncation,0))) {
+                    lp_accum__.add(neg_binomial_2_log_log<propto__>(y_int, y_hat, get_base1(nb2_phi,1,"nb2_phi",1)));
+                } else {
+                    for (int i = 1; i <= N; ++i) {
+                        lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(y_int,i,"y_int",1), exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
+                        if (get_base1(y_int,i,"y_int",1) < lower_truncation) lp_accum__.add(-std::numeric_limits<double>::infinity());
+                        else lp_accum__.add(-neg_binomial_2_ccdf_log(lower_truncation, exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
+                    }
+                }
             }
             if (as_bool(logical_eq(obs_model,1))) {
                 lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
