@@ -11,6 +11,9 @@ vignette: >
 ```{r set-knitr-options, cache=FALSE, echo=FALSE}
 library("knitr")
 opts_chunk$set(message=FALSE, fig.width=7, fig.height=5)
+
+if (Sys.getenv("TRAVIS") == "true")
+  opts_chunk$set(eval = FALSE)
 ```
   
 ```{r}
