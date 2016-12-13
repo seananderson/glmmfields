@@ -16,7 +16,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
   covariance = "squared-exponential", fixed_intercept = FALSE) {
 
   data = as.data.frame(data)
-  yearID = as.numeric(as.factor(data[,time]))
+  yearID <- as.numeric(data[,time])
   if(is.null(station)) {
     stationID <- seq(1, nrow(data))
   } else {
