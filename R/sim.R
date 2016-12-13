@@ -11,7 +11,8 @@
 #' @param sd_obs The observation process scale parameter
 #' @param covariance The covariance function
 #' @param obs_error The observation error distribution
-#' @param B A vector of parameters. The first element is the intercept.
+#' @param B A vector of parameters. The first element is the intercept
+#' @param ar The auto regressive parameter on the mean of the random field knots
 #' @param X The model matrix
 #'
 #' @export
@@ -19,7 +20,7 @@
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential",
-  obs_error = c("normal", "gamma", "nb2"), B = c(0),
+  obs_error = c("normal", "gamma", "nb2"), B = c(0), ar = 0,
   X = rep(1, n_draws * n_data_points)) {
 
   g <- data.frame(lon = runif(n_data_points, 0, 10),
@@ -69,10 +70,23 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
 
   # generate vector of random effects
   # each 'draw' here is hypothetical draw from posterior
-  if (mvt)
-    re_knots <- mvtnorm::rmvt(n_draws, sigma = sigma_knots, df = df)
-  if (!mvt)
-    re_knots <- mvtnorm::rmvnorm(n_draws, sigma = sigma_knots)
+  # initialize:
+  re_knots <- matrix(ncol = n_knots, nrow = n_draws)
+  if (mvt) {
+    re_knots[1, ] <- mvtnorm::rmvt(1, sigma = sigma_knots, df = df)
+  }
+  if (!mvt) {
+    re_knots[1, ] <- mvtnorm::rmvnorm(1, sigma = sigma_knots)
+  }
+  # potentially with AR process:
+  for (i in seq(2, n_draws)) {
+    if (mvt) {
+      re_knots[i, ] <- mvtnorm::rmvt(1, delta = ar * re_knots[i - 1, ], sigma = sigma_knots, df = df)
+    }
+    if (!mvt) {
+      re_knots[i, ] <- mvtnorm::rmvnorm(1, mean = ar * re_knots[i - 1, ], sigma = sigma_knots)
+    }
+  }
 
   # project random effects to locations of the data
   proj <- t((sigma21 %*% invsigma_knots) %*% t(re_knots))
