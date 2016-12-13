@@ -15,7 +15,11 @@
 format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NULL, nknots = 25L,
   covariance = "squared-exponential", fixed_intercept = FALSE) {
 
-  data = as.data.frame(data)
+  data <- as.data.frame(data)
+
+  stopifnot(is.integer(data[,time]) | is.numeric(data[,time]) | is.factor(data[,time]))
+  stopifnot(is.integer(data[,station]) | is.numeric(data[,station]) | is.factor(data[,station]))
+
   yearID <- as.numeric(data[,time])
   if(is.null(station)) {
     stationID <- seq(1, nrow(data))
@@ -41,7 +45,6 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
     distAll = as.matrix(stats::dist(rbind(data[, c(lon, lat)], knots)))
     nLocs = nrow(data)
   }
-
 
   if (covariance[[1]] == "squared-exponential") {
     distKnots = distKnots^2 # squared distances
