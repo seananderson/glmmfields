@@ -19,6 +19,5 @@ LineEndingConversion: Native
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source --no-build-vignettes
-PackageBuildArgs: --no-build-vignettes
 PackageCheckArgs: --as-cran
 PackageRoxygenize: rd,namespace
