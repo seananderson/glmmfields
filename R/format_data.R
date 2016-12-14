@@ -17,14 +17,14 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
 
   data <- as.data.frame(data)
 
-  stopifnot(is.integer(data[,time]) | is.numeric(data[,time]) | is.factor(data[,time]))
-  stopifnot(is.integer(data[,station]) | is.numeric(data[,station]) | is.factor(data[,station]))
+  # stopifnot(is.integer(data[,time]) | is.numeric(data[,time]) | is.factor(data[,time]))
+  # stopifnot(is.integer(data[,station]) | is.numeric(data[,station]) | is.factor(data[,station]))
 
-  yearID <- as.numeric(data[,time])
+  yearID <- as.numeric(as.factor(data[,time]))
   if(is.null(station)) {
     stationID <- seq(1, nrow(data))
   } else {
-    stationID <- as.numeric(data[,station])
+    stationID <- as.numeric(as.factor(data[,station]))
   }
 
   # if stationID is duplicated, perform clustering on the subset of data
