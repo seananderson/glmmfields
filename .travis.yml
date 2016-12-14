@@ -3,10 +3,6 @@ sudo: false
 cache: packages
 r: devel
 
-r_github_packages:
-  - jimhester/covr
-  - stan-dev/rstan/rstan/rstan@develop
-
 notifications:
   email:
     on_success: change
