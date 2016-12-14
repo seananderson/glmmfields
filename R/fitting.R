@@ -72,6 +72,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
 #' @param lower_truncation For NB2: lower truncation value. E.g. 0 for no
 #'   truncation, 1 for 1 and all values above
+#' @param control List to pass to \code{\link[rstan]{sampling}}
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
@@ -95,6 +96,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
   lower_truncation = 0,
+  control = list(adapt_delta = 0.9),
   ...) {
 
   mf <- model.frame(formula, data)
@@ -146,7 +148,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
     data = stan_data,
     pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df,
       est_temporalRE = est_temporalRE, estimate_ar = estimate_ar,
-      fixed_intercept = fixed_intercept), ...)
+      fixed_intercept = fixed_intercept),
+    control = control, ...)
 
   if (algorithm[[1]] == "meanfield") {
     sampling_args$chains <- NULL

@@ -12,7 +12,7 @@ rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"), year_re = FALSE,
-  lower_truncation = 0, ...)
+  lower_truncation = 0, control = list(adapt_delta = 0.9), ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -82,6 +82,8 @@ incorrect inference than MCMC.}
 
 \item{lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
 truncation, 1 for 1 and all values above}
+
+\item{control}{List to pass to \code{\link[rstan]{sampling}}}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }
