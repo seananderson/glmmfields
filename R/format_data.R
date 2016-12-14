@@ -29,14 +29,15 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
 
   # if stationID is duplicated, perform clustering on the subset of data
   if(length(unique(stationID)) < length(stationID)) {
-    first_instance = !duplicated(stationID) # see http://stackoverflow.com/questions/11546684/how-can-i-find-the-first-and-last-occurrences-of-an-element-in-a-data-frame
+    first_instance = which(!duplicated(stationID)) # see http://stackoverflow.com/questions/11546684/how-can-i-find-the-first-and-last-occurrences-of-an-element-in-a-data-frame
+    sorted_index = sort(stationID[first_instance], index.return=T)
 
     knots = cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     distKnots = as.matrix(dist(knots))
 
     # Calculate distance from knots to grid
-    distAll = as.matrix(stats::dist(rbind(data[which(first_instance == TRUE), c(lon, lat)], knots)))
-    nLocs = length(which(first_instance==TRUE))
+    distAll = as.matrix(stats::dist(rbind(data[sorted_index$ix, c(lon, lat)], knots)))
+    nLocs = length(first_instance)
   } else {
     knots = cluster::pam(data[, c(lon, lat)], nknots)$medoids
     distKnots = as.matrix(dist(knots))
