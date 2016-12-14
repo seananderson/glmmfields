@@ -42,7 +42,7 @@ parameters {
   real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
-  real ar[est_ar];
+  real<lower=-1, upper=1> ar[est_ar];
 }
 transformed parameters {
 	vector[nKnots] muZeros;
