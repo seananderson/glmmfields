@@ -153,6 +153,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
 
   if (algorithm[[1]] == "meanfield") {
     sampling_args$chains <- NULL
+    sampling_args$control <- NULL
     m <- do.call(vb, sampling_args)
   } else {
     m <- do.call(sampling, sampling_args)
