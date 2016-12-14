@@ -49,25 +49,25 @@ out <- map_dbl(x, function(y) {
   mean(est$estimate - y$B)
 })
 
-
+x <- test_new()
 
 # --------------------------------
 # old vs new
 library(testthat)
 
-set.seed(SEED*42)
+set.seed(SEED*431113)
 
 ITER <- 600
-gp_sigma <- 0.3
-sigma <- 1
-df <- 15
-gp_scale <- 0.07
+gp_sigma <- 0.5
+sigma <- 1.1
+df <- 9
+gp_scale <- 0.02
 n_draws <- 18
-nknots <- 10
+nknots <- 12
 ar <- 1
 B <- vector(mode = "double", length = n_draws)
-B[1] <- 3
-year_sigma <- 0.14
+B[1] <- 0
+year_sigma <- 0.2
 for (i in 2:length(B)) {
   B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
 }
@@ -84,10 +84,15 @@ library(ggplot2); ggplot(s$dat, aes(time, y)) +
 # new:
 m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
-  iter = ITER*1.5, chains = 3, seed = SEED,
+  iter = ITER*1.5, chains = 2,
   estimate_df = TRUE, year_re = TRUE, obs_error = "gamma",
-  estimate_ar = TRUE, algorithm = "sampling", control = list(adapt_delta = 0.95))
+  estimate_ar = TRUE, algorithm = "sampling", control = list(adapt_delta = 0.9))
 m
+library(dplyr)
+b <- tidy(m, estimate.method = "median") %>% dplyr::filter(grepl("yearEffects", term))
+mean(b$estimate)
+mean(log(s$dat$y))
+mean(B)
 
 # --------------
 # old:
@@ -104,8 +109,22 @@ library(rstan)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 m_old <- stan("inst/tests/mvtGamma_estSigma_index_cov_yr_ar1.stan", data = old_dat,
-  iter = ITER*1.2, chains = 3, control = list(adapt_delta = 0.9))
+  iter = ITER*1.5, chains = 3, control = list(adapt_delta = 0.95))
 m_old
+
+b <- broom::tidy(m_old, estimate.method = "median") %>% dplyr::filter(grepl("yearEffects", term))
+mean(b$estimate)
+mean(log(s$dat$y))
+
+p <- predict(m)
+# pp <- predict(m, interval = "prediction")
+plot(s$dat$y, p$estimate, log = "xy")
+# segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5)
+# segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 0.75)
+abline(a = 0, b = 1)
+
+# coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high)
+# expect_equal(coverage, 0.95, tol = 0.05)
 
 b_new <- tidy(m, estimate.method = "median")
 b_old <- broom::tidyMCMC(m_old, estimate.method = "median")
@@ -127,12 +146,12 @@ check_est("yearEffects[10]", "yearEffects[10]")
 
 old <- filter(b_old, grepl("spatialEffects", term))
 new <- filter(b_new, grepl("spatialEffects", term))
-mean(old$estimate - new$estimate)
+# mean(old$estimate - new$estimate)
 plot(old$estimate[1:100], new$estimate[1:100])
 
-check_est("spatialEffects[3,2]", "spatialEffectsKnots[3,2]")
+# check_est("spatialEffects[3,2]", "spatialEffectsKnots[3,2]")
 
-check_est("spatialEffects[3,2]", "spatialEffectsKnots[3,2]")
+# check_est("spatialEffects[3,2]", "spatialEffectsKnots[3,2]")
 
 ## expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
 ## expect_equal(b[b$term == "df[1]", "estimate"], df, tol = df * TOL_df)
