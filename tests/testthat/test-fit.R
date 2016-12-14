@@ -402,36 +402,23 @@ test_that("mvt-norm model fits with repeat stations but missing in some years", 
   sigma <- 0.1
   df <- 20
   gp_scale <- 1.2
-  n_draws <- 5
-  nknots <- 8
+  n_draws <- 15
+  nknots <- 10
 
   set.seed(SEED)
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  # s$dat <- s$dat[-c(5, 15, 200, 300:305, 1000), ] # remove some
   s$dat <- s$dat[-1, ] # remove some
-
-  s$plot
 
   m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
 
-  p <- predict(m)
-  # pp <- predict(m, interval = "prediction")
-  plot(s$dat$y, p$estimate)
-  # segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5)
-  # segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 2)
-  abline(a = 0, b = 1)
-
-  # coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high)
-  # expect_equal(coverage, 0.95, tol = 0.05)
-
-  # b <- broom::tidyMCMC(m$model, estimate.method = "median")
-  # expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
-  # expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  # expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+  b <- broom::tidyMCMC(m$model, estimate.method = "median")
+  expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
 })
