@@ -43,6 +43,7 @@ parameters {
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
   real<lower=-1, upper=1> ar[est_ar];
+  real<lower=0> W[nT];
 }
 transformed parameters {
 	vector[nKnots] muZeros;
@@ -129,22 +130,24 @@ model {
 
   // if est_df == 1 estimate MVT degrees of freedom, otherwise use fixed df
   if (est_df == 1) {
+    W ~ scaled_inv_chi_square(df[1], 1);
     df ~ gamma(2, 0.1);
-    spatialEffectsKnots[1] ~ multi_student_t(df[1], muZeros, SigmaKnots);
+    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
     for(t in 2:nT) {
       if(est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_student_t(df[1], ar[1]*spatialEffectsKnots[t-1], SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_student_t(df[1], fixed_ar_value*spatialEffectsKnots[t-1], SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
       }
     }
   } else {
-    spatialEffectsKnots[1] ~ multi_student_t(fixed_df_value, muZeros, SigmaKnots);
+    W ~ scaled_inv_chi_square(fixed_df_value, 1);
+    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
     for(t in 2:nT) {
       if(est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_student_t(fixed_df_value, ar[1]*spatialEffectsKnots[t-1], SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_student_t(fixed_df_value, fixed_ar_value*spatialEffectsKnots[t-1], SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
       }
     }
   }
