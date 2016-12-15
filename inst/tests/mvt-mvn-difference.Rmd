@@ -20,10 +20,11 @@ if (Sys.getenv("TRAVIS") == "true")
 library(rrfields)
 library(dplyr)
 library(ggplot2)
+library(rstan)
 ```
 
 ```{r setup}
-if (interactive()) options(mc.cores = parallel::detectCores())
+options(mc.cores = parallel::detectCores())
 ITER <- 600
 CHAINS <- 2
 SEED <- 42
@@ -305,7 +306,7 @@ ggplot(data.frame(knot_true = as.numeric(s$re_knots),
   coord_flip()
 ```
 
-Residual ratios?
+Residual ratios etc?
 
 ```{r}
 d_combined <- d_combined %>% mutate(resid = y - estimate, resid_wrong = y - est_wrong)
@@ -314,6 +315,56 @@ ggplot(d_combined, aes(as.factor(time), abs(resid_wrong) - abs(resid))) +
   geom_boxplot() +
   geom_hline(yintercept = 0, lty = 2) +
   coord_flip()
+
+ggplot(d_combined, aes(as.factor(time), resid_wrong)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, lty = 2) +
+  coord_flip()
+
+ggplot(d_combined, aes(as.factor(time), resid)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, lty = 2) +
+  coord_flip()
 ```
 
-????
+Mean coverage:
+
+```{r}
+proj <- reshape2::melt(s$proj)
+names(proj) <- c("time", "pt", "proj")
+proj <- dplyr::arrange_(proj, "time", "pt")
+
+d2 <- data.frame(d_combined, proj = proj$proj)
+
+(coverage <- mean(d2$proj > p$conf_low & d2$proj < p$conf_high) %>% round(3))
+(coverage <- mean(d2$proj > p_wrong$conf_low & d2$proj < p_wrong$conf_high) %>% round(3))
+  
+d2 <- data.frame(d2, rename(d_wrong, conf_low_wrong = conf_low, conf_high_wrong = conf_high) %>% 
+    select(conf_low_wrong, conf_high_wrong))
+
+c1 <- group_by(d2, time) %>%
+  summarise(cov = mean(proj > conf_low & proj < conf_high))
+
+c2 <- group_by(d2, time) %>%
+  summarise(cov_wrong = mean(proj > conf_low_wrong & proj < conf_high_wrong))
+
+cov <- data.frame(c1, select(c2, -time))
+
+ggplot(cov, aes(time, cov)) + geom_line() +
+  geom_line(aes(y = cov_wrong), col = "red") +
+  geom_hline(yintercept = 0.95)
+```
+
+```{r, fig.width=10, fig.height=10}
+jitter <- 0.2
+# HERE
+filter(d2, pt %in% 1:15) %>%
+  ggplot(aes(x = conf_low, xend = conf_high, y = pt+jitter, yend = pt+jitter)) +
+  geom_segment(alpha = 0.5) +
+  geom_segment(aes(x = conf_low_wrong, xend = conf_high_wrong, 
+    y = pt-jitter, yend = pt-jitter), alpha = 0.5, colour = "red") +
+  geom_point(aes(x = proj, y = pt)) +
+  facet_wrap(~ time, scales = "free_x") + theme_light()
+```
+
+
