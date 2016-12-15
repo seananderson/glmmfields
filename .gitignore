@@ -9,3 +9,6 @@ README-cache/
 inst/doc
 vignettes/*.R
 vignettes/*.html
+inst/tests/mvt-mvn-difference_*
+
+*.html
