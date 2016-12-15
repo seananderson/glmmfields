@@ -14,6 +14,8 @@ predict.rrfield <- function(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
   interval = c("confidence", "prediction"), ...) {
 
+  if (!is.null(newdata)) stop("argument newdata not implemented yet")
+
   obs_model <- object$obs_model
 
   # newdata is df with time, y, lon, lat
@@ -26,60 +28,63 @@ predict.rrfield <- function(object, newdata = NULL,
   knots <- object$knots
   n_knots <- nrow(knots)
 
-  distKnots <- as.matrix(dist(knots))
+  pred_values <- t(rstan::extract(object$model, pars = "y_hat")[[1]])
 
-  # Calculate distance from knots to grid
-  dist_all <- as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
-  n_locs <- nrow(newdata)
-
-  # this is the transpose of the lower left corner
-  dist_knots21 <- t(
-    dist_all[-c(seq_len(n_locs)), -c((n_locs + 1):ncol(dist_all))])
-
+  ##  distKnots <- as.matrix(dist(knots))
+  ##
+  ##  # Calculate distance from knots to grid
+  ##  dist_all <- as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
+  ##  n_locs <- nrow(newdata)
+  ##
+  ##  # this is the transpose of the lower left corner
+  ##  dist_knots21 <- t(
+  ##    dist_all[-c(seq_len(n_locs)), -c((n_locs + 1):ncol(dist_all))])
+  ##
   # extract mcmc pars
   pars <- rstan::extract(object$model, permuted = TRUE)
-
+  ##
   mcmc.i <- seq_len(length(pars$lp__))
   mcmc_draws <- max(mcmc.i)
-  pred_values <- matrix(NA, n_locs, mcmc_draws)
-  for(i in 1:mcmc_draws) {
-    # create cov matrix @ knots
-    if(object$covariance == "exponential") {
-      covmat <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-distKnots/pars$gp_scale[mcmc.i[i]])
-      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
-    } else {
-      covmat <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-(distKnots)/(2 * pars$gp_scale[mcmc.i[i]]^2))
-      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-(dist_knots21)/(2 * pars$gp_scale[mcmc.i[i]]^2))
-    }
+  ##  pred_values <- matrix(NA, n_locs, mcmc_draws)
+  ##  for(i in 1:mcmc_draws) {
+  ##    # create cov matrix @ knots
+  ##    if(object$covariance == "exponential") {
+  ##      covmat <- pars$gp_sigma[mcmc.i[i]] *
+  ##        exp(-distKnots/pars$gp_scale[mcmc.i[i]])
+  ##      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
+  ##        exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
+  ##    } else {
+  ##      covmat <- pars$gp_sigma[mcmc.i[i]] *
+  ##        exp(-(distKnots)/(2 * pars$gp_scale[mcmc.i[i]]^2))
+  ##      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
+  ##        exp(-(dist_knots21)/(2 * pars$gp_scale[mcmc.i[i]]^2))
+  ##    }
+  ##
+  ##    # these are projected spatial effects, dim = new data points x time
+  ##    spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
+  ##
+  ##    rows <- seq_len(n_locs)
+  ##    cols <- as.numeric(as.factor(newdata[, time][[1]]))
+  ##    # check this for > 1 year. B will also have to be modified
+  ##    if(object$year_re == FALSE) {
+  ##      if (!object$fixed_intercept) {
+  ##        pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], nrow = 1) +
+  ##          spat_effects[cbind(rows,cols)]
+  ##      } else {
+  ##        pred_values[,i] <- spat_effects[cbind(rows,cols)]
+  ##      }
+  ##    } else {
+  ##      pred_values[,i] <- spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][cols]
+  ##    }
+  ##  }
 
-    # these are projected spatial effects, dim = new data points x time
-    spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
-
-    rows <- seq_len(n_locs)
-    cols <- as.numeric(as.factor(newdata[, time][[1]]))
-    # check this for > 1 year. B will also have to be modified
-    if(object$year_re == FALSE) {
-      if (!object$fixed_intercept) {
-        pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], nrow = 1) +
-          spat_effects[cbind(rows,cols)]
-      } else {
-        pred_values[,i] <- spat_effects[cbind(rows,cols)]
-      }
-    } else {
-      pred_values[,i] <- spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][cols]
-    }
-  }
-
+  mcmc_draws <- ncol(pred_values)
   if(obs_model %in% c(0, 2)) pred_values <- exp(pred_values)
 
   if(obs_model == 0) {
     # gamma, CV is returned; gammaA = 1/(CV*CV)
     pp <- t(apply(pred_values, 1, function(x) rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
-        rate = 1/(pars$CV[,1]^2)/x)))
+      rate = 1/(pars$CV[,1]^2)/x)))
   }
   if(obs_model == 1) {
     # normal, sigma is returned
