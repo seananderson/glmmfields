@@ -1,19 +1,12 @@
 ---
 title: "MVT vs. MVN random field differences"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_document
 ---
 
 ```{r set-knitr-options, cache=FALSE, echo=FALSE}
 library("knitr")
 opts_chunk$set(message=FALSE, fig.width=7, fig.height=5)
-
-if (Sys.getenv("TRAVIS") == "true")
-  opts_chunk$set(eval = FALSE)
 ```
   
 ```{r}
@@ -47,7 +40,7 @@ print(s$plot)
 
 Let's fit a model where we estimate the degrees of freedom parameter. 
 
-```{r, message=FALSE}
+```{r, message=FALSE, cache=TRUE}
 m1 <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS, estimate_df = TRUE)
@@ -58,9 +51,6 @@ Let's look at the coverage of our correct model.
 
 ```{r}
 p <- predict(m1)
-# p <- broom::tidyMCMC(m1$model, estimate.method = "median", conf.int = TRUE) %>% 
-#   filter(grepl("y_hat", term)) %>%
-#   rename(conf_low = conf.low, conf_high = conf.high)
 pp <- predict(m1, interval = "prediction")
 plot(s$dat$y, p$estimate, col = "#00000060")
 segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000090")
@@ -73,7 +63,7 @@ abline(a = 0, b = 1, lty = 2)
 
 Now let's fit a model where we force the random field to be multivariate normal by fixing the degrees of freedom parameter at a large value. 
 
-```{r, message=FALSE}
+```{r, message=FALSE, cache=TRUE}
 m_wrong <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS,
@@ -355,8 +345,10 @@ ggplot(cov, aes(time, cov)) + geom_line() +
   geom_hline(yintercept = 0.95)
 ```
 
+coverage:
+
 ```{r, fig.width=10, fig.height=10}
-jitter <- 0.2
+jitter <- 0.25
 # HERE
 filter(d2, pt %in% 1:15) %>%
   ggplot(aes(x = conf_low, xend = conf_high, y = pt+jitter, yend = pt+jitter)) +
@@ -364,7 +356,63 @@ filter(d2, pt %in% 1:15) %>%
   geom_segment(aes(x = conf_low_wrong, xend = conf_high_wrong, 
     y = pt-jitter, yend = pt-jitter), alpha = 0.5, colour = "red") +
   geom_point(aes(x = proj, y = pt)) +
-  facet_wrap(~ time, scales = "free_x") + theme_light()
+  geom_point(aes(x = estimate, y = pt+jitter), pch = 4) +
+  geom_point(aes(x = est_wrong, y = pt-jitter), colour = "red", pch = 4) +
+  facet_wrap(~ time, scales = "free_x") + theme_light() +
+  xlab("y") + ylab("Point ID")
 ```
 
+error of abs:
 
+```{r}
+ae1 <- group_by(d2, time) %>%
+  mutate(
+    abs_err_wrong = abs(est_wrong) - abs(proj),
+    abs_err       = abs(estimate)  - abs(proj))
+
+p1 <- ggplot(ae1, aes(as.factor(time), abs_err)) + geom_line() +
+  geom_boxplot(aes(y = abs_err), col = "black") +
+  geom_hline(yintercept = 0) +
+  coord_flip()
+
+p2 <- ggplot(ae1, aes(as.factor(time), abs_err)) + geom_line() +
+  geom_boxplot(aes(y = abs_err_wrong), col = "red") +
+  geom_hline(yintercept = 0) +
+  coord_flip()
+
+gridExtra::grid.arrange(p1, p2)
+```
+
+or abs diff:
+
+```{r}
+ae1 <- group_by(d2, time) %>%
+  mutate(
+    abs_err_wrong = abs(est_wrong - proj),
+    abs_err       = abs(estimate  - proj))
+
+p1 <- ggplot(ae1, aes(as.factor(time), abs_err)) + geom_line() +
+  geom_boxplot(aes(y = abs_err), col = "black") +
+  # scale_y_log10() +
+  coord_flip()
+
+p2 <- ggplot(ae1, aes(as.factor(time), abs_err)) + geom_line() +
+  geom_boxplot(aes(y = abs_err_wrong), col = "red") +
+  coord_flip()
+  # scale_y_log10()
+
+gridExtra::grid.arrange(p1, p2)
+```
+
+or mean sq error:
+
+```{r}
+ms1 <- group_by(d2, time) %>%
+  mutate(mse_wrong = mean((est_wrong - proj) ^ 2),
+  mse = mean((estimate - proj) ^ 2))
+
+# HERE
+ggplot(ms1, aes(time, mse)) +
+  geom_line() +
+  geom_line(aes(y = mse_wrong), col = "red")
+```
