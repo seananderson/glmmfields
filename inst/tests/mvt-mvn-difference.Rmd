@@ -26,13 +26,13 @@ library(ggplot2)
 if (interactive()) options(mc.cores = parallel::detectCores())
 ITER <- 600
 CHAINS <- 2
-SEED <- 1
-gp_sigma <- 0.2
-sigma <- 0.1
-df <- 2.5
+SEED <- 42
+gp_sigma <- 0.3
+sigma <- 0.8
+df <- 0.6
 gp_scale <- 1.2
-n_draws <- 12
-nknots <- 12
+n_draws <- 16
+nknots <- 14
 ```
 
 Let's simulate some data that has heavy tails. 
@@ -47,7 +47,7 @@ print(s$plot)
 Let's fit a model where we estimate the degrees of freedom parameter. 
 
 ```{r, message=FALSE}
-m1 <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+m1 <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS, estimate_df = TRUE)
 print(m1)
@@ -57,43 +57,95 @@ Let's look at the coverage of our correct model.
 
 ```{r}
 p <- predict(m1)
+# p <- broom::tidyMCMC(m1$model, estimate.method = "median", conf.int = TRUE) %>% 
+#   filter(grepl("y_hat", term)) %>%
+#   rename(conf_low = conf.low, conf_high = conf.high)
 pp <- predict(m1, interval = "prediction")
 plot(s$dat$y, p$estimate, col = "#00000060")
 segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000090")
 segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1.5)
 abline(a = 0, b = 1, lty = 2)
 
-(coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high) %>% round(2))
+(coverage <- mean(s$dat$y > p$conf_low & s$dat$y < p$conf_high) %>% round(3))
+(coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high) %>% round(3))
 ```
 
 Now let's fit a model where we force the random field to be multivariate normal by fixing the degrees of freedom parameter at a large value. 
 
 ```{r, message=FALSE}
-m_wrong <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+m_wrong <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS,
-  estimate_df = FALSE, fixed_df_value = 1e6)
+  estimate_df = FALSE, fixed_df_value = 500)
 print(m_wrong)
 ```
 
 ```{r}
 p_wrong <- predict(m_wrong)
+# p_wrong <- broom::tidyMCMC(m_wrong$model, estimate.method = "median", conf.int = TRUE) %>% 
+#   filter(grepl("y_hat", term)) %>%
+#   rename(conf_low = conf.low, conf_high = conf.high)
 pp_wrong <- predict(m_wrong, interval = "prediction")
-mean(s$dat$y > pp_wrong$conf_low & s$dat$y < pp_wrong$conf_high) %>% round(2)
+plot(s$dat$y, p_wrong$estimate, col = "#00000060")
+segments(s$dat$y, pp_wrong$conf_low, s$dat$y, pp_wrong$conf_high, lwd = 0.5, col = "#00000090")
+segments(s$dat$y, p_wrong$conf_low, s$dat$y, p_wrong$conf_high, lwd = 1.5)
+abline(a = 0, b = 1, lty = 2)
+
+mean(s$dat$y > p_wrong$conf_low & s$dat$y < p_wrong$conf_high) %>% round(3)
+mean(s$dat$y > pp_wrong$conf_low & s$dat$y < pp_wrong$conf_high) %>% round(3)
 ```
 
 Let's look at the ratio of the confidence intervals. The objects starting with `p` contain the confidence intervals on the mean and the objects starting with `pp` contain the prediction confidence intervals (i.e. posterior predictive checks).
 
 ```{r}
-hist(log((pp_wrong$conf_high - pp_wrong$conf_low) / (pp$conf_high - pp$conf_low)))
-hist(log((p_wrong$conf_high - p_wrong$conf_low) / (p$conf_high - p$conf_low)))
+pp_cis <- log((pp_wrong$conf_high - pp_wrong$conf_low) / (pp$conf_high - pp$conf_low))
+p_cis <- log((p_wrong$conf_high - p_wrong$conf_low) / (p$conf_high - p$conf_low))
+hist(pp_cis);abline(v = median(pp_cis), col = "red")
+hist(p_cis);abline(v = median(p_cis), col = "red")
+
+cis_wrong <- p_wrong$conf_high - p_wrong$conf_low
+cis <- p$conf_high - p$conf_low
+plot(cis, cis_wrong, log = "xy");abline(a = 0, b = 1, col = "red")
+plot(log(abs(s$dat$y)), exp(log(cis_wrong) - log(cis)), log = "y")
+abline(h = 1, col = "red")
+abline(h = median(exp(log(cis_wrong) - log(cis))), col = "blue")
+
+pp_cis_wrong <- pp_wrong$conf_high - pp_wrong$conf_low
+pp_cis <- pp$conf_high - pp$conf_low
+plot(pp_cis, pp_cis_wrong, log = "xy");abline(a = 0, b = 1, col = "red")
+plot(log(abs(s$dat$y)), exp(log(pp_cis_wrong) - log(pp_cis)), log = "y")
+abline(h = 1, col = "red")
+abline(h = median(exp(log(pp_cis_wrong) - log(pp_cis))), col = "blue")
+
+ggplot(data.frame(y = s$dat$y, cis = cis, ratio = exp(log(cis_wrong) - log(cis)), 
+  time = as.factor(s$dat$time)), 
+  aes(log(abs(y)), ratio)) +
+  geom_point() +
+  geom_hline(yintercept = 1, lty = 2) +
+  geom_smooth(method = "gam", se = F, colour = "red") +
+  facet_wrap(~time) 
+
+# HERE
+ggplot(data.frame(y = s$dat$y, cis = cis, ratio = exp(log(cis_wrong) - log(cis)), 
+  time = as.factor(s$dat$time)), 
+  aes(as.factor(time), ratio)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 1, lty = 2) +
+  coord_flip()
 ```
 
 Let's look at the sum of the squared residuals:
 
 ```{r}
-sum((pp$estimate - s$dat$y)^2)
-sum((pp_wrong$estimate - s$dat$y)^2)
+sum((p$estimate - s$dat$y)^2)
+sum((p_wrong$estimate - s$dat$y)^2)
+```
+
+Correlation
+
+```{r}
+cor(pp$estimate, s$dat$y)
+cor(pp_wrong$estimate, s$dat$y)
 ```
 
 Let's plot the true data, and the spatial productions from the correct and incorrect models.
@@ -107,8 +159,8 @@ plot(m_wrong)
 Now let's combine the predictions to compare them:
 
 ```{r}
-d <- data.frame(s$dat, pp)
-d_wrong <- data.frame(s$dat, pp_wrong)
+d <- data.frame(s$dat, p)
+d_wrong <- data.frame(s$dat, p_wrong)
 d_combined <- data.frame(d, select(d_wrong, estimate) %>% rename(est_wrong = estimate))
 ```
 
@@ -124,14 +176,14 @@ ggplot(d_combined, aes(lon, lat, colour = estimate - est_wrong)) +
 These plots look at the residuals spatially 
 
 ```{r}
-ggplot(d, aes(lon, lat, colour = estimate - y)) +
+ggplot(d, aes(lon, lat, colour = abs(estimate - y))) +
   geom_point(size = 2) +
-  scale_color_gradient2() +
+  viridis::scale_color_viridis() +
   facet_wrap(~time)
 
-ggplot(d_wrong, aes(lon, lat, colour = estimate - y)) +
+ggplot(d_wrong, aes(lon, lat, colour = abs(estimate - y))) +
   geom_point(size = 2) +
-  scale_color_gradient2() +
+  viridis::scale_color_viridis() +
   facet_wrap(~time)
 ```
 
@@ -141,3 +193,127 @@ What about looking at the maximum absolute residuals?
 max(abs(d_wrong$estimate - d_wrong$y))
 max(abs(d$estimate - d$y))
 ```
+
+CIs spatially?
+
+```{r}
+d$pp_cis <- pp_cis
+d$p_cis <- p_cis
+ggplot(d, aes(lon, lat, colour = p_cis)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+```
+
+Just the big year?
+
+```{r}
+big <- group_by(d, time) %>% summarise(med_abs_val = median(abs(y))) %>% arrange(-med_abs_val) %>% .[1,]
+
+filter(d, time == big$time) %>%
+  ggplot(aes(lon, lat, colour = p_cis)) +
+  geom_point(size = 2) +
+  scale_color_gradient2()
+
+p1 <- filter(d_combined, time == big$time) %>%
+  ggplot(aes(lon, lat, colour = estimate - y)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+
+p2 <- filter(d_combined, time == big$time) %>%
+  ggplot(aes(lon, lat, colour = est_wrong - y)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+
+gridExtra::grid.arrange(p1, p2)
+```
+
+Small years?
+
+```{r}
+p1 <- filter(d_combined, time != big$time) %>%
+  ggplot(aes(lon, lat, colour = estimate - y)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+
+p2 <- filter(d_combined, time != big$time) %>%
+  ggplot(aes(lon, lat, colour = est_wrong - y)) +
+  geom_point(size = 2) +
+  scale_color_gradient2() +
+  facet_wrap(~time)
+
+gridExtra::grid.arrange(p1, p2)
+```
+
+Pars:
+
+```{r}
+library(bayesplot)
+pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
+mm <- as.matrix(m1$model)
+p1 <- mcmc_areas(mm, pars = pars) + xlim(0, 5)
+
+pars <- c("gp_sigma", "sigma[1]", "gp_scale")
+mm_wrong <- as.matrix(m_wrong$model)
+p2 <- mcmc_areas(mm_wrong, pars = pars) + xlim(0, 5)
+
+gridExtra::grid.arrange(p1, p2)
+```
+
+Knots?
+
+```{r}
+library(rstan)
+e <- extract(m1$model, pars = "spatialEffectsKnots")[[1]]
+dim(e)
+e_med <- apply(e, 2:3, median)
+
+e_wrong <- extract(m_wrong$model, pars = "spatialEffectsKnots")[[1]]
+dim(e_wrong)
+e_wrong_med <- apply(e_wrong, 2:3, median)
+
+image(e_med - e_wrong_med)
+plot(as.numeric(e_med), as.numeric(e_wrong_med))
+plot(as.numeric(e_med) - as.numeric(e_wrong_med))
+
+plot(as.numeric(e_med) - as.numeric(s$re_knots))
+plot(as.numeric(e_wrong_med) - as.numeric(s$re_knots))
+
+knot_res <- as.numeric(e_med) - as.numeric(s$re_knots)
+knot_res_wrong <- as.numeric(e_wrong_med) - as.numeric(s$re_knots)
+
+median(abs(knot_res))
+median(abs(knot_res_wrong))
+
+# HERE
+ggplot(data.frame(knot_true = as.numeric(s$re_knots), 
+  knot_res, knot_res_wrong, time = rep(unique(s$dat$time), nknots)), 
+  aes(log(abs(knot_true)), abs(knot_res_wrong) - abs(knot_res))) +
+  geom_point() +
+  geom_hline(yintercept = 0, lty = 2) +
+  facet_wrap(~time)
+
+# HERE
+ggplot(data.frame(knot_true = as.numeric(s$re_knots), 
+  knot_res, knot_res_wrong, time = rep(unique(s$dat$time), nknots)), 
+  aes(as.factor(time), abs(knot_res_wrong) - abs(knot_res))) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, lty = 2) +
+  coord_flip()
+```
+
+Residual ratios?
+
+```{r}
+d_combined <- d_combined %>% mutate(resid = y - estimate, resid_wrong = y - est_wrong)
+
+ggplot(d_combined, aes(as.factor(time), abs(resid_wrong) - abs(resid))) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, lty = 2) +
+  coord_flip()
+```
+
+????
