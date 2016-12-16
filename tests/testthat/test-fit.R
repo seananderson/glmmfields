@@ -41,6 +41,10 @@ test_that("mvt-norm model fits with repeat stations", {
   segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 2)
   abline(a = 0, b = 1)
 
+  plot(m)
+  plot(m, type = "spatial-residual")
+  plot(m, type = "residual-vs-fitted")
+
   coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high)
   expect_equal(coverage, 0.95, tol = 0.05)
 
