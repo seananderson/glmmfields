@@ -23,7 +23,7 @@ CHAINS <- 2
 SEED <- 42
 gp_sigma <- 0.3
 sigma <- 0.8
-df <- 0.6
+df <- 2
 gp_scale <- 1.2
 n_draws <- 16
 nknots <- 14
@@ -40,7 +40,7 @@ print(s$plot)
 
 Let's fit a model where we estimate the degrees of freedom parameter. 
 
-```{r, message=FALSE, cache=TRUE}
+```{r, message=FALSE, cache=FALSE}
 m1 <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS, estimate_df = TRUE)
@@ -63,7 +63,7 @@ abline(a = 0, b = 1, lty = 2)
 
 Now let's fit a model where we force the random field to be multivariate normal by fixing the degrees of freedom parameter at a large value. 
 
-```{r, message=FALSE, cache=TRUE}
+```{r, message=FALSE, cache=FALSE}
 m_wrong <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
   lat = "lat", lon = "lon", nknots = nknots,
   iter = ITER, chains = CHAINS,
