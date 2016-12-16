@@ -6,11 +6,11 @@
 #'
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point
 #'   scale_color_gradient2 geom_smooth geom_hline facet_wrap
-#'   geom_contour
 
 #' @export
 
-plot.rrfield <- function(x, type = c("prediction", "contour", "spatial-residual", "residual-vs-fitted"), ...)  {
+plot.rrfield <- function(x,
+  type = c("prediction", "spatial-residual", "residual-vs-fitted"), ...)  {
 
   p <- predict(x, ...)
   d <- data.frame(x$data, p)
@@ -37,12 +37,6 @@ plot.rrfield <- function(x, type = c("prediction", "contour", "spatial-residual"
       facet_wrap(x$time) +
       geom_hline(yintercept = 0, lty = 2) +
       geom_smooth(method = "loess", se = FALSE, colour = "red")
-  }
-
-  if (type[[1]] == "contour") {
-    g <- ggplot(d, aes_string(x$lon, x$lat, z = "estimate")) +
-      geom_contour() +
-      facet_wrap(x$time)
   }
 
   g

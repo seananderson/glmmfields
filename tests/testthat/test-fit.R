@@ -43,7 +43,6 @@ test_that("mvt-norm model fits with repeat stations", {
 
   plot(m)
   plot(m, type = "spatial-residual")
-  # plot(m, type = "contour")
   plot(m, type = "residual-vs-fitted")
 
   coverage <- mean(s$dat$y > pp$conf_low & s$dat$y < pp$conf_high)
