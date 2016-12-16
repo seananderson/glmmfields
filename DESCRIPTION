@@ -1,16 +1,16 @@
 Package: rrfields
 Type: Package
 Title: Robust random fields for spatiotemporal modelling
-Version: 0.01
-Date: 2016-11-19
+Version: 0.01.9000
+Date: 2016-12-15
 Authors@R: c(
     person(c("Sean", "C."), "Anderson", email = "sandrsn@uw.edu", 
       role = c("aut", "cre")),
     person(c("Eric", "J."), "Ward", role = "aut"))
-Description: Implements spatiotemporal models that allow for extreme spatial
-    deviations through time. It uses a predictive process approach with random
-    fields implemented through a multivariate-t distribution instead of a
-    multivariate normal.
+Description: Implements Baysian spatiotemporal models that allow for extreme
+    spatial deviations through time. It uses a predictive process approach
+    with random fields implemented through a multivariate-t distribution
+    instead of a multivariate normal.
 License: GPL (>=3)
 Depends:
     R (>= 3.3.0),

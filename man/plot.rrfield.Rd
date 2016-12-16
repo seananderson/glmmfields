@@ -4,8 +4,8 @@
 \alias{plot.rrfield}
 \title{Plot predictions from an rrfield model}
 \usage{
-\method{plot}{rrfield}(x, type = c("prediction", "grid", "spatial-residual",
-  "residual-vs-fitted"), ...)
+\method{plot}{rrfield}(x, type = c("prediction", "contour",
+  "spatial-residual", "residual-vs-fitted"), ...)
 }
 \arguments{
 \item{x}{An object returned by \code{\link{rrfield}}}
