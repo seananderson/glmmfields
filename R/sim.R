@@ -21,7 +21,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential",
   obs_error = c("normal", "gamma", "nb2", "tweedie"), B = c(0), ar = 0,
-  X = rep(1, n_draws * n_data_points)) {
+  X = rep(1, n_draws * n_data_points), tweedie_theta = 1.5) {
 
   g <- data.frame(lon = runif(n_data_points, 0, 10),
     lat = runif(n_data_points, 0, 10))
@@ -108,7 +108,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   }
   if (obs_error[[1]] == "tweedie") {
     proj <- proj + eta_mat
-    y <- matrix(data = tweedie::rtweedie(N, power = 1.5, mu = as.numeric(exp(proj)), phi = sd_obs),
+    y <- matrix(data = tweedie::rtweedie(N, power = tweedie_theta, mu = as.numeric(exp(proj)), phi = sd_obs),
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "gamma") {
