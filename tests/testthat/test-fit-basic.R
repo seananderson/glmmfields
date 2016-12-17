@@ -83,7 +83,7 @@ test_that("mvt-norm model fits without station argument", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
-  b_nostation <- broom::tidyMCMC(m1$model, estimate.method = "median")
+  b_nostation <- broom::tidyMCMC(m_nostation$model, estimate.method = "median")
 
   expect_equal(b$estimate, b_nostation$estimate, tol = 0.02) # w or w/o station arg
 })

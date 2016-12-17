@@ -99,23 +99,23 @@ test_that("mvt-binomial model fits", {
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     obs_error = "binomial", B = b0)
-  print(s$plot)
-  out <- reshape2::melt(s$proj)
-  names(out) <- c("time", "pt", "y")
-  out <- dplyr::arrange_(out, "time", "pt")
-  out$lon <- s$dat$lon
-  out$lat <- s$dat$lat
-  ggplot2::ggplot(out, ggplot2::aes(lon, lat, colour = plogis(y))) + ggplot2::geom_point() +
-    ggplot2::facet_wrap(~time)
+  # print(s$plot)
+  # out <- reshape2::melt(s$proj)
+  # names(out) <- c("time", "pt", "y")
+  # out <- dplyr::arrange_(out, "time", "pt")
+  # out$lon <- s$dat$lon
+  # out$lat <- s$dat$lat
+  # ggplot2::ggplot(out, ggplot2::aes(lon, lat, colour = plogis(y))) + ggplot2::geom_point() +
+  #   ggplot2::facet_wrap(~time)
 
   m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, obs_error = "binomial",
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
-  m
-
-  p <- predict(m)
-  p <- predict(m, interval = "prediction")
+  # m
+  #
+  # p <- predict(m)
+  # p <- predict(m, interval = "prediction")
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
