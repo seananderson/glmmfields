@@ -68,19 +68,24 @@ test_that("mvt-norm model fits without station argument", {
   skip_on_travis()
   skip_on_appveyor()
 
+  set.seed(SEED)
+
+  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
+
   m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
 
-  m1 <- rrfield(y ~ 0, data = s$dat, time = "time",
+  m_nostation <- rrfield(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
-  b1 <- broom::tidyMCMC(m1$model, estimate.method = "median")
+  b_nostation <- broom::tidyMCMC(m1$model, estimate.method = "median")
 
-  expect_equal(b$estimate, b1$estimate, tol = 0.02) # w or w/o station arg
+  expect_equal(b$estimate, b_nostation$estimate, tol = 0.02) # w or w/o station arg
 })
 
 # ------------------------------------------------------
