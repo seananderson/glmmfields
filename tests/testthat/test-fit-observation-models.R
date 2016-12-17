@@ -87,30 +87,33 @@ test_that("mvt-tweedie model fits", {
   skip_on_appveyor()
   set.seed(SEED)
 
-  sigma <- 1.6
-  df <- 12
+  sigma <- 1.8 # tweedie_phi internally
+  df <- 8
   b0 <- 1.6
-  n_draws <- 8
+  n_draws <- 15
   gp_scale <- 1.6
-  nknots <- 6
+  nknots <- 8
   gp_sigma <- 0.2
+  tweedie_theta <- 1.5 # 1 (poisson) < tweedie_theta < 2 (gamma)
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     obs_error = "tweedie", B = b0)
-  print(s$plot)
+  # print(s$plot)
   plot(s$dat$y)
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "tweedie",
+    iter = 600, chains = CHAINS, obs_error = "tweedie",
     estimate_df = FALSE, fixed_df_value = df,
-    control = list(adapt_delta = 0.9), seed = SEED, tweedie_series_n = 10)
+    control = list(adapt_delta = 0.95), seed = SEED, tweedie_series_n = 7)
+  m
 
   p <- predict(m)
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "tweedie_theta[1]", "estimate"], tweedie_theta, tol = tweedie_theta * TOL)
+  expect_equal(b[b$term == "tweedie_phi[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
   expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)

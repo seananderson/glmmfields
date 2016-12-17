@@ -155,7 +155,7 @@ model {
 
   // switch between observation error models: normal (1), gamma (0), NB2 (2), tweedie (3)
  if(obs_model == 3) {
-    tweedie_phi[1] ~ cauchy(0, 5);
+    tweedie_phi[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
     for (i in 1:N) {
       tweedie_lambda[i] = 1/tweedie_phi[1]*pow(y_hat[i],(2-tweedie_theta[1]))/(2-tweedie_theta[1]);
       tweedie_alpha[i] = (2-tweedie_theta[1])/(tweedie_theta[1]-1);
