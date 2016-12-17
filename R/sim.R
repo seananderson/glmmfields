@@ -20,8 +20,8 @@
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential",
-  obs_error = c("normal", "gamma", "nb2", "binomial"), B = c(0), ar = 0,
-  X = rep(1, n_draws * n_data_points)) {
+  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial"),
+  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points)) {
 
   g <- data.frame(lon = runif(n_data_points, 0, 10),
     lat = runif(n_data_points, 0, 10))
@@ -102,8 +102,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "nb2") {
-    proj <- proj + eta_mat
-    y <- matrix(data = stats::rnbinom(N, mu = exp(proj), size = sd_obs),
+    y <- matrix(data = stats::rnbinom(N, mu = exp(proj + eta_mat), size = sd_obs),
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "gamma") {
@@ -114,6 +113,10 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   }
   if (obs_error[[1]] == "binomial") { # plogis = inverse_logit
     y <- matrix(data = stats::rbinom(N, size = 1, prob = stats::plogis(proj + eta_mat)),
+      ncol = ncol(proj), nrow = nrow(proj))
+  }
+  if (obs_error[[1]] == "poisson") {
+    y <- matrix(data = stats::rpois(N, lambda = exp(proj + eta_mat)),
       ncol = ncol(proj), nrow = nrow(proj))
   }
 

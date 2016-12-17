@@ -23,7 +23,7 @@ data {
   int<lower=0,upper=1> norm_params;
   int<lower=0,upper=1> gamma_params;
   int<lower=0,upper=1> nb2_params;
-  int<lower=0,upper=4> obs_model;
+  int<lower=0,upper=5> obs_model;
   real<lower=2> fixed_df_value;
   real fixed_ar_value;
   int<lower=0,upper=1> est_temporalRE;
@@ -152,7 +152,11 @@ model {
     }
   }
 
-  // switch between observation error models: normal (1), gamma (0), NB2 (2), binomial (4); (tweedie (3) is in a branch)
+  // switch between observation error models: normal (1), gamma (0), NB2 (2), binomial (4), poisson (5)
+  // (tweedie (3) is in a branch)
+  if(obs_model == 5) {
+    y_int ~ poisson_log(y_hat);
+  }
   if(obs_model == 4) {
     y_int ~ bernoulli_logit(y_hat);
   }

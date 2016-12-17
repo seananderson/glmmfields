@@ -121,3 +121,38 @@ test_that("mvt-binomial model fits", {
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
 })
+
+# ------------------------------------------------------
+# a poisson observation model
+
+test_that("mvt-poisson model fits", {
+  skip_on_cran()
+  skip_on_travis()
+  skip_on_appveyor()
+
+  set.seed(SEED)
+
+  nknots <- 12
+  gp_sigma <- 0.8
+  df <- 10
+  b0 <- 3
+  n_draws <- 15
+  gp_scale <- 2.1
+
+  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
+    obs_error = "poisson", B = b0)
+  # print(s$plot)
+  # hist(s$dat$y)
+
+  m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+    lat = "lat", lon = "lon", nknots = nknots,
+    iter = ITER, chains = CHAINS, obs_error = "poisson",
+    estimate_df = FALSE, fixed_df_value = df, seed = SEED)
+  m
+
+  b <- tidy(m, estimate.method = "median")
+  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)
+})

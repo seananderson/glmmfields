@@ -61,7 +61,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   between random fields at time(t) and time(t-1). If the ar parameter
 #'   is estimated then this argument is ignored.
 #' @param obs_error Character object indicating the observation process
-#'   distribution.
+#'   distribution (i.e. the GLM "family"). Links are hardcoded. Gamma, NB2,
+#'   and Poisson have a log link. Binomial has a logit link.
 #' @param covariance Character object describing the covariance
 #'   function of the Gaussian Process.
 #' @param algorithm Character object describing whether the model should be fit
@@ -92,7 +93,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   fixed_ar_value = 0,
   estimate_df = TRUE,
   estimate_ar = FALSE,
-  obs_error = c("normal", "gamma", "nb2", "binomial"),
+  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
@@ -113,7 +114,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   data_knots = data_list$knots
 
   obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, binomial = 4L,
-    stop(paste("observation model", obs_error[[1]], "is not defined.")))
+    poisson = 5L, stop(paste("observation model", obs_error[[1]], "is not defined.")))
 
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
@@ -139,7 +140,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       lower_truncation = lower_truncation,
       fixed_intercept = as.integer(fixed_intercept)))
 
-  if (obs_model %in% c(2L, 4L)) { # NB2 or binomial obs model
+  if (obs_model %in% c(2L, 4L, 5L)) { # NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
   } else {
     stan_data <- c(stan_data, list(y_int = rep(0L, stan_data$N)))

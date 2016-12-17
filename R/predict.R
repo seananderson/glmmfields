@@ -77,7 +77,7 @@ predict.rrfield <- function(object, newdata = NULL,
   }
 
   mcmc_draws <- ncol(pred_values)
-  if(obs_model %in% c(0, 2)) pred_values <- exp(pred_values) # gamma or NB2
+  if(obs_model %in% c(0, 2, 5)) pred_values <- exp(pred_values) # gamma or NB2 or poisson
   if(obs_model == 4) pred_values <- stats::plogis(pred_values) # binomial (plogis = inverse logit)
 
   if(obs_model == 0) {
@@ -96,6 +96,10 @@ predict.rrfield <- function(object, newdata = NULL,
   if(obs_model == 4) {
     # binomial
     pp <- t(apply(pred_values, 1, function(x) stats::rbinom(mcmc_draws, size = 1, prob = x)))
+  }
+  if(obs_model == 5) {
+    # poisson
+    pp <- t(apply(pred_values, 1, function(x) stats::rpois(mcmc_draws, lambda = x)))
   }
 
   est_method <- switch(estimate_method[[1]], median = median, mean = mean)
