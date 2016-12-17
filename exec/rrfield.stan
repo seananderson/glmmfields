@@ -30,6 +30,8 @@ data {
   int<lower=0> n_year_effects;
   int<lower=0> lower_truncation;
   int<lower=0,upper=1> fixed_intercept;
+  int<lower=0,upper=1> tweedie_params;
+  int<lower=0> tweedie_series_n;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -38,6 +40,8 @@ parameters {
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
+  real<lower=0> tweedie_phi[tweedie_params];
+  real<lower=1,upper=2> tweedie_theta[tweedie_params];
   real yearEffects[n_year_effects];
   real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
@@ -99,6 +103,11 @@ transformed parameters {
 
 }
 model {
+  real tweedie_lambda[N];
+  real tweedie_alpha[N];
+  real tweedie_beta[N];
+  vector[tweedie_series_n] ps;
+
   // priors:
   gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
@@ -132,7 +141,10 @@ model {
   if (est_df == 1) {
     W ~ scaled_inv_chi_square(df[1], 1);
     df ~ gamma(2, 0.1);
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
+  } else {
+    W ~ scaled_inv_chi_square(fixed_df_value, 1);
+  }
+  spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
     for(t in 2:nT) {
       if(est_ar == 1) {
         spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
@@ -140,19 +152,24 @@ model {
         spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
       }
     }
-  } else {
-    W ~ scaled_inv_chi_square(fixed_df_value, 1);
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
-    for(t in 2:nT) {
-      if(est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
+
+  // switch between observation error models: normal (1), gamma (0), NB2 (2), tweedie (3)
+ if(obs_model == 3) {
+    tweedie_phi[1] ~ cauchy(0, 5);
+    for (i in 1:N) {
+      tweedie_lambda[i] = 1/tweedie_phi[1]*pow(y_hat[i],(2-tweedie_theta[1]))/(2-tweedie_theta[1]);
+      tweedie_alpha[i] = (2-tweedie_theta[1])/(tweedie_theta[1]-1);
+      tweedie_beta[i] = 1/tweedie_phi[1]*pow(y_hat[i], (1-tweedie_theta[1]))/(tweedie_theta[1]-1);
+      if (y[i] == 0) {
+        target += -tweedie_lambda[i];
       } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
+        for (m in 1:tweedie_series_n) {
+          ps[m] = poisson_lpmf(m | tweedie_lambda[i]) + gamma_lpdf(y[i] | m*tweedie_alpha[i], tweedie_beta[i]);
+        }
+        target += log_sum_exp(ps);
       }
     }
   }
-
-  // switch between observation error models: normal (1), gamma (0), NB2 (2)
   if(obs_model == 2) {
     nb2_phi[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
     if (lower_truncation == 0) {

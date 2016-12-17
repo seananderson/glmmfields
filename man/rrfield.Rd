@@ -9,9 +9,9 @@ rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 2),
   fixed_df_value = 5, fixed_ar_value = 0, estimate_df = TRUE,
-  estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2"),
-  covariance = c("squared-exponential", "exponential"),
-  algorithm = c("sampling", "meanfield"), year_re = FALSE,
+  estimate_ar = FALSE, obs_error = c("normal", "gamma", "nb2", "tweedie"),
+  tweedie_series_n = 30, covariance = c("squared-exponential",
+  "exponential"), algorithm = c("sampling", "meanfield"), year_re = FALSE,
   lower_truncation = 0, control = list(adapt_delta = 0.9), ...)
 }
 \arguments{

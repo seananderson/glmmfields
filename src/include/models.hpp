@@ -57,6 +57,8 @@ private:
     int n_year_effects;
     int lower_truncation;
     int fixed_intercept;
+    int tweedie_params;
+    int tweedie_series_n;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -305,6 +307,16 @@ public:
         vals_i__ = context__.vals_i("fixed_intercept");
         pos__ = 0;
         fixed_intercept = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "tweedie_params", "int", context__.to_vec());
+        tweedie_params = int(0);
+        vals_i__ = context__.vals_i("tweedie_params");
+        pos__ = 0;
+        tweedie_params = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "tweedie_series_n", "int", context__.to_vec());
+        tweedie_series_n = int(0);
+        vals_i__ = context__.vals_i("tweedie_series_n");
+        pos__ = 0;
+        tweedie_series_n = vals_i__[pos__++];
 
         // validate data
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -339,6 +351,9 @@ public:
         check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
         check_greater_or_equal(function__,"fixed_intercept",fixed_intercept,0);
         check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
+        check_greater_or_equal(function__,"tweedie_params",tweedie_params,0);
+        check_less_or_equal(function__,"tweedie_params",tweedie_params,1);
+        check_greater_or_equal(function__,"tweedie_series_n",tweedie_series_n,0);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
         (void) DUMMY_VAR__;  // suppress unused var warning
@@ -364,6 +379,8 @@ public:
         num_params_r__ += norm_params;
         num_params_r__ += gamma_params;
         num_params_r__ += nb2_params;
+        num_params_r__ += tweedie_params;
+        num_params_r__ += tweedie_params;
         num_params_r__ += n_year_effects;
         num_params_r__ += est_temporalRE;
         num_params_r__ += nKnots * nT;
@@ -469,6 +486,36 @@ public:
             writer__.scalar_lb_unconstrain(0,nb2_phi[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable nb2_phi: ") + e.what());
+        }
+
+        if (!(context__.contains_r("tweedie_phi")))
+            throw std::runtime_error("variable tweedie_phi missing");
+        vals_r__ = context__.vals_r("tweedie_phi");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "tweedie_phi", "double", context__.to_vec(tweedie_params));
+        std::vector<double> tweedie_phi(tweedie_params,double(0));
+        for (int i0__ = 0U; i0__ < tweedie_params; ++i0__)
+            tweedie_phi[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < tweedie_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,tweedie_phi[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable tweedie_phi: ") + e.what());
+        }
+
+        if (!(context__.contains_r("tweedie_theta")))
+            throw std::runtime_error("variable tweedie_theta missing");
+        vals_r__ = context__.vals_r("tweedie_theta");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "tweedie_theta", "double", context__.to_vec(tweedie_params));
+        std::vector<double> tweedie_theta(tweedie_params,double(0));
+        for (int i0__ = 0U; i0__ < tweedie_params; ++i0__)
+            tweedie_theta[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < tweedie_params; ++i0__)
+            try {
+            writer__.scalar_lub_unconstrain(1,2,tweedie_theta[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable tweedie_theta: ") + e.what());
         }
 
         if (!(context__.contains_r("yearEffects")))
@@ -643,6 +690,26 @@ public:
                 nb2_phi.push_back(in__.scalar_lb_constrain(0,lp__));
             else
                 nb2_phi.push_back(in__.scalar_lb_constrain(0));
+        }
+
+        vector<T__> tweedie_phi;
+        size_t dim_tweedie_phi_0__ = tweedie_params;
+        tweedie_phi.reserve(dim_tweedie_phi_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_tweedie_phi_0__; ++k_0__) {
+            if (jacobian__)
+                tweedie_phi.push_back(in__.scalar_lb_constrain(0,lp__));
+            else
+                tweedie_phi.push_back(in__.scalar_lb_constrain(0));
+        }
+
+        vector<T__> tweedie_theta;
+        size_t dim_tweedie_theta_0__ = tweedie_params;
+        tweedie_theta.reserve(dim_tweedie_theta_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_tweedie_theta_0__; ++k_0__) {
+            if (jacobian__)
+                tweedie_theta.push_back(in__.scalar_lub_constrain(1,2,lp__));
+            else
+                tweedie_theta.push_back(in__.scalar_lub_constrain(1,2));
         }
 
         vector<T__> yearEffects;
@@ -838,67 +905,86 @@ public:
 
         // model body
         try {
-            lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
-            lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
-            if (as_bool(logical_eq(est_ar,1))) {
-                lp_accum__.add(normal_log<propto__>(ar, 0, 1));
-            }
-            if (as_bool(logical_gte(nCov,1))) {
-                lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
-            }
-            if (as_bool(logical_gte(nCov,2))) {
-                for (int i = 2; i <= nCov; ++i) {
-                    lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
+            {
+                vector<T__> tweedie_lambda(N);
+                vector<T__> tweedie_alpha(N);
+                vector<T__> tweedie_beta(N);
+                Eigen::Matrix<T__,Eigen::Dynamic,1>  ps(static_cast<Eigen::VectorXd::Index>(tweedie_series_n));
+                (void) ps;  // dummy to suppress unused var warning
+                stan::math::initialize(tweedie_lambda, DUMMY_VAR__);
+                stan::math::initialize(tweedie_alpha, DUMMY_VAR__);
+                stan::math::initialize(tweedie_beta, DUMMY_VAR__);
+                stan::math::initialize(ps, DUMMY_VAR__);
+                lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
+                lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+                if (as_bool(logical_eq(est_ar,1))) {
+                    lp_accum__.add(normal_log<propto__>(ar, 0, 1));
                 }
-            }
-            if (as_bool(logical_eq(est_temporalRE,1))) {
-                lp_accum__.add(student_t_log<propto__>(year_sigma, get_base1(prior_rw_sigma,1,"prior_rw_sigma",1), get_base1(prior_rw_sigma,2,"prior_rw_sigma",1), get_base1(prior_rw_sigma,3,"prior_rw_sigma",1)));
-                lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
-                for (int t = 2; t <= nT; ++t) {
-                    lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
+                if (as_bool(logical_gte(nCov,1))) {
+                    lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
                 }
-            }
-            if (as_bool(logical_eq(est_df,1))) {
-                lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, get_base1(df,1,"df",1), 1));
-                lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
-                for (int t = 2; t <= nT; ++t) {
-                    if (as_bool(logical_eq(est_ar,1))) {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
-                    } else {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                if (as_bool(logical_gte(nCov,2))) {
+                    for (int i = 2; i <= nCov; ++i) {
+                        lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
                     }
                 }
-            } else {
-                lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, fixed_df_value, 1));
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
-                for (int t = 2; t <= nT; ++t) {
-                    if (as_bool(logical_eq(est_ar,1))) {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
-                    } else {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                if (as_bool(logical_eq(est_temporalRE,1))) {
+                    lp_accum__.add(student_t_log<propto__>(year_sigma, get_base1(prior_rw_sigma,1,"prior_rw_sigma",1), get_base1(prior_rw_sigma,2,"prior_rw_sigma",1), get_base1(prior_rw_sigma,3,"prior_rw_sigma",1)));
+                    lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+                    for (int t = 2; t <= nT; ++t) {
+                        lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
                     }
                 }
-            }
-            if (as_bool(logical_eq(obs_model,2))) {
-                lp_accum__.add(student_t_log<propto__>(get_base1(nb2_phi,1,"nb2_phi",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-                if (as_bool(logical_eq(lower_truncation,0))) {
-                    lp_accum__.add(neg_binomial_2_log_log<propto__>(y_int, y_hat, get_base1(nb2_phi,1,"nb2_phi",1)));
+                if (as_bool(logical_eq(est_df,1))) {
+                    lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, get_base1(df,1,"df",1), 1));
+                    lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
                 } else {
-                    for (int i = 1; i <= N; ++i) {
-                        lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(y_int,i,"y_int",1), exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
-                        if (get_base1(y_int,i,"y_int",1) < lower_truncation) lp_accum__.add(-std::numeric_limits<double>::infinity());
-                        else lp_accum__.add(-neg_binomial_2_ccdf_log(lower_truncation, exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
+                    lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, fixed_df_value, 1));
+                }
+                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
+                for (int t = 2; t <= nT; ++t) {
+                    if (as_bool(logical_eq(est_ar,1))) {
+                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                    } else {
+                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                     }
                 }
-            }
-            if (as_bool(logical_eq(obs_model,1))) {
-                lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-                lp_accum__.add(normal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
-            }
-            if (as_bool(logical_eq(obs_model,0))) {
-                lp_accum__.add(student_t_log<propto__>(get_base1(CV,1,"CV",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
-                lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), elt_divide(get_base1(gammaA,1,"gammaA",1),exp(y_hat))));
+                if (as_bool(logical_eq(obs_model,3))) {
+                    lp_accum__.add(cauchy_log<propto__>(get_base1(tweedie_phi,1,"tweedie_phi",1), 0, 5));
+                    for (int i = 1; i <= N; ++i) {
+                        stan::math::assign(get_base1_lhs(tweedie_lambda,i,"tweedie_lambda",1), (((1 / get_base1(tweedie_phi,1,"tweedie_phi",1)) * pow(get_base1(y_hat,i,"y_hat",1),(2 - get_base1(tweedie_theta,1,"tweedie_theta",1)))) / (2 - get_base1(tweedie_theta,1,"tweedie_theta",1))));
+                        stan::math::assign(get_base1_lhs(tweedie_alpha,i,"tweedie_alpha",1), ((2 - get_base1(tweedie_theta,1,"tweedie_theta",1)) / (get_base1(tweedie_theta,1,"tweedie_theta",1) - 1)));
+                        stan::math::assign(get_base1_lhs(tweedie_beta,i,"tweedie_beta",1), (((1 / get_base1(tweedie_phi,1,"tweedie_phi",1)) * pow(get_base1(y_hat,i,"y_hat",1),(1 - get_base1(tweedie_theta,1,"tweedie_theta",1)))) / (get_base1(tweedie_theta,1,"tweedie_theta",1) - 1)));
+                        if (as_bool(logical_eq(get_base1(y,i,"y",1),0))) {
+                            lp_accum__.add(-(get_base1(tweedie_lambda,i,"tweedie_lambda",1)));
+                        } else {
+                            for (int m = 1; m <= tweedie_series_n; ++m) {
+                                stan::math::assign(get_base1_lhs(ps,m,"ps",1), (poisson_log(m,get_base1(tweedie_lambda,i,"tweedie_lambda",1)) + gamma_log(get_base1(y,i,"y",1),(m * get_base1(tweedie_alpha,i,"tweedie_alpha",1)),get_base1(tweedie_beta,i,"tweedie_beta",1))));
+                            }
+                            lp_accum__.add(log_sum_exp(ps));
+                        }
+                    }
+                }
+                if (as_bool(logical_eq(obs_model,2))) {
+                    lp_accum__.add(student_t_log<propto__>(get_base1(nb2_phi,1,"nb2_phi",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                    if (as_bool(logical_eq(lower_truncation,0))) {
+                        lp_accum__.add(neg_binomial_2_log_log<propto__>(y_int, y_hat, get_base1(nb2_phi,1,"nb2_phi",1)));
+                    } else {
+                        for (int i = 1; i <= N; ++i) {
+                            lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(y_int,i,"y_int",1), exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
+                            if (get_base1(y_int,i,"y_int",1) < lower_truncation) lp_accum__.add(-std::numeric_limits<double>::infinity());
+                            else lp_accum__.add(-neg_binomial_2_ccdf_log(lower_truncation, exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
+                        }
+                    }
+                }
+                if (as_bool(logical_eq(obs_model,1))) {
+                    lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                    lp_accum__.add(normal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
+                }
+                if (as_bool(logical_eq(obs_model,0))) {
+                    lp_accum__.add(student_t_log<propto__>(get_base1(CV,1,"CV",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                    lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), elt_divide(get_base1(gammaA,1,"gammaA",1),exp(y_hat))));
+                }
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -931,6 +1017,8 @@ public:
         names__.push_back("sigma");
         names__.push_back("CV");
         names__.push_back("nb2_phi");
+        names__.push_back("tweedie_phi");
+        names__.push_back("tweedie_theta");
         names__.push_back("yearEffects");
         names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
@@ -966,6 +1054,12 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nb2_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(tweedie_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(tweedie_params);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(n_year_effects);
@@ -1050,6 +1144,16 @@ public:
         for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
             nb2_phi.push_back(in__.scalar_lb_constrain(0));
         }
+        vector<double> tweedie_phi;
+        size_t dim_tweedie_phi_0__ = tweedie_params;
+        for (size_t k_0__ = 0; k_0__ < dim_tweedie_phi_0__; ++k_0__) {
+            tweedie_phi.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> tweedie_theta;
+        size_t dim_tweedie_theta_0__ = tweedie_params;
+        for (size_t k_0__ = 0; k_0__ < dim_tweedie_theta_0__; ++k_0__) {
+            tweedie_theta.push_back(in__.scalar_lub_constrain(1,2));
+        }
         vector<double> yearEffects;
         size_t dim_yearEffects_0__ = n_year_effects;
         for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
@@ -1089,6 +1193,12 @@ public:
         }
         for (int k_0__ = 0; k_0__ < nb2_params; ++k_0__) {
             vars__.push_back(nb2_phi[k_0__]);
+        }
+        for (int k_0__ = 0; k_0__ < tweedie_params; ++k_0__) {
+            vars__.push_back(tweedie_phi[k_0__]);
+        }
+        for (int k_0__ = 0; k_0__ < tweedie_params; ++k_0__) {
+            vars__.push_back(tweedie_theta[k_0__]);
         }
         for (int k_0__ = 0; k_0__ < n_year_effects; ++k_0__) {
             vars__.push_back(yearEffects[k_0__]);
@@ -1280,6 +1390,16 @@ public:
             param_name_stream__ << "nb2_phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= tweedie_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "tweedie_phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= tweedie_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "tweedie_theta" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         for (int k_0__ = 1; k_0__ <= n_year_effects; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "yearEffects" << '.' << k_0__;
@@ -1393,6 +1513,16 @@ public:
         for (int k_0__ = 1; k_0__ <= nb2_params; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "nb2_phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= tweedie_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "tweedie_phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= tweedie_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "tweedie_theta" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
         for (int k_0__ = 1; k_0__ <= n_year_effects; ++k_0__) {
