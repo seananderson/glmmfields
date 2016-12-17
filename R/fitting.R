@@ -92,7 +92,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   fixed_ar_value = 0,
   estimate_df = TRUE,
   estimate_ar = FALSE,
-  obs_error = c("normal", "gamma", "nb2"),
+  obs_error = c("normal", "gamma", "nb2", "binomial"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
@@ -112,7 +112,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
-  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, 1L)
+  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, binomial = 4L,
+    stop(paste("observation model", obs_error[[1]], "is not defined.")))
 
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
@@ -123,8 +124,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       prior_intercept = parse_t_prior(prior_intercept),
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
-      sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L,
-        exponential = 0L, 1L),
+      sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L, exponential = 0L,
+        stop(paste("covariance function", covariance[[1]], "is not defined."))),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
       est_ar = as.integer(estimate_ar),
@@ -138,7 +139,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       lower_truncation = lower_truncation,
       fixed_intercept = as.integer(fixed_intercept)))
 
-  if (obs_model == 2) { # NB2 obs model
+  if (obs_model %in% c(2L, 4L)) { # NB2 or binomial obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
   } else {
     stan_data <- c(stan_data, list(y_int = rep(0L, stan_data$N)))

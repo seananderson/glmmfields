@@ -77,20 +77,25 @@ predict.rrfield <- function(object, newdata = NULL,
   }
 
   mcmc_draws <- ncol(pred_values)
-  if(obs_model %in% c(0, 2)) pred_values <- exp(pred_values)
+  if(obs_model %in% c(0, 2)) pred_values <- exp(pred_values) # gamma or NB2
+  if(obs_model == 4) pred_values <- stats::plogis(pred_values) # binomial (plogis = inverse logit)
 
   if(obs_model == 0) {
     # gamma, CV is returned; gammaA = 1/(CV*CV)
-    pp <- t(apply(pred_values, 1, function(x) rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
+    pp <- t(apply(pred_values, 1, function(x) stats::rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
       rate = 1/(pars$CV[,1]^2)/x)))
   }
   if(obs_model == 1) {
     # normal, sigma is returned
-    pp <- t(apply(pred_values, 1, function(x) rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
+    pp <- t(apply(pred_values, 1, function(x) stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
   }
   if(obs_model == 2) {
     # negative binomial, phi returned
-    pp <- t(apply(pred_values, 1, function(x) rnbinom(mcmc_draws, mu = x, size = pars$nb2_phi[,1])))
+    pp <- t(apply(pred_values, 1, function(x) stats::rnbinom(mcmc_draws, mu = x, size = pars$nb2_phi[,1])))
+  }
+  if(obs_model == 4) {
+    # binomial
+    pp <- t(apply(pred_values, 1, function(x) stats::rbinom(mcmc_draws, size = 1, prob = x)))
   }
 
   est_method <- switch(estimate_method[[1]], median = median, mean = mean)

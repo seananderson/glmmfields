@@ -331,7 +331,7 @@ public:
         check_greater_or_equal(function__,"nb2_params",nb2_params,0);
         check_less_or_equal(function__,"nb2_params",nb2_params,1);
         check_greater_or_equal(function__,"obs_model",obs_model,0);
-        check_less_or_equal(function__,"obs_model",obs_model,2);
+        check_less_or_equal(function__,"obs_model",obs_model,4);
         check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
         check_greater_or_equal(function__,"est_temporalRE",est_temporalRE,0);
         check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);
@@ -879,6 +879,9 @@ public:
                         lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                     }
                 }
+            }
+            if (as_bool(logical_eq(obs_model,4))) {
+                lp_accum__.add(bernoulli_logit_log<propto__>(y_int, y_hat));
             }
             if (as_bool(logical_eq(obs_model,2))) {
                 lp_accum__.add(student_t_log<propto__>(get_base1(nb2_phi,1,"nb2_phi",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
