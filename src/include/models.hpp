@@ -343,7 +343,7 @@ public:
         check_greater_or_equal(function__,"nb2_params",nb2_params,0);
         check_less_or_equal(function__,"nb2_params",nb2_params,1);
         check_greater_or_equal(function__,"obs_model",obs_model,0);
-        check_less_or_equal(function__,"obs_model",obs_model,2);
+        check_less_or_equal(function__,"obs_model",obs_model,3);
         check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
         check_greater_or_equal(function__,"est_temporalRE",est_temporalRE,0);
         check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);

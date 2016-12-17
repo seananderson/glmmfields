@@ -6,6 +6,9 @@ SEED <- 9999
 TOL <- 0.2 # %
 TOL_df <- .25 # %
 
+nknots <- 10
+gp_sigma <- 0.2
+
 # ------------------------------------------------------
 # a negative binomial model
 
@@ -100,9 +103,9 @@ test_that("mvt-tweedie model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = 1, chains = 1, obs_error = "tweedie",
+    iter = ITER, chains = CHAINS, obs_error = "tweedie",
     estimate_df = FALSE, fixed_df_value = df,
-    control = list(adapt_delta = 0.9), seed = SEED)
+    control = list(adapt_delta = 0.9), seed = SEED, tweedie_series_n = 10)
 
   p <- predict(m)
 

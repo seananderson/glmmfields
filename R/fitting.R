@@ -13,7 +13,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
     "gp_scale",
     "B",
     switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi",
-      tweedie = c("tweedie_theta", "tweedie_phi")),
+      tweedie = c("tweedie_theta", "tweedie_phi"),
+      stop(paste("observation model", obs_error[[1]], "is not defined."))),
     "spatialEffectsKnots")
   if (estimate_df) p <- c("df", p)
   if (estimate_ar) p <- c("ar", p)
@@ -113,7 +114,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
-  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, 1L)
+  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, tweedie = 3L,
+    stop(paste("observation model", obs_error[[1]], "is not defined.")))
 
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
@@ -125,7 +127,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
       sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L,
-        exponential = 0L, 1L),
+        exponential = 0L, stop(paste("covariance function", covariance[[1]], "is not defined."))),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
       est_ar = as.integer(estimate_ar),

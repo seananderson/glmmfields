@@ -23,7 +23,7 @@ data {
   int<lower=0,upper=1> norm_params;
   int<lower=0,upper=1> gamma_params;
   int<lower=0,upper=1> nb2_params;
-  int<lower=0,upper=2> obs_model;
+  int<lower=0,upper=3> obs_model;
   real<lower=2> fixed_df_value;
   real fixed_ar_value;
   int<lower=0,upper=1> est_temporalRE;
