@@ -743,7 +743,7 @@ public:
             }
             stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
             for (int t = 1; t <= nT; ++t) {
-                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
+                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,subtract(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1),mean(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)))));
             }
             for (int i = 1; i <= N; ++i) {
                 if (as_bool(logical_eq(est_temporalRE,0))) {
@@ -1152,7 +1152,7 @@ public:
             }
             stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
             for (int t = 1; t <= nT; ++t) {
-                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
+                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,subtract(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1),mean(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)))));
             }
             for (int i = 1; i <= N; ++i) {
                 if (as_bool(logical_eq(est_temporalRE,0))) {
