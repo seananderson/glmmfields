@@ -77,7 +77,8 @@ transformed parameters {
 	// multiply and invert once, used below:
 	SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
 	for(t in 1:nT) {
-    spatialEffects[t] = SigmaOffDiag * (spatialEffectsKnots[t] - mean(spatialEffectsKnots[t]));
+    // spatialEffects[t] = SigmaOffDiag * (spatialEffectsKnots[t] - mean(spatialEffectsKnots[t]));
+    spatialEffects[t] = SigmaOffDiag * spatialEffectsKnots[t];
 	}
 
 	// calculate predicted value of each observation
