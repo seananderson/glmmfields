@@ -94,7 +94,7 @@ transformed parameters {
 	}
 
 	if(obs_model==0) {
-	  gammaA[1] = 1/(CV[1]*CV[1]);
+	  gammaA[1] = inv(pow(CV[1], 2.0));
 	}
 
 }
@@ -132,17 +132,10 @@ model {
   if (est_df == 1) {
     W ~ scaled_inv_chi_square(df[1], 1);
     df ~ gamma(2, 0.1);
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
-    for(t in 2:nT) {
-      if(est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
-      } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
-      }
-    }
   } else {
     W ~ scaled_inv_chi_square(fixed_df_value, 1);
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
+  }
+  spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
     for(t in 2:nT) {
       if(est_ar == 1) {
         spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
@@ -150,7 +143,6 @@ model {
         spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
       }
     }
-  }
 
   // switch between observation error models: normal (1), gamma (0), NB2 (2), binomial (4), poisson (5)
   // (tweedie (3) is in a branch)

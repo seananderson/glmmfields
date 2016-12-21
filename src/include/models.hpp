@@ -757,7 +757,7 @@ public:
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
-                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
+                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
@@ -861,23 +861,15 @@ public:
             if (as_bool(logical_eq(est_df,1))) {
                 lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, get_base1(df,1,"df",1), 1));
                 lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
-                for (int t = 2; t <= nT; ++t) {
-                    if (as_bool(logical_eq(est_ar,1))) {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
-                    } else {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
-                    }
-                }
             } else {
                 lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, fixed_df_value, 1));
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
-                for (int t = 2; t <= nT; ++t) {
-                    if (as_bool(logical_eq(est_ar,1))) {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
-                    } else {
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
-                    }
+            }
+            lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
+            for (int t = 2; t <= nT; ++t) {
+                if (as_bool(logical_eq(est_ar,1))) {
+                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                } else {
+                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                 }
             }
             if (as_bool(logical_eq(obs_model,5))) {
@@ -1166,7 +1158,7 @@ public:
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
-                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), (1 / (get_base1(CV,1,"CV",1) * get_base1(CV,1,"CV",1))));
+                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
