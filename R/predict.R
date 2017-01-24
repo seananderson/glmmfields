@@ -66,7 +66,7 @@ predict.rrfield <- function(object, newdata = NULL,
     # check this for > 1 year. B will also have to be modified
     if(object$year_re == FALSE) {
       if (!object$fixed_intercept) {
-        pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], col = 1) +
+        pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], ncol = 1) +
           spat_effects[cbind(rows,cols)]
       } else {
         pred_values[,i] <- spat_effects[cbind(rows,cols)]
