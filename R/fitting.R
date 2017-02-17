@@ -93,7 +93,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   fixed_ar_value = 0,
   estimate_df = TRUE,
   estimate_ar = FALSE,
-  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial"),
+  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
@@ -114,7 +114,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   data_knots = data_list$knots
 
   obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, binomial = 4L,
-    poisson = 5L, stop(paste("observation model", obs_error[[1]], "is not defined.")))
+    poisson = 5L, lognormal = 6L, stop(paste("observation model", obs_error[[1]], "is not defined.")))
 
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
@@ -131,7 +131,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       est_df = as.integer(estimate_df),
       est_ar = as.integer(estimate_ar),
       gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
-      norm_params = ifelse(obs_error[[1]] == "normal", 1L, 0L),
+      norm_params = ifelse(obs_error[[1]] %in% c("normal", "lognormal"), 1L, 0L),
       nb2_params = ifelse(obs_error[[1]] == "nb2", 1L, 0L),
       fixed_df_value = fixed_df_value,
       fixed_ar_value = fixed_ar_value,

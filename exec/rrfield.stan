@@ -23,7 +23,7 @@ data {
   int<lower=0,upper=1> norm_params;
   int<lower=0,upper=1> gamma_params;
   int<lower=0,upper=1> nb2_params;
-  int<lower=0,upper=5> obs_model;
+  int<lower=0,upper=6> obs_model;
   real<lower=2> fixed_df_value;
   real fixed_ar_value;
   int<lower=0,upper=1> est_temporalRE;
@@ -172,5 +172,8 @@ model {
     CV[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
     y ~ gamma(gammaA[1], gammaA[1] ./ exp(y_hat));
   }
-
+  if(obs_model == 6) {
+    sigma[1] ~ student_t(prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+    y ~ lognormal(y_hat, sigma[1]);
+  }
 }

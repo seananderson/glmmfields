@@ -20,7 +20,7 @@
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential",
-  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial"),
+  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
   B = c(0), ar = 0, X = rep(1, n_draws * n_data_points)) {
 
   g <- data.frame(lon = runif(n_data_points, 0, 10),
@@ -119,7 +119,10 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     y <- matrix(data = stats::rpois(N, lambda = exp(proj + eta_mat)),
       ncol = ncol(proj), nrow = nrow(proj))
   }
-
+  if (obs_error[[1]] == "lognormal") {
+    y <- matrix(data = stats::rlnorm(N, meanlog = proj + eta_mat, sdlog = sd_obs),
+      ncol = ncol(proj), nrow = nrow(proj))
+  }
   # Reshape for output
   out <- reshape2::melt(y)
   names(out) <- c("time", "pt", "y")
