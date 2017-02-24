@@ -20,7 +20,7 @@
 
 \item{interval}{Type of interval calculation. Same as \code{\link[stats]{predict.lm}}}
 
-\item{type}{Whether the predictions are returned on link scale (default, like glm) or response scale}
+\item{type}{Whether the predictions are returned on "link" scale or "response" scale (Same as \code{\link[stats]{predict.glm}})}
 
 \item{...}{Ignored currently}
 }
