@@ -32,4 +32,3 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 \description{
 Format data for fitting an rrfield model
 }
-

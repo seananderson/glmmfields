@@ -6,7 +6,8 @@
 \usage{
 \method{predict}{rrfield}(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
-  interval = c("confidence", "prediction"), ...)
+  interval = c("confidence", "prediction"), type = c("link", "response"),
+  ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link{rrfield}}.}
@@ -19,9 +20,10 @@
 
 \item{interval}{Type of interval calculation. Same as \code{\link[stats]{predict.lm}}}
 
+\item{type}{Whether the predictions are returned on link scale (default, like glm) or response scale}
+
 \item{...}{Ignored currently}
 }
 \description{
 Predict from an rrfield model
 }
-
