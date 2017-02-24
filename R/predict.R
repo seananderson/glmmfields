@@ -86,6 +86,11 @@ predict.rrfield <- function(object, newdata = NULL,
 
   # If predictions other than on link scale, use observation model and link to
   # generate (1) confidence intervals on mean or (2) prediction intervals including obs error
+  if(obs_model == 1) {
+    # normal, sigma is returned
+    pp <- t(apply(pred_values, 1, function(x) stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
+  }
+
   if(type[[1]] != "link") {
     if(obs_model %in% c(0, 2, 5, 6)) pred_values <- exp(pred_values) # gamma or NB2 or poisson
     if(obs_model == 4) pred_values <- stats::plogis(pred_values) # binomial (plogis = inverse logit)
@@ -94,10 +99,6 @@ predict.rrfield <- function(object, newdata = NULL,
       # gamma, CV is returned; gammaA = 1/(CV*CV)
       pp <- t(apply(pred_values, 1, function(x) stats::rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
         rate = 1/(pars$CV[,1]^2)/x)))
-    }
-    if(obs_model == 1) {
-      # normal, sigma is returned
-      pp <- t(apply(pred_values, 1, function(x) stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
     }
     if(obs_model == 2) {
       # negative binomial, phi returned
@@ -124,7 +125,7 @@ predict.rrfield <- function(object, newdata = NULL,
     out$conf_low <- apply(pred_values, 1, quantile, probs = (1 - conf_level) / 2)
     out$conf_high <- apply(pred_values, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
-  if (interval[[1]] == "prediction" & type[[1]] == "response") {
+  if (interval[[1]] == "prediction" & (type[[1]] == "response" | (type[[1]] != "response" & obs_model==1))) {
     out$conf_low <- apply(pp, 1, quantile, probs = (1 - conf_level) / 2)
     out$conf_high <- apply(pp, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
