@@ -35,5 +35,5 @@ Suggests:
     rmarkdown
 URL: https://github.com/seananderson/rrfields
 BugReports: https://github.com/seananderson/rrfields/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 VignetteBuilder: knitr

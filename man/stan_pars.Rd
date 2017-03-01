@@ -23,4 +23,3 @@ parameter should be estimated}
 \description{
 Return a vector of parameters
 }
-

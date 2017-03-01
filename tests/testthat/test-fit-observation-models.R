@@ -3,7 +3,7 @@ if (interactive()) options(mc.cores = parallel::detectCores())
 ITER <- 600
 CHAINS <- 2
 SEED <- 9999
-TOL <- 0.2 # %
+TOL <- 0.25 # %
 TOL_df <- .25 # %
 
 nknots <- 10

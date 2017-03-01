@@ -42,4 +42,3 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
 \description{
 Simulate a random field with a MVT distribution
 }
-

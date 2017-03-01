@@ -14,4 +14,3 @@
 \description{
 Tidy model output
 }
-

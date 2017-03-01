@@ -92,4 +92,3 @@ truncation, 1 for 1 and all values above}
 \description{
 Fit a robust spatiotemporal random fields model
 }
-
