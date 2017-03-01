@@ -24,7 +24,7 @@ data {
   int<lower=0,upper=1> gamma_params;
   int<lower=0,upper=1> nb2_params;
   int<lower=0,upper=6> obs_model;
-  real<lower=2> fixed_df_value;
+  real<lower=1> fixed_df_value;
   real fixed_ar_value;
   int<lower=0,upper=1> est_temporalRE;
   int<lower=0> n_year_effects;
