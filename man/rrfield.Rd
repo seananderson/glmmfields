@@ -12,7 +12,8 @@ rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "poisson", "nb2",
   "binomial", "lognormal"), covariance = c("squared-exponential",
   "exponential"), algorithm = c("sampling", "meanfield"), year_re = FALSE,
-  nb_lower_truncation = 0, control = list(adapt_delta = 0.9), ...)
+  nb_lower_truncation = 0, control = list(adapt_delta = 0.9),
+  save_log_lik = FALSE, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -86,6 +87,10 @@ incorrect inference than MCMC.}
 truncation, 1 for 1 and all values above}
 
 \item{control}{List to pass to \code{\link[rstan]{sampling}}}
+
+\item{save_log_lik}{Logical: should the log likelihood for each data point be
+saved so that information criteria such as LOOIC or WAIC can be calculated?
+Defaults to \code{FALSE} so that the size of model objects is smaller.}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

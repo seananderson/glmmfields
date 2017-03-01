@@ -7,8 +7,11 @@
 #' @param estimate_ar Logical indicating whether the ar
 #'   parameter should be estimated
 #' @param fixed_intercept Should the intercept be fixed?
+#' @param save_log_lik Logical: should the log likelihood for each data point be
+#'   saved so that information criteria such as LOOIC or WAIC can be calculated?
+#'   Defaults to \code{FALSE} so that the size of model objects is smaller.
 stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
-  estimate_ar = FALSE, fixed_intercept = FALSE) {
+  estimate_ar = FALSE, fixed_intercept = FALSE, save_log_lik = FALSE) {
   p <- c("gp_sigma",
     "gp_scale",
     "B",
@@ -21,7 +24,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
     p <- p[!p=="B"] # no main effects if random walk for now
   }
   if (fixed_intercept) p <- p[p != "B"]
-  p <- c(p, "log_lik")
+  if (save_log_lik) p <- c(p, "log_lik")
   p
 }
 
@@ -76,6 +79,9 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @param nb_lower_truncation For NB2: lower truncation value. E.g. 0 for no
 #'   truncation, 1 for 1 and all values above
 #' @param control List to pass to \code{\link[rstan]{sampling}}
+#' @param save_log_lik Logical: should the log likelihood for each data point be
+#'   saved so that information criteria such as LOOIC or WAIC can be calculated?
+#'   Defaults to \code{FALSE} so that the size of model objects is smaller.
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
@@ -101,6 +107,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   year_re = FALSE,
   nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9),
+  save_log_lik = FALSE,
   ...) {
 
   # argument checks:
@@ -113,6 +120,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
     obs_error[[1]] %in% c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"))
   assert_that(covariance[[1]] %in% c("squared-exponential", "exponential"))
   assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
+  assert_that(is.logical(save_log_lik))
   assert_that(is.logical(estimate_df))
   assert_that(is.logical(estimate_ar))
   assert_that(is.logical(year_re))
@@ -173,7 +181,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
     data = stan_data,
     pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df,
       est_temporalRE = est_temporalRE, estimate_ar = estimate_ar,
-      fixed_intercept = fixed_intercept),
+      fixed_intercept = fixed_intercept, save_log_lik = save_log_lik),
     control = control, ...)
 
   if (algorithm[[1]] == "meanfield") {

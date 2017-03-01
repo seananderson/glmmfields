@@ -5,7 +5,7 @@
 \title{Return a vector of parameters}
 \usage{
 stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
-  estimate_ar = FALSE, fixed_intercept = FALSE)
+  estimate_ar = FALSE, fixed_intercept = FALSE, save_log_lik = FALSE)
 }
 \arguments{
 \item{obs_error}{The observation error distribution}
@@ -19,6 +19,10 @@ parameter should be estimated}
 parameter should be estimated}
 
 \item{fixed_intercept}{Should the intercept be fixed?}
+
+\item{save_log_lik}{Logical: should the log likelihood for each data point be
+saved so that information criteria such as LOOIC or WAIC can be calculated?
+Defaults to \code{FALSE} so that the size of model objects is smaller.}
 }
 \description{
 Return a vector of parameters
