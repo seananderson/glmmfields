@@ -12,7 +12,6 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
   p <- c("gp_sigma",
     "gp_scale",
     "B",
-    # "y_hat",
     switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi"),
     "spatialEffectsKnots")
   if (estimate_df) p <- c("df", p)
@@ -22,6 +21,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
     p <- p[!p=="B"] # no main effects if random walk for now
   }
   if (fixed_intercept) p <- p[p != "B"]
+  p <- c(p, "log_lik")
   p
 }
 
@@ -52,7 +52,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   declared with \code{\link{student_t}}.
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
 #'   parameter if the degrees of freedom parameter is fixed. If the degrees of
-#'   freedom parameter is estimated then this argument is ignored.
+#'   freedom parameter is estimated then this argument is ignored. Must be 1 or
+#'   greater.
 #' @param estimate_df Logical: should the degrees of freedom perameter be
 #'   estimated?
 #' @param estimate_ar Logical: should the ar parameter be
@@ -72,7 +73,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   incorrect inference than MCMC.
 #' @param year_re Logical: estimate a random walk for the time variable? If
 #'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
-#' @param lower_truncation For NB2: lower truncation value. E.g. 0 for no
+#' @param nb_lower_truncation For NB2: lower truncation value. E.g. 0 for no
 #'   truncation, 1 for 1 and all values above
 #' @param control List to pass to \code{\link[rstan]{sampling}}
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
@@ -81,6 +82,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @importFrom rstan sampling vb
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
+#' @importFrom assertthat assert_that is.count is.number
 
 rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_gp_scale = half_t(3, 0, 5),
@@ -97,9 +99,29 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   covariance = c("squared-exponential", "exponential"),
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
-  lower_truncation = 0,
+  nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9),
   ...) {
+
+  # argument checks:
+  is.count(nb_lower_truncation)
+  assert_that(nb_lower_truncation >= 0)
+  assert_that(fixed_df_value >= 1)
+  is.number(fixed_ar_value)
+  assert_that(all(unlist(lapply(list(obs_error, covariance, algorithm), is.character))))
+  assert_that(
+    obs_error[[1]] %in% c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"))
+  assert_that(covariance[[1]] %in% c("squared-exponential", "exponential"))
+  assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
+  assert_that(is.logical(estimate_df))
+  assert_that(is.logical(estimate_ar))
+  assert_that(is.logical(year_re))
+  assert_that(is.list(control))
+
+  if (nb_lower_truncation > 0)
+    warning(paste0(c("Lower truncation with negative binomial has not been ",
+      "extensively tested and calculation of log likelihood for information ",
+      "criteria purposes has not been checked.")))
 
   mf <- model.frame(formula, data)
   X <- model.matrix(formula, mf)
@@ -137,7 +159,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       fixed_ar_value = fixed_ar_value,
       est_temporalRE = est_temporalRE,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L),
-      lower_truncation = lower_truncation,
+      lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept)))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # NB2 or binomial or poisson obs model
