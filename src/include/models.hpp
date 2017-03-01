@@ -335,8 +335,8 @@ public:
         check_greater_or_equal(function__,"nb2_params",nb2_params,0);
         check_less_or_equal(function__,"nb2_params",nb2_params,1);
         check_greater_or_equal(function__,"obs_model",obs_model,0);
-        check_less_or_equal(function__,"obs_model",obs_model,5);
-        check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,2);
+        check_less_or_equal(function__,"obs_model",obs_model,6);
+        check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,1);
         check_greater_or_equal(function__,"est_temporalRE",est_temporalRE,0);
         check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);
         check_greater_or_equal(function__,"n_year_effects",n_year_effects,0);
@@ -946,6 +946,11 @@ public:
                 lp_accum__.add(student_t_log<propto__>(get_base1(CV,1,"CV",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
                 lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), elt_divide(get_base1(gammaA,1,"gammaA",1),exp(y_hat))));
             }
+            if (as_bool(logical_eq(obs_model,6))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                lp_accum__.add(lognormal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
             // Next line prevents compiler griping about no return
@@ -991,6 +996,7 @@ public:
         names__.push_back("y_hat");
         names__.push_back("gammaA");
         names__.push_back("gp_sigma_sq");
+        names__.push_back("log_lik");
     }
 
 
@@ -1058,6 +1064,9 @@ public:
         dims__.push_back(gamma_params);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N);
         dimss__.push_back(dims__);
     }
 
@@ -1284,9 +1293,46 @@ public:
 
         if (!include_gqs__) return;
         // declare and define generated quantities
+        vector_d log_lik(static_cast<Eigen::VectorXd::Index>(N));
+        (void) log_lik;  // dummy to suppress unused var warning
+        stan::math::initialize(log_lik, std::numeric_limits<double>::quiet_NaN());
+        stan::math::fill(log_lik,DUMMY_VAR__);
 
 
         try {
+            for (int i = 1; i <= N; ++i) {
+
+                if (as_bool(logical_eq(obs_model,0))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), gamma_log(get_base1(y,i,"y",1),get_base1(gammaA,1,"gammaA",1),(get_base1(gammaA,1,"gammaA",1) / exp(get_base1(y_hat,i,"y_hat",1)))));
+                }
+                if (as_bool(logical_eq(obs_model,1))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), normal_log(get_base1(y,i,"y",1),stan::model::rvalue(y_hat, stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list()), "y_hat"),get_base1(sigma,1,"sigma",1)));
+                }
+                if (as_bool(logical_eq(obs_model,2))) {
+
+                    if (as_bool(logical_eq(lower_truncation,0))) {
+
+                        stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), neg_binomial_2_log_log(get_base1(y_int,i,"y_int",1),get_base1(y_hat,i,"y_hat",1),get_base1(nb2_phi,1,"nb2_phi",1)));
+                    } else {
+
+                        stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), neg_binomial_2_log(get_base1(y_int,i,"y_int",1),exp(get_base1(y_hat,i,"y_hat",1)),get_base1(nb2_phi,1,"nb2_phi",1)));
+                    }
+                }
+                if (as_bool(logical_eq(obs_model,4))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), bernoulli_logit_log(get_base1(y_int,i,"y_int",1),get_base1(y_hat,i,"y_hat",1)));
+                }
+                if (as_bool(logical_eq(obs_model,5))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), poisson_log_log(get_base1(y_int,i,"y_int",1),get_base1(y_hat,i,"y_hat",1)));
+                }
+                if (as_bool(logical_eq(obs_model,6))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), lognormal_log(get_base1(y,i,"y",1),y_hat,get_base1(sigma,1,"sigma",1)));
+                }
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e,current_statement_begin__);
             // Next line prevents compiler griping about no return
@@ -1296,6 +1342,10 @@ public:
         // validate generated quantities
 
         // write generated quantities
+        for (int k_0__ = 0; k_0__ < N; ++k_0__) {
+            vars__.push_back(log_lik[k_0__]);
+        }
+
     }
 
     template <typename RNG>
@@ -1433,6 +1483,11 @@ public:
         param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
 
 
@@ -1548,6 +1603,11 @@ public:
         param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
 
 }; // model

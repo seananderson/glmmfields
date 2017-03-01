@@ -23,7 +23,8 @@ Imports:
     reshape2,
     mvtnorm,
     broom,
-    methods
+    methods,
+    assertthat
 LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:

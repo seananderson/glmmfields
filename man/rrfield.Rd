@@ -10,9 +10,9 @@ rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 2),
   fixed_df_value = 5, fixed_ar_value = 0, estimate_df = TRUE,
   estimate_ar = FALSE, obs_error = c("normal", "gamma", "poisson", "nb2",
-  "binomial"), covariance = c("squared-exponential", "exponential"),
-  algorithm = c("sampling", "meanfield"), year_re = FALSE,
-  lower_truncation = 0, control = list(adapt_delta = 0.9), ...)
+  "binomial", "lognormal"), covariance = c("squared-exponential",
+  "exponential"), algorithm = c("sampling", "meanfield"), year_re = FALSE,
+  nb_lower_truncation = 0, control = list(adapt_delta = 0.9), ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -53,7 +53,8 @@ declared with \code{\link{student_t}}.}
 
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
 parameter if the degrees of freedom parameter is fixed. If the degrees of
-freedom parameter is estimated then this argument is ignored.}
+freedom parameter is estimated then this argument is ignored. Must be 1 or
+greater.}
 
 \item{fixed_ar_value}{The fixed value for temporal autoregressive parameter,
 between random fields at time(t) and time(t-1). If the ar parameter
@@ -81,7 +82,7 @@ incorrect inference than MCMC.}
 \item{year_re}{Logical: estimate a random walk for the time variable? If
 \code{TRUE}, then no fixed effects (B coefficients) will be estimated.}
 
-\item{lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
+\item{nb_lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
 truncation, 1 for 1 and all values above}
 
 \item{control}{List to pass to \code{\link[rstan]{sampling}}}
