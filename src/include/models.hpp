@@ -1308,7 +1308,7 @@ public:
                 }
                 if (as_bool(logical_eq(obs_model,1))) {
 
-                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), normal_log(get_base1(y,i,"y",1),stan::model::rvalue(y_hat, stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list()), "y_hat"),get_base1(sigma,1,"sigma",1)));
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), normal_log(get_base1(y,i,"y",1),get_base1(y_hat,i,"y_hat",1),get_base1(sigma,1,"sigma",1)));
                 }
                 if (as_bool(logical_eq(obs_model,2))) {
 

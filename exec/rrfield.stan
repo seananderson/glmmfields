@@ -186,7 +186,7 @@ generated quantities {
       log_lik[i] = gamma_lpdf(y[i] | gammaA[1], gammaA[1] ./ exp(y_hat[i]));
     }
     if(obs_model == 1) {
-      log_lik[i] = normal_lpdf(y[i] | y_hat[], sigma[1]);
+      log_lik[i] = normal_lpdf(y[i] | y_hat[i], sigma[1]);
     }
     if(obs_model == 2) {
       if (lower_truncation == 0) {
