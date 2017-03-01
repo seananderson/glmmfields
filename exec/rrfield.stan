@@ -146,6 +146,7 @@ model {
     }
 
   // switch between observation error models: normal (1), gamma (0), NB2 (2), binomial (4), poisson (5)
+  // lognormal (6)
   // (tweedie (3) is in a branch)
   if(obs_model == 5) {
     y_int ~ poisson_log(y_hat);
