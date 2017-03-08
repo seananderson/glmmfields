@@ -15,7 +15,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
   p <- c("gp_sigma",
     "gp_scale",
     "B",
-    switch(obs_error[[1]], normal = "sigma", gamma = "CV", nb2 = "nb2_phi"),
+    switch(obs_error[[1]], lognormal = "sigma", normal = "sigma",
+      gamma = "CV", nb2 = "nb2_phi"),
     "spatialEffectsKnots")
   if (estimate_df) p <- c("df", p)
   if (estimate_ar) p <- c("ar", p)
