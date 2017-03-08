@@ -16,15 +16,16 @@ predict.rrfield <- function(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
   interval = c("confidence", "prediction"), type = c("link", "response"), ...) {
 
-  assert_that(is.character(estimate_method))
-  assert_that(is.character(interval))
-  assert_that(is.character(type))
+  assert_that(is.character(estimate_method[[1]]))
+  assert_that(is.character(interval[[1]]))
+  assert_that(is.character(type[[1]]))
   assert_that(is.numeric(conf_level))
+  assert_that(identical(length(conf_level), 1L))
   assert_that(conf_level > 0 & conf_level < 1)
   assert_that(identical(class(object), "rrfield"))
-  assert_that(type %in% c("link", "response"))
-  assert_that(estimate_method %in% c("median", "mean"))
-  assert_that(interval %in% c("confidence", "prediction"))
+  assert_that(type[[1]] %in% c("link", "response"))
+  assert_that(estimate_method[[1]] %in% c("median", "mean"))
+  assert_that(interval[[1]] %in% c("confidence", "prediction"))
 
   obs_model <- object$obs_model
 
