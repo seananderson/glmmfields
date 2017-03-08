@@ -80,19 +80,18 @@ predict.rrfield <- function(object, newdata = NULL,
   mcmc_draws <- ncol(pred_values)
 
   # if type == link, don't include observation/data model.
-  if(type[[1]]=="link") {
-    pred_values
-  }
 
   # If predictions other than on link scale, use observation model and link to
   # generate (1) confidence intervals on mean or (2) prediction intervals including obs error
-  if(obs_model == 1) {
-    # normal, sigma is returned
-    pp <- t(apply(pred_values, 1, function(x) stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
-  }
 
-  if(type[[1]] != "link") {
+  if(type[[1]] == "response") {
     if(obs_model %in% c(0, 2, 5, 6)) pred_values <- exp(pred_values) # gamma or NB2 or poisson
+
+    if(obs_model == 1) {
+      # normal, sigma is returned
+      pp <- t(apply(pred_values, 1, function(x) stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
+    }
+
     if(obs_model == 4) pred_values <- stats::plogis(pred_values) # binomial (plogis = inverse logit)
 
     if(obs_model == 0) {
