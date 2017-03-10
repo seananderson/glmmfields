@@ -79,12 +79,14 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     re_knots[1, ] <- mvtnorm::rmvnorm(1, sigma = sigma_knots)
   }
   # potentially with AR process:
-  for (i in seq(2, n_draws)) {
-    if (mvt) {
-      re_knots[i, ] <- mvtnorm::rmvt(1, delta = ar * re_knots[i - 1, ], sigma = sigma_knots, df = df)
-    }
-    if (!mvt) {
-      re_knots[i, ] <- mvtnorm::rmvnorm(1, mean = ar * re_knots[i - 1, ], sigma = sigma_knots)
+  if (n_draws > 1) {
+    for (i in seq(2, n_draws)) {
+      if (mvt) {
+        re_knots[i, ] <- mvtnorm::rmvt(1, delta = ar * re_knots[i - 1, ], sigma = sigma_knots, df = df)
+      }
+      if (!mvt) {
+        re_knots[i, ] <- mvtnorm::rmvnorm(1, mean = ar * re_knots[i - 1, ], sigma = sigma_knots)
+      }
     }
   }
 
