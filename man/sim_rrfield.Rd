@@ -8,7 +8,7 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
   mvt = TRUE, df = 4, seed = NULL, n_data_points = 100, sd_obs = 0.1,
   covariance = "squared-exponential", obs_error = c("normal", "gamma",
   "poisson", "nb2", "binomial", "lognormal"), B = c(0), ar = 0, X = rep(1,
-  n_draws * n_data_points))
+  n_draws * n_data_points), demean = FALSE)
 }
 \arguments{
 \item{n_knots}{The number of knots}
@@ -38,6 +38,9 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
 \item{ar}{The auto regressive parameter on the mean of the random field knots}
 
 \item{X}{The model matrix}
+
+\item{demean}{Should the spatial knots be centered by subtracting
+their mean at each time slice?}
 }
 \description{
 Simulate a random field with a MVT distribution

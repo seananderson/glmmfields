@@ -83,6 +83,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
+#' @param demean Should the spatial knots be centered by subtracting
+#'   their mean at each time slice?
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
@@ -109,6 +111,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9),
   save_log_lik = FALSE,
+  demean = TRUE,
   ...) {
 
   # argument checks:
@@ -169,7 +172,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       est_temporalRE = est_temporalRE,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L),
       lower_truncation = nb_lower_truncation,
-      fixed_intercept = as.integer(fixed_intercept)))
+      fixed_intercept = as.integer(fixed_intercept),
+      demean = as.integer(demean)))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))

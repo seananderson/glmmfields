@@ -57,6 +57,7 @@ private:
     int n_year_effects;
     int lower_truncation;
     int fixed_intercept;
+    int demean;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -309,6 +310,11 @@ public:
         vals_i__ = context__.vals_i("fixed_intercept");
         pos__ = 0;
         fixed_intercept = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "demean", "int", context__.to_vec());
+        demean = int(0);
+        vals_i__ = context__.vals_i("demean");
+        pos__ = 0;
+        demean = vals_i__[pos__++];
 
         // validate, data variables
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -343,6 +349,8 @@ public:
         check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
         check_greater_or_equal(function__,"fixed_intercept",fixed_intercept,0);
         check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
+        check_greater_or_equal(function__,"demean",demean,0);
+        check_less_or_equal(function__,"demean",demean,1);
         // initialize data variables
 
         try {
@@ -906,10 +914,10 @@ public:
 
                 if (as_bool(logical_eq(est_ar,1))) {
 
-                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),subtract(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1),mean(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)))), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                 } else {
 
-                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,subtract(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1),mean(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)))), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                 }
             }
             if (as_bool(logical_eq(obs_model,5))) {

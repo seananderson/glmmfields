@@ -13,7 +13,7 @@ rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   "binomial", "lognormal"), covariance = c("squared-exponential",
   "exponential"), algorithm = c("sampling", "meanfield"), year_re = FALSE,
   nb_lower_truncation = 0, control = list(adapt_delta = 0.9),
-  save_log_lik = FALSE, ...)
+  save_log_lik = FALSE, demean = TRUE, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -91,6 +91,9 @@ truncation, 1 for 1 and all values above}
 \item{save_log_lik}{Logical: should the log likelihood for each data point be
 saved so that information criteria such as LOOIC or WAIC can be calculated?
 Defaults to \code{FALSE} so that the size of model objects is smaller.}
+
+\item{demean}{Should the spatial knots be centered by subtracting
+their mean at each time slice?}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

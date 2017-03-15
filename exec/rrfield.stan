@@ -30,6 +30,7 @@ data {
   int<lower=0> n_year_effects;
   int<lower=0> lower_truncation;
   int<lower=0,upper=1> fixed_intercept;
+  int<lower=0,upper=1> demean;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -77,8 +78,11 @@ transformed parameters {
 	// multiply and invert once, used below:
 	SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
 	for(t in 1:nT) {
-    // spatialEffects[t] = SigmaOffDiag * (spatialEffectsKnots[t] - mean(spatialEffectsKnots[t]));
+	 // if (demean == 1) {
+    //spatialEffects[t] = SigmaOffDiag * (spatialEffectsKnots[t] - mean(spatialEffectsKnots[t]));
+	  //} else {
     spatialEffects[t] = SigmaOffDiag * spatialEffectsKnots[t];
+	  //}
 	}
 
 	// calculate predicted value of each observation
@@ -139,9 +143,13 @@ model {
   spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
     for(t in 2:nT) {
       if(est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(ar[1]*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal(
+          ar[1] * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
+          W[t]*SigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value*spatialEffectsKnots[t-1], W[t]*SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal(
+          fixed_ar_value * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
+          W[t]*SigmaKnots);
       }
     }
 
@@ -193,8 +201,9 @@ generated quantities {
         log_lik[i] = neg_binomial_2_log_lpmf(y_int[i] | y_hat[i], nb2_phi[1]);
       } else {
         // TODO!!! Note that I had to remove T[lower_truncation, ] from the following line
-        // and I haven't thought through other that will make this calculation correct
+        // and I think that will make this calculation incorrect
         // in the case of truncated negative binomial
+        // the package will issue a warning
         log_lik[i] = neg_binomial_2_lpmf(y_int[i] | exp(y_hat[i]), nb2_phi[1]);
       }
     }
