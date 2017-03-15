@@ -57,7 +57,7 @@ predict.rrfield <- function(object, newdata = NULL,
   mcmc.i <- seq_len(length(pars$lp__))
   mcmc_draws <- max(mcmc.i)
   pred_values <- matrix(NA, n_locs, mcmc_draws)
-  for(i in 1:mcmc_draws) {
+  for(i in seq_len(mcmc_draws)) {
     # create cov matrix @ knots
     if(object$covariance == "exponential") {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
