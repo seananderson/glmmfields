@@ -27,6 +27,9 @@ predict.rrfield <- function(object, newdata = NULL,
   assert_that(estimate_method[[1]] %in% c("median", "mean"))
   assert_that(interval[[1]] %in% c("confidence", "prediction"))
 
+  if (interval[[1]] == "prediction" & type[[1]] != "response")
+    stop("type must be 'response' if interval is 'prediction")
+
   obs_model <- object$obs_model
 
   # newdata is df with time, y, lon, lat
@@ -136,7 +139,7 @@ predict.rrfield <- function(object, newdata = NULL,
     out$conf_low <- apply(pred_values, 1, quantile, probs = (1 - conf_level) / 2)
     out$conf_high <- apply(pred_values, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
-  if (interval[[1]] == "prediction" & (type[[1]] == "response" | (type[[1]] != "response" & obs_model==1))) {
+  if (interval[[1]] == "prediction" & type[[1]] == "response") {
     out$conf_low <- apply(pp, 1, quantile, probs = (1 - conf_level) / 2)
     out$conf_high <- apply(pp, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
