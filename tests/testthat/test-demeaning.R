@@ -3,8 +3,8 @@ if (interactive()) options(mc.cores = parallel::detectCores())
 ITER <- 400
 CHAINS <- 2
 SEED <- 9999
-TOL <- 0.1 # %
-TOL_df <- 0.1 # %
+TOL <- 0.15 # %
+TOL_df <- 0.15 # %
 
 # --------------------------
 # fixed effects + fixed AR with and without demeaning
