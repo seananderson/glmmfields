@@ -39,7 +39,7 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   expect_output(print(m), "Inference for Stan model")
 
   p <- predict(m)
-  pp <- predict(m, interval = "prediction")
+  pp <- predict(m, type = "response", interval = "prediction")
   plot(s$dat$y, p$estimate)
   segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000020")
   segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1, col = "#00000060")
