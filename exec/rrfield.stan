@@ -43,7 +43,7 @@ parameters {
   real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
-  real<lower=-1, upper=1> ar[est_ar];
+  real<lower=-0.9999, upper=0.9999> ar[est_ar];
   real<lower=0> W[nT];
 }
 transformed parameters {
@@ -140,7 +140,16 @@ model {
   } else {
     W ~ scaled_inv_chi_square(fixed_df_value, 1);
   }
-  spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
+
+  # spatial deviates in first time slice
+  if(est_ar == 1) {
+    # for AR model, constrain first draw: e.g. Blangiardo et al. (2012)
+    spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-ar[1]*ar[1]))*SigmaKnots);
+  }
+  else {
+    spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-fixed_ar_value*fixed_ar_value))*SigmaKnots);
+  }
+  # spatial deviates in remaining time slices
     for(t in 2:nT) {
       if(est_ar == 1) {
         spatialEffectsKnots[t] ~ multi_normal(
