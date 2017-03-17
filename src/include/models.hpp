@@ -559,7 +559,7 @@ public:
             ar[i0__] = vals_r__[pos__++];
         for (int i0__ = 0U; i0__ < est_ar; ++i0__)
             try {
-            writer__.scalar_lub_unconstrain(-(1),1,ar[i0__]);
+            writer__.scalar_lub_unconstrain(-(0.99990000000000001),0.99990000000000001,ar[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable ar: ") + e.what());
         }
@@ -706,9 +706,9 @@ public:
         ar.reserve(dim_ar_0__);
         for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
             if (jacobian__)
-                ar.push_back(in__.scalar_lub_constrain(-(1),1,lp__));
+                ar.push_back(in__.scalar_lub_constrain(-(0.99990000000000001),0.99990000000000001,lp__));
             else
-                ar.push_back(in__.scalar_lub_constrain(-(1),1));
+                ar.push_back(in__.scalar_lub_constrain(-(0.99990000000000001),0.99990000000000001));
         }
 
         vector<T__> W;
@@ -909,7 +909,13 @@ public:
 
                 lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, fixed_df_value, 1));
             }
-            lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
+            if (as_bool(logical_eq(est_ar,1))) {
+
+                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply((get_base1(W,1,"W",1) / (1 - (get_base1(ar,1,"ar",1) * get_base1(ar,1,"ar",1)))),SigmaKnots)));
+            } else {
+
+                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply((get_base1(W,1,"W",1) / (1 - (fixed_ar_value * fixed_ar_value))),SigmaKnots)));
+            }
             for (int t = 2; t <= nT; ++t) {
 
                 if (as_bool(logical_eq(est_ar,1))) {
@@ -1132,7 +1138,7 @@ public:
         vector<double> ar;
         size_t dim_ar_0__ = est_ar;
         for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
-            ar.push_back(in__.scalar_lub_constrain(-(1),1));
+            ar.push_back(in__.scalar_lub_constrain(-(0.99990000000000001),0.99990000000000001));
         }
         vector<double> W;
         size_t dim_W_0__ = nT;
