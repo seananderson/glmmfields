@@ -34,7 +34,8 @@ test_that("check demeaning", {
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
+    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))),
+    obs_error = "lognormal")
   print(s$plot)
 
   # look at the auto regressive spatial field (de-meaned)
@@ -71,6 +72,7 @@ test_that("check demeaning", {
     fixed_df_value = df, estimate_df = T,
     estimate_ar = TRUE,
     year_re = TRUE,
+    obs_error = "lognormal",
     prior_intercept = student_t(99, 0, 20),
     prior_beta = student_t(99, 0, 20))
   m
@@ -81,5 +83,16 @@ test_that("check demeaning", {
   expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = gp_sigma * TOL)
   B_hat <- subset(b, grepl("yearEffects", term))
   expect_equal(B, B_hat$estimate, tol = TOL)
+
+  p <- predict(m, type = "response", interval = "prediction")
+  p$observed <- s$dat$y
+  p$year <- s$dat$time
+
+  coverage <- p %>%
+    group_by(year) %>%
+    mutate(contained = observed < log(conf_high) & observed > log(conf_low)) %>%
+    ungroup() %>%
+    summarize(coverage = mean(contained))
+  print(coverage)
 
 })
