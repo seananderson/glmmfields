@@ -138,13 +138,16 @@ model {
   }
 
   # spatial deviates in first time slice
-  if(est_ar == 1) {
-    # for AR model, constrain first draw: e.g. Blangiardo et al. (2012)
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-ar[1]*ar[1]))*SigmaKnots);
-  }
-  else {
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-fixed_ar_value*fixed_ar_value))*SigmaKnots);
-  }
+
+  spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
+
+  // if(est_ar == 1) {
+  //   # for AR model, constrain first draw: e.g. Blangiardo et al. (2012)
+  //   spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-ar[1]*ar[1]))*SigmaKnots);
+  // }
+  // else {
+  //   spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-fixed_ar_value*fixed_ar_value))*SigmaKnots);
+  // }
   # spatial deviates in remaining time slices
     for(t in 2:nT) {
       if(est_ar == 1) {

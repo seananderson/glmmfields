@@ -911,13 +911,7 @@ public:
 
                 lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, fixed_df_value, 1));
             }
-            if (as_bool(logical_eq(est_ar,1))) {
-
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply((get_base1(W,1,"W",1) / (1 - (get_base1(ar,1,"ar",1) * get_base1(ar,1,"ar",1)))),SigmaKnots)));
-            } else {
-
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply((get_base1(W,1,"W",1) / (1 - (fixed_ar_value * fixed_ar_value))),SigmaKnots)));
-            }
+            lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
             for (int t = 2; t <= nT; ++t) {
 
                 if (as_bool(logical_eq(est_ar,1))) {
