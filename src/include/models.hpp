@@ -40,6 +40,7 @@ private:
     vector<double> prior_rw_sigma;
     vector<double> prior_intercept;
     vector<double> prior_beta;
+    vector<double> prior_ar;
     matrix_d distKnots;
     matrix_d distKnots21;
     int nCov;
@@ -57,7 +58,6 @@ private:
     int n_year_effects;
     int lower_truncation;
     int fixed_intercept;
-    int demean;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -201,6 +201,15 @@ public:
         for (size_t i_0__ = 0; i_0__ < prior_beta_limit_0__; ++i_0__) {
             prior_beta[i_0__] = vals_r__[pos__++];
         }
+        context__.validate_dims("data initialization", "prior_ar", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_ar", "3", 3);
+        prior_ar = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_ar");
+        pos__ = 0;
+        size_t prior_ar_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_ar_limit_0__; ++i_0__) {
+            prior_ar[i_0__] = vals_r__[pos__++];
+        }
         context__.validate_dims("data initialization", "distKnots", "matrix_d", context__.to_vec(nKnots,nKnots));
         validate_non_negative_index("distKnots", "nKnots", nKnots);
         validate_non_negative_index("distKnots", "nKnots", nKnots);
@@ -310,11 +319,6 @@ public:
         vals_i__ = context__.vals_i("fixed_intercept");
         pos__ = 0;
         fixed_intercept = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "demean", "int", context__.to_vec());
-        demean = int(0);
-        vals_i__ = context__.vals_i("demean");
-        pos__ = 0;
-        demean = vals_i__[pos__++];
 
         // validate, data variables
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -349,8 +353,6 @@ public:
         check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
         check_greater_or_equal(function__,"fixed_intercept",fixed_intercept,0);
         check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
-        check_greater_or_equal(function__,"demean",demean,0);
-        check_less_or_equal(function__,"demean",demean,1);
         // initialize data variables
 
         try {
@@ -559,7 +561,7 @@ public:
             ar[i0__] = vals_r__[pos__++];
         for (int i0__ = 0U; i0__ < est_ar; ++i0__)
             try {
-            writer__.scalar_lub_unconstrain(-(0.99990000000000001),0.99990000000000001,ar[i0__]);
+            writer__.scalar_lub_unconstrain(-(1),1,ar[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable ar: ") + e.what());
         }
@@ -706,9 +708,9 @@ public:
         ar.reserve(dim_ar_0__);
         for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
             if (jacobian__)
-                ar.push_back(in__.scalar_lub_constrain(-(0.99990000000000001),0.99990000000000001,lp__));
+                ar.push_back(in__.scalar_lub_constrain(-(1),1,lp__));
             else
-                ar.push_back(in__.scalar_lub_constrain(-(0.99990000000000001),0.99990000000000001));
+                ar.push_back(in__.scalar_lub_constrain(-(1),1));
         }
 
         vector<T__> W;
@@ -879,7 +881,7 @@ public:
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
             if (as_bool(logical_eq(est_ar,1))) {
 
-                lp_accum__.add(normal_log<propto__>(ar, 0, 1));
+                lp_accum__.add(student_t_log<propto__>(ar, get_base1(prior_ar,1,"prior_ar",1), get_base1(prior_ar,2,"prior_ar",1), get_base1(prior_ar,3,"prior_ar",1)));
             }
             if (as_bool(logical_gte(nCov,1))) {
 
@@ -920,10 +922,10 @@ public:
 
                 if (as_bool(logical_eq(est_ar,1))) {
 
-                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),subtract(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1),mean(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)))), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                 } else {
 
-                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,subtract(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1),mean(get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)))), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                    lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                 }
             }
             if (as_bool(logical_eq(obs_model,5))) {
@@ -1138,7 +1140,7 @@ public:
         vector<double> ar;
         size_t dim_ar_0__ = est_ar;
         for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
-            ar.push_back(in__.scalar_lub_constrain(-(0.99990000000000001),0.99990000000000001));
+            ar.push_back(in__.scalar_lub_constrain(-(1),1));
         }
         vector<double> W;
         size_t dim_W_0__ = nT;

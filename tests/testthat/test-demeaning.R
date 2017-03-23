@@ -14,11 +14,11 @@ test_that("check demeaning", {
   skip_on_travis()
   skip_on_appveyor()
 
-  set.seed(SEED)
+  set.seed(SEED*1234)
 
   gp_sigma <- 0.6
   sigma <- 0.2
-  df <- 7
+  df <- 2.5
   gp_scale <- 1
   n_draws <- 20
   nknots <- 10
@@ -34,8 +34,7 @@ test_that("check demeaning", {
 
   s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))),
-    demean = TRUE)
+    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   print(s$plot)
 
   # look at the auto regressive spatial field (de-meaned)
@@ -65,12 +64,13 @@ test_that("check demeaning", {
     geom_point(data = data.frame(B = B, time = seq_len(n_draws)),
       aes(x = time, y = B), inherit.aes = FALSE, col = "red")
 
-  m <- rrfield(y ~ 0 + as.factor(time), data = s$dat,
+  m <- rrfield(y ~ 1, data = s$dat,
     time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    fixed_df_value = df, estimate_df = FALSE,
+    fixed_df_value = df, estimate_df = T,
     estimate_ar = TRUE,
+    year_re = TRUE,
     prior_intercept = student_t(99, 0, 20),
     prior_beta = student_t(99, 0, 20))
   m
@@ -79,7 +79,7 @@ test_that("check demeaning", {
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = gp_sigma * TOL)
-  B_hat <- subset(b, grepl("B", term))
+  B_hat <- subset(b, grepl("yearEffects", term))
   expect_equal(B, B_hat$estimate, tol = TOL)
 
 })

@@ -14,8 +14,6 @@
 #' @param B A vector of parameters. The first element is the intercept
 #' @param ar The auto regressive parameter on the mean of the random field knots
 #' @param X The model matrix
-#' @param demean Should the spatial knots be centered by subtracting
-#'   their mean at each time slice?
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
@@ -23,7 +21,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential",
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
-  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points), demean = FALSE) {
+  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points)) {
 
   g <- data.frame(lon = runif(n_data_points, 0, 10),
     lat = runif(n_data_points, 0, 10))
@@ -85,12 +83,14 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     for (i in seq(2, n_draws)) {
       if (mvt) {
         re_knots[i, ] <- mvtnorm::rmvt(1,
-          delta = ar * (re_knots[i - 1, ] - mean(re_knots[i - 1, ])),
+          # delta = ar * (re_knots[i - 1, ] - mean(re_knots[i - 1, ])),
+          delta = ar * (re_knots[i - 1, ]),
           sigma = sigma_knots, df = df)
       }
       if (!mvt) {
         re_knots[i, ] <- mvtnorm::rmvnorm(1,
-          mean = ar * (re_knots[i - 1, ] - mean(re_knots[i - 1, ])),
+          # mean = ar * (re_knots[i - 1, ] - mean(re_knots[i - 1, ])),
+          mean = ar * (re_knots[i - 1, ]),
           sigma = sigma_knots)
       }
     }

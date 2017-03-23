@@ -54,6 +54,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   with \code{\link{student_t}}.
 #' @param prior_beta The prior on the slope parameters (if any). Must be
 #'   declared with \code{\link{student_t}}.
+#' @param prior_ar The prior on the AR parameter. Must be
+#'   declared with \code{\link{student_t}}.
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
 #'   parameter if the degrees of freedom parameter is fixed. If the degrees of
 #'   freedom parameter is estimated then this argument is ignored. Must be 1 or
@@ -99,7 +101,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_sigma = half_t(3, 0, 5),
   prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10),
-  prior_beta = student_t(3, 0, 2),
+  prior_beta = student_t(3, 0, 3),
+  prior_ar = student_t(1e6, 0, 0.5),
   fixed_df_value = 5,
   fixed_ar_value = 0,
   estimate_df = TRUE,
@@ -159,6 +162,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       prior_intercept = parse_t_prior(prior_intercept),
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
+      prior_ar = parse_t_prior(prior_ar),
       sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L, exponential = 0L,
         stop(paste("covariance function", covariance[[1]], "is not defined."))),
       obs_model = obs_model,

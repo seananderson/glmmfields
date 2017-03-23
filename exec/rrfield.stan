@@ -13,6 +13,7 @@ data {
   real prior_rw_sigma[3];
   real prior_intercept[3];
   real prior_beta[3];
+  real prior_ar[3];
   matrix[nKnots,nKnots] distKnots;
   matrix[nLocs,nKnots] distKnots21;
   int<lower=0> nCov;
@@ -30,7 +31,6 @@ data {
   int<lower=0> n_year_effects;
   int<lower=0> lower_truncation;
   int<lower=0,upper=1> fixed_intercept;
-  int<lower=0,upper=1> demean;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -43,7 +43,7 @@ parameters {
   real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
-  real<lower=-0.9999, upper=0.9999> ar[est_ar];
+  real<lower=-1, upper=1> ar[est_ar];
   real<lower=0> W[nT];
 }
 transformed parameters {
@@ -78,11 +78,7 @@ transformed parameters {
 	// multiply and invert once, used below:
 	SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
 	for(t in 1:nT) {
-	 // if (demean == 1) {
-    //spatialEffects[t] = SigmaOffDiag * (spatialEffectsKnots[t] - mean(spatialEffectsKnots[t]));
-	  //} else {
     spatialEffects[t] = SigmaOffDiag * spatialEffectsKnots[t];
-	  //}
 	}
 
 	// calculate predicted value of each observation
@@ -109,7 +105,7 @@ model {
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
   if(est_ar == 1) {
-    ar ~ normal(0, 1);
+    ar ~ student_t(prior_ar[1], prior_ar[2], prior_ar[3]);
   }
 
   if(nCov >= 1) {
@@ -153,11 +149,13 @@ model {
     for(t in 2:nT) {
       if(est_ar == 1) {
         spatialEffectsKnots[t] ~ multi_normal(
-          ar[1] * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
+          // ar[1] * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
+          ar[1] * spatialEffectsKnots[t-1],
           W[t]*SigmaKnots);
       } else {
         spatialEffectsKnots[t] ~ multi_normal(
-          fixed_ar_value * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
+          // fixed_ar_value * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
+          fixed_ar_value * spatialEffectsKnots[t-1],
           W[t]*SigmaKnots);
       }
     }

@@ -7,11 +7,12 @@
 rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_gp_scale = half_t(3, 0, 5), prior_gp_sigma = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
-  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 2),
-  fixed_df_value = 5, fixed_ar_value = 0, estimate_df = TRUE,
-  estimate_ar = FALSE, obs_error = c("normal", "gamma", "poisson", "nb2",
-  "binomial", "lognormal"), covariance = c("squared-exponential",
-  "exponential"), algorithm = c("sampling", "meanfield"), year_re = FALSE,
+  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
+  prior_ar = student_t(1e+06, 0, 0.5), fixed_df_value = 5,
+  fixed_ar_value = 0, estimate_df = TRUE, estimate_ar = FALSE,
+  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
+  covariance = c("squared-exponential", "exponential"),
+  algorithm = c("sampling", "meanfield"), year_re = FALSE,
   nb_lower_truncation = 0, control = list(adapt_delta = 0.9),
   save_log_lik = FALSE, demean = TRUE, ...)
 }
@@ -50,6 +51,9 @@ random walk process (if specified). Must be declared with
 with \code{\link{student_t}}.}
 
 \item{prior_beta}{The prior on the slope parameters (if any). Must be
+declared with \code{\link{student_t}}.}
+
+\item{prior_ar}{The prior on the AR parameter. Must be
 declared with \code{\link{student_t}}.}
 
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
