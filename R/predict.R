@@ -128,7 +128,8 @@ predict.rrfield <- function(object, newdata = NULL,
     }
     if(obs_model == 6) {
       # lognormal, sigma is returned
-      pp <- t(apply(pred_values, 1, function(x) stats::rlnorm(mcmc_draws, meanlog = x, sdlog = pars$sigma[,1])))
+      pp <- t(apply(pred_values, 1, function(x) stats::rlnorm(mcmc_draws, meanlog = log(x),
+        sdlog = pars$sigma[,1])))
     }
   }
 
