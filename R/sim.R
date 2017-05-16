@@ -37,7 +37,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   distKnots <- as.matrix(dist(knots))
 
 
-  if (!covariance[[1]] %in% c("squared-exponential", "exponential")) {
+  if (!covariance[[1]] %in% c("squared-exponential", "exponential", "matern")) {
     stop(paste(covariance[[1]], "not implemented"))
   }
   if (covariance[[1]] == "squared-exponential") {
@@ -48,7 +48,11 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     dist_knots_sq <- distKnots # NOT squared distances despite name
     cor_knots <- exp(-dist_knots_sq / (gp_scale))
   }
-
+  if (covariance[[1]] == "matern") {
+    # change this
+    dist_knots_sq <- distKnots^2 # squared distances
+    cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
+  }
   sigma_knots <- gp_sigma^2 * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 

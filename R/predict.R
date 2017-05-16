@@ -67,13 +67,20 @@ predict.rrfield <- function(object, newdata = NULL,
         exp(-distKnots/pars$gp_scale[mcmc.i[i]])
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
         exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
-    } else {
+    }
+    if(object$covariance == "squared-exponential")
       covmat <- pars$gp_sigma[mcmc.i[i]] *
         exp(-(distKnots^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
         exp(-(dist_knots21^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
     }
-
+    if(object$covariance == "matern") {
+      # change this
+    covmat <- pars$gp_sigma[mcmc.i[i]] *
+    exp(-(distKnots^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
+    covmat21 <- pars$gp_sigma[mcmc.i[i]] *
+    exp(-(dist_knots21^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
+  }
     # these are projected spatial effects, dim = new data points x time
     spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
 

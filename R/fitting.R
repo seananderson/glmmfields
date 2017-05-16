@@ -108,7 +108,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   estimate_df = TRUE,
   estimate_ar = FALSE,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
-  covariance = c("squared-exponential", "exponential"),
+  covariance = c("squared-exponential", "exponential", "matern"),
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
   nb_lower_truncation = 0,
@@ -125,7 +125,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   assert_that(all(unlist(lapply(list(obs_error, covariance, algorithm), is.character))))
   assert_that(
     obs_error[[1]] %in% c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"))
-  assert_that(covariance[[1]] %in% c("squared-exponential", "exponential"))
+  assert_that(covariance[[1]] %in% c("squared-exponential", "exponential", "matern"))
   assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
   assert_that(is.logical(save_log_lik))
   assert_that(is.logical(estimate_df))
@@ -163,7 +163,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
       prior_ar = parse_t_prior(prior_ar),
-      sqexp_cov = switch(covariance[[1]], `squared-exponential` = 1L, exponential = 0L,
+      cov_func = switch(covariance[[1]], exponential = 0L, `squared-exponential` = 1L, matern = 2L,
         stop(paste("covariance function", covariance[[1]], "is not defined."))),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),

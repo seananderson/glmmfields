@@ -18,7 +18,7 @@ data {
   matrix[nLocs,nKnots] distKnots21;
   int<lower=0> nCov;
   matrix[N,nCov] X;
-  int<lower=0,upper=1> sqexp_cov;
+  int<lower=0,upper=1> cov_func; # 0 exp, 1 = sq_exp, 2 = matern
   int<lower=0,upper=1> est_df;
   int<lower=0,upper=1> est_ar;
   int<lower=0,upper=1> norm_params;
@@ -58,18 +58,27 @@ transformed parameters {
   gp_sigma_sq = pow(gp_sigma, 2.0);
 
   // allow user to switch between squared-exponential and exponential covariance
-  if (sqexp_cov == 1) {
+  if(cov_func == 0) {
+    // cov matrix between knots
+    SigmaKnots = gp_sigma_sq * exp(-distKnots / gp_scale);
+    // cov matrix between knots and projected locs
+    SigmaOffDiag = gp_sigma_sq * exp(-distKnots21 / gp_scale);
+  }
+  if (cov_func == 1) {
     // cov matrix between knots:
     SigmaKnots = gp_sigma_sq *
       exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots); // dist^2 as data
     // cov matrix between knots and projected locs:
     SigmaOffDiag = gp_sigma_sq *
       exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
-  } else {
-    // cov matrix between knots
-    SigmaKnots = gp_sigma_sq * exp(-distKnots / gp_scale);
-    // cov matrix between knots and projected locs
-    SigmaOffDiag = gp_sigma_sq * exp(-distKnots21 / gp_scale);
+  }
+  if (cov_func == 2) {
+    // cov matrix between knots:
+    SigmaKnots = gp_sigma_sq *
+      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots); // dist^2 as data
+    // cov matrix between knots and projected locs:
+    SigmaOffDiag = gp_sigma_sq *
+      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
   }
 
 	for(k in 1:nKnots) {
