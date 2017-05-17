@@ -12,9 +12,9 @@ rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   fixed_ar_value = 0, estimate_df = TRUE, estimate_ar = FALSE,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
   covariance = c("squared-exponential", "exponential", "matern"),
-  algorithm = c("sampling", "meanfield"), year_re = FALSE,
-  nb_lower_truncation = 0, control = list(adapt_delta = 0.9),
-  save_log_lik = FALSE, demean = TRUE, ...)
+  matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
+  year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
+  0.9), save_log_lik = FALSE, demean = TRUE, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -77,6 +77,8 @@ and Poisson have a log link. Binomial has a logit link.}
 
 \item{covariance}{Character object describing the covariance
 function of the Gaussian Process.}
+
+\item{matern_kappa}{Optional parameter for the Matern covariance function. Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.}
 
 \item{algorithm}{Character object describing whether the model should be fit
 with full NUTS MCMC or via the variational inference mean-field approach.

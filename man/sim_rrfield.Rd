@@ -6,9 +6,9 @@
 \usage{
 sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
   mvt = TRUE, df = 4, seed = NULL, n_data_points = 100, sd_obs = 0.1,
-  covariance = "squared-exponential", obs_error = c("normal", "gamma",
-  "poisson", "nb2", "binomial", "lognormal"), B = c(0), ar = 0, X = rep(1,
-  n_draws * n_data_points))
+  covariance = "squared-exponential", matern_kappa = 0.5,
+  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
+  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points))
 }
 \arguments{
 \item{n_knots}{The number of knots}
@@ -30,6 +30,8 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
 \item{sd_obs}{The observation process scale parameter}
 
 \item{covariance}{The covariance function}
+
+\item{matern_kappa}{The optional matern parameter. Can be 1.5 or 2.5. Values of 0.5 equivalent to exponential model.}
 
 \item{obs_error}{The observation error distribution}
 
