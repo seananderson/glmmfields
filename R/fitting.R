@@ -72,6 +72,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   and Poisson have a log link. Binomial has a logit link.
 #' @param covariance Character object describing the covariance
 #'   function of the Gaussian Process.
+#' @param matern_kappa Optional parameter for the Matern covariance function. Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.
 #' @param algorithm Character object describing whether the model should be fit
 #'   with full NUTS MCMC or via the variational inference mean-field approach.
 #'   See \code{\link[rstan]{vb}}. Note that the variational inference approach
@@ -109,6 +110,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   estimate_ar = FALSE,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
   covariance = c("squared-exponential", "exponential", "matern"),
+  matern_kappa = 0.5,
   algorithm = c("sampling", "meanfield"),
   year_re = FALSE,
   nb_lower_truncation = 0,
@@ -127,11 +129,18 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
     obs_error[[1]] %in% c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"))
   assert_that(covariance[[1]] %in% c("squared-exponential", "exponential", "matern"))
   assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
+  assert_that(matern_kappa %in% c(0.5, 1.5, 2.5))
   assert_that(is.logical(save_log_lik))
   assert_that(is.logical(estimate_df))
   assert_that(is.logical(estimate_ar))
   assert_that(is.logical(year_re))
   assert_that(is.list(control))
+
+  if(covariance[[1]] == "matern" & matern_kappa %in% c(1.5,2.5) == FALSE) {
+    warning(paste0(c("Matern covariance specified, but Matern kappa not 1.5 or 2.5",
+      ": defaulting to 0.5, or exponential")))
+    covariance[[1]] = "exponential"
+  }
 
   if (nb_lower_truncation > 0)
     warning(paste0(c("Lower truncation with negative binomial has not been ",
@@ -177,7 +186,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L),
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
-      demean = as.integer(demean)))
+      demean = as.integer(demean),
+      matern_kappa = matern_kappa))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
