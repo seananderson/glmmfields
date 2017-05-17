@@ -68,18 +68,31 @@ predict.rrfield <- function(object, newdata = NULL,
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
         exp(-dist_knots21/pars$gp_scale[mcmc.i[i]])
     }
-    if(object$covariance == "squared-exponential")
+    if(object$covariance == "squared-exponential") {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
         exp(-(distKnots^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
         exp(-(dist_knots21^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
     }
     if(object$covariance == "matern") {
-      # change this
-    covmat <- pars$gp_sigma[mcmc.i[i]] *
-    exp(-(distKnots^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
-    covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-    exp(-(dist_knots21^2)/(2 * pars$gp_scale[mcmc.i[i]]^2))
+      if(object$matern_kappa == 1.5) {
+        transformed_dist <- sqrt(3) * distKnots / pars$gp_scale[mcmc.i[i]]
+        covmat <-
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
+
+        transformed_dist <- sqrt(3) * dist_knots21 / pars$gp_scale[mcmc.i[i]]
+        covmat21 <-
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
+      }
+      if(object$matern_kappa == 2.5) {
+        transformed_dist <- sqrt(5) * distKnots / pars$gp_scale[mcmc.i[i]]
+        covmat <-
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
+
+        transformed_dist <- sqrt(5) * dist_knots21 / pars$gp_scale[mcmc.i[i]]
+        covmat21 <-
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
+      }
   }
     # these are projected spatial effects, dim = new data points x time
     spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])

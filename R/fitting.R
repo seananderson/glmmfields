@@ -213,7 +213,7 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
 
   out <- list(model = m, knots = dplyr::as.tbl(as.data.frame(data_knots)), y = y, X = X,
     data = dplyr::as.tbl(data), formula = formula,
-    covariance = covariance[[1]], lon = lon, lat = lat, time = time, year_re = year_re,
+    covariance = covariance[[1]], matern_kappa = matern_kappa, lon = lon, lat = lat, time = time, year_re = year_re,
     station = data_list$stationID, obs_model = obs_model, fixed_intercept = fixed_intercept)
   out <- structure(out, class = "rrfield")
 }
