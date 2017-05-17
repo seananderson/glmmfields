@@ -31,6 +31,7 @@ data {
   int<lower=0> n_year_effects;
   int<lower=0> lower_truncation;
   int<lower=0,upper=1> fixed_intercept;
+  real matern_kappa;
 }
 parameters {
   real<lower=0> gp_scale;
@@ -50,6 +51,8 @@ transformed parameters {
 	vector[nKnots] muZeros;
 	vector[nLocs] spatialEffects[nT];
   matrix[nKnots, nKnots] SigmaKnots;
+  matrix[nKnots, nKnots] transformed_dist;
+  matrix[nLocs, nKnots] transformed_dist21;
   matrix[nLocs, nKnots] SigmaOffDiag;
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
@@ -73,12 +76,22 @@ transformed parameters {
       exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
   }
   if (cov_func == 2) {
-    // cov matrix between knots:
-    SigmaKnots = gp_sigma_sq *
-      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots); // dist^2 as data
-    // cov matrix between knots and projected locs:
-    SigmaOffDiag = gp_sigma_sq *
-      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
+    if(matern_kappa == 1.5) {
+      // cov matrix between knots
+      transformed_dist = sqrt(3) * distKnots / gp_scale;
+      SigmaKnots = gp_sigma_sq * (1 + transformed_dist) * exp (-transformed_dist);
+      // cov matrix between knots and projected locs
+      transformed_dist21 = sqrt(3) * distKnots21 / gp_scale;
+      SigmaOffDiag = gp_sigma_sq * (1 + transformed_dist21) * exp (-transformed_dist21);
+    }
+    if(matern_kappa == 2.5) {
+      // cov matrix between knots
+      transformed_dist = sqrt(5) * distKnots / gp_scale;
+      SigmaKnots = gp_sigma_sq * (1 + transformed_dist + pow(transformed_dist, 2)/3) * exp (-transformed_dist);
+      // cov matrix between knots and projected locs
+      transformed_dist21 = sqrt(5) * distKnots21 / gp_scale;
+      SigmaOffDiag = gp_sigma_sq * (1 + transformed_dist21 + pow(transformed_dist21, 2)/3) * exp (-transformed_dist21);
+    }
   }
 
 	for(k in 1:nKnots) {
