@@ -71,7 +71,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   distribution (i.e. the GLM "family"). Links are hardcoded. Gamma, NB2,
 #'   and Poisson have a log link. Binomial has a logit link.
 #' @param covariance Character object describing the covariance
-#'   function of the Gaussian Process.
+#'   function of the Gaussian Process ("squared-exponential", "exponential", "matern")
 #' @param matern_kappa Optional parameter for the Matern covariance function. Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.
 #' @param algorithm Character object describing whether the model should be fit
 #'   with full NUTS MCMC or via the variational inference mean-field approach.

@@ -76,7 +76,7 @@ distribution (i.e. the GLM "family"). Links are hardcoded. Gamma, NB2,
 and Poisson have a log link. Binomial has a logit link.}
 
 \item{covariance}{Character object describing the covariance
-function of the Gaussian Process.}
+function of the Gaussian Process ("squared-exponential", "exponential", "matern")}
 
 \item{matern_kappa}{Optional parameter for the Matern covariance function. Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.}
 

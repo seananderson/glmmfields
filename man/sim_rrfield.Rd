@@ -29,7 +29,7 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
 
 \item{sd_obs}{The observation process scale parameter}
 
-\item{covariance}{The covariance function}
+\item{covariance}{The covariance function of the Gaussian process ("squared-exponential", "exponential", "matern")}
 
 \item{matern_kappa}{The optional matern parameter. Can be 1.5 or 2.5. Values of 0.5 equivalent to exponential model.}
 
