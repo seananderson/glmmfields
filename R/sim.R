@@ -10,6 +10,7 @@
 #' @param n_data_points The number of data points per draw
 #' @param sd_obs The observation process scale parameter
 #' @param covariance The covariance function
+#' @matern_kapa The optional matern parameter. Can be 1.5 or 2.5. Values of 0.5 equivalent to exponential model.
 #' @param obs_error The observation error distribution
 #' @param B A vector of parameters. The first element is the intercept
 #' @param ar The auto regressive parameter on the mean of the random field knots
@@ -19,7 +20,7 @@
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
 sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   gp_sigma = 0.2, mvt = TRUE, df = 4, seed = NULL, n_data_points = 100,
-  sd_obs = 0.1, covariance = "squared-exponential",
+  sd_obs = 0.1, covariance = "squared-exponential", matern_kappa = 0.5,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
   B = c(0), ar = 0, X = rep(1, n_draws * n_data_points)) {
 
@@ -40,6 +41,24 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
   if (!covariance[[1]] %in% c("squared-exponential", "exponential", "matern")) {
     stop(paste(covariance[[1]], "not implemented"))
   }
+  if (covariance[[1]] == "matern") {
+    if(matern_kappa %in% c(1.5,2.5)==FALSE) {
+      matern_kappa = 0.5
+      covariance[[1]] = "exponential"
+    }
+    else {
+      if(matern_kappa == 1.5) {
+        dist_knots_sq <- distKnots # NOT squared distances despite name
+        transformed_dist = sqrt(3) * dist_knots_sq / gp_scale;
+        cor_knots <- (1 + transformed_dist) * exp (-transformed_dist)
+      }
+      if(matern_kappa == 2.5) {
+        dist_knots_sq <- distKnots # NOT squared distances despite name
+        transformed_dist = sqrt(5) * dist_knots_sq / gp_scale;
+        cor_knots <- (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
+      }
+    }
+  }
   if (covariance[[1]] == "squared-exponential") {
     dist_knots_sq <- distKnots^2 # squared distances
     cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
@@ -48,11 +67,7 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     dist_knots_sq <- distKnots # NOT squared distances despite name
     cor_knots <- exp(-dist_knots_sq / (gp_scale))
   }
-  if (covariance[[1]] == "matern") {
-    # change this
-    dist_knots_sq <- distKnots^2 # squared distances
-    cor_knots <- exp(-dist_knots_sq / (2 * gp_scale^2))
-  }
+
   sigma_knots <- gp_sigma^2 * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 
@@ -70,6 +85,20 @@ sim_rrfield <- function(n_knots = 15, n_draws = 10, gp_scale = 0.5,
     dist_knots21_sq <- t( # NOT squared distances despite name
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
     sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (gp_scale))
+  }
+  if (covariance[[1]] == "matern") {
+    # calculate distance from knots to grid
+    dist_all <- as.matrix(dist(rbind(g, knots)))
+    dist_knots21_sq <- t( # NOT squared distances despite name
+      dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
+    if(matern_kappa == 1.5) {
+      transformed_dist = sqrt(3) * dist_knots21_sq / gp_scale;
+      sigma21 <- gp_sigma^2 * (1 + transformed_dist) * exp (-transformed_dist)
+    }
+    if(matern_kappa == 2.5) {
+      transformed_dist = sqrt(5) * dist_knots21_sq / gp_scale;
+      sigma21 <- gp_sigma^2 * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
+    }
   }
 
   # generate vector of random effects
