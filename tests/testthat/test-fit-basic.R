@@ -153,3 +153,21 @@ test_that("mvt-norm model fits with repeat stations but missing in some years", 
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
 })
+
+test_that("predictions work with one time slice", {
+  skip_on_cran()
+  skip_on_travis()
+  skip_on_appveyor()
+  set.seed(SEED)
+
+  s <- sim_rrfield(df = df, n_draws = 1, gp_scale = gp_scale,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
+
+  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+    lat = "lat", lon = "lon", nknots = nknots,
+    iter = ITER, chains = CHAINS, seed = SEED,
+    estimate_df = FALSE, fixed_df_value = df)
+
+  p <- predict(m)
+
+})

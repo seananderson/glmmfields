@@ -101,7 +101,13 @@ predict.rrfield <- function(object, newdata = NULL,
       }
   }
     # these are projected spatial effects, dim = new data points x time
-    spat_effects <- covmat21 %*% solve(covmat) %*% t(pars$spatialEffectsKnots[mcmc.i[i],,])
+    spat_eff_knots_i <- pars$spatialEffectsKnots[mcmc.i[i],,]
+    if (is.matrix(spat_eff_knots_i)) {
+      spat_eff_knots_i <- t(spat_eff_knots_i)
+    } else { # these are for one time slice and are a vector
+      spat_eff_knots_i <- t(t(spat_eff_knots_i))
+    }
+    spat_effects <- covmat21 %*% solve(covmat) %*% spat_eff_knots_i
 
     rows <- seq_len(n_locs)
     cols <- as.numeric(as.factor(newdata[, time][[1]]))
