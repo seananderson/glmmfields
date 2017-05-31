@@ -22,8 +22,6 @@ nbinom2 <- function(link = "log") {
 #' Check a family object
 #'
 #' @param family The family
-#' @examples
-#' check_family(Gamma(link = "log"))
 check_family <- function(family) {
 
   assert_that(identical(class(family), "family") |

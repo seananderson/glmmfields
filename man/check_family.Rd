@@ -12,6 +12,3 @@ check_family(family)
 \description{
 Check a family object
 }
-\examples{
-check_family(Gamma(link = "log"))
-}

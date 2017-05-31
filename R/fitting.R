@@ -97,6 +97,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 #' @importFrom assertthat assert_that is.count is.number
+#' @importFrom stats gaussian
 
 rrfield <- function(formula, data, lon, lat,
   time = NULL,
@@ -141,7 +142,7 @@ rrfield <- function(formula, data, lon, lat,
 
   family <- check_family(family)
   obs_error <- tolower(family$family)
-  assert_that(obs_error[[1]] %in% c("normal", "gamma", "poisson", "negbin2",
+  assert_that(obs_error[[1]] %in% c("gaussian", "gamma", "poisson", "nbinom2",
     "binomial", "lognormal"))
 
   if(covariance[[1]] == "matern" & matern_kappa %in% c(1.5,2.5) == FALSE) {
@@ -167,7 +168,7 @@ rrfield <- function(formula, data, lon, lat,
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
-  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, negbin2 = 2L,
+  obs_model <- switch(obs_error[[1]], gaussian = 1L, gamma = 0L, nbinom2 = 2L,
     binomial = 4L, poisson = 5L, lognormal = 6L,
     stop(paste("observation model", obs_error[[1]], "is not defined.")))
 
@@ -187,8 +188,8 @@ rrfield <- function(formula, data, lon, lat,
       est_df = as.integer(estimate_df),
       est_ar = as.integer(estimate_ar),
       gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
-      norm_params = ifelse(obs_error[[1]] %in% c("normal", "lognormal"), 1L, 0L),
-      nb2_params = ifelse(obs_error[[1]] == "negbin2", 1L, 0L),
+      norm_params = ifelse(obs_error[[1]] %in% c("gaussian", "lognormal"), 1L, 0L),
+      nb2_params = ifelse(obs_error[[1]] == "nbinom2", 1L, 0L),
       fixed_df_value = fixed_df_value,
       fixed_ar_value = fixed_ar_value,
       est_temporalRE = est_temporalRE,

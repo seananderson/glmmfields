@@ -31,7 +31,7 @@ test_that("mvt-nb2 model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "nb2",
+    iter = ITER, chains = CHAINS, family = nbinom2(link = "log"),
     estimate_df = FALSE, fixed_df_value = df,
     control = list(adapt_delta = 0.9), seed = SEED)
 
@@ -67,7 +67,7 @@ test_that("mvt-gamma model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "gamma",
+    iter = ITER, chains = CHAINS, family = Gamma(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
 
   p <- predict(m)
@@ -110,7 +110,7 @@ test_that("mvt-binomial model fits", {
 
   m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "binomial",
+    iter = ITER, chains = CHAINS, family = binomial(link = "logit"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
   # m
   #
@@ -147,7 +147,7 @@ test_that("mvt-poisson model fits", {
 
   m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, obs_error = "poisson",
+    iter = ITER, chains = CHAINS, family = poisson(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
   m
 
