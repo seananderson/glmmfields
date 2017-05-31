@@ -17,11 +17,12 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
 
   data <- as.data.frame(data)
 
-  # stopifnot(is.integer(data[,time]) | is.numeric(data[,time]) | is.factor(data[,time]))
-  # stopifnot(is.integer(data[,station]) | is.numeric(data[,station]) | is.factor(data[,station]))
-
+  if (is.null(time)) {
+    data$time <- 1
+    time <- "time"
+  }
   yearID <- as.numeric(as.factor(data[,time]))
-  if(is.null(station)) {
+  if (is.null(station)) {
     stationID <- seq(1, nrow(data))
   } else {
     stationID <- as.numeric(as.factor(data[,station]))
@@ -29,8 +30,8 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
 
   # if stationID is duplicated, perform clustering on the subset of data
   if(length(unique(stationID)) < length(stationID)) {
-    first_instance = which(!duplicated(stationID)) # see http://stackoverflow.com/questions/11546684/how-can-i-find-the-first-and-last-occurrences-of-an-element-in-a-data-frame
-    sorted_index = sort(stationID[first_instance], index.return=T)
+    first_instance = which(!duplicated(stationID))
+    sorted_index = sort(stationID[first_instance], index.return = TRUE)
 
     knots = cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     distKnots = as.matrix(dist(knots))
@@ -55,7 +56,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
   # this is the transpose of the lower left corner
   distKnots21 = t(distAll[-c(1:nLocs), -c((nLocs + 1):ncol(distAll))])
 
-  # create list for STAN
+  # create list for Stan
   spatglm_data = list(
     nKnots = nknots,
     nLocs = nLocs,

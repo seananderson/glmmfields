@@ -4,28 +4,28 @@
 \alias{rrfield}
 \title{Fit a robust spatiotemporal random fields model}
 \usage{
-rrfield(formula, data, time, lon, lat, station = NULL, nknots = 25L,
-  prior_gp_scale = half_t(3, 0, 5), prior_gp_sigma = half_t(3, 0, 5),
-  prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
-  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
-  prior_ar = student_t(1e+06, 0, 0.5), fixed_df_value = 5,
-  fixed_ar_value = 0, estimate_df = TRUE, estimate_ar = FALSE,
-  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
+rrfield(formula, data, lon, lat, time = NULL, station = NULL,
+  nknots = 15L, prior_gp_scale = half_t(3, 0, 5),
+  prior_gp_sigma = half_t(3, 0, 5), prior_sigma = half_t(3, 0, 5),
+  prior_rw_sigma = half_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
+  prior_beta = student_t(3, 0, 3), prior_ar = student_t(1e+06, 0, 0.5),
+  fixed_df_value = 1e+06, fixed_ar_value = 0, estimate_df = FALSE,
+  estimate_ar = FALSE, family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
-  0.9), save_log_lik = FALSE, demean = TRUE, ...)
+  0.9), save_log_lik = FALSE, ...)
 }
 \arguments{
 \item{formula}{The model formula}
 
 \item{data}{A data frame}
 
-\item{time}{A character object giving the name of the time column}
-
 \item{lon}{A character object giving the name of the longitude column}
 
 \item{lat}{A character object giving the name of the latitude column}
+
+\item{time}{A character object giving the name of the time column}
 
 \item{station}{A numeric vector giving the integer ID of the station}
 
@@ -59,7 +59,8 @@ declared with \code{\link{student_t}}.}
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
 parameter if the degrees of freedom parameter is fixed. If the degrees of
 freedom parameter is estimated then this argument is ignored. Must be 1 or
-greater.}
+greater. Very large values (e.g. the default value) approximate the
+normal distribution.}
 
 \item{fixed_ar_value}{The fixed value for temporal autoregressive parameter,
 between random fields at time(t) and time(t-1). If the ar parameter
@@ -71,14 +72,17 @@ estimated?}
 \item{estimate_ar}{Logical: should the ar parameter be
 estimated?}
 
-\item{obs_error}{Character object indicating the observation process
-distribution (i.e. the GLM "family"). Links are hardcoded. Gamma, NB2,
-and Poisson have a log link. Binomial has a logit link.}
+\item{family}{Family object describing the observation model. Note that only
+one link is implemented for each distribution. Gamma, negative binomial
+nbinom2, and Poisson must have a log link. Binomial must have a logit link.
+Also implemented is lognormal(link = "log") (which must be specified
+exactly like that).}
 
 \item{covariance}{Character object describing the covariance
 function of the Gaussian Process ("squared-exponential", "exponential", "matern")}
 
-\item{matern_kappa}{Optional parameter for the Matern covariance function. Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.}
+\item{matern_kappa}{Optional parameter for the Matern covariance function.
+Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.}
 
 \item{algorithm}{Character object describing whether the model should be fit
 with full NUTS MCMC or via the variational inference mean-field approach.
@@ -97,9 +101,6 @@ truncation, 1 for 1 and all values above}
 \item{save_log_lik}{Logical: should the log likelihood for each data point be
 saved so that information criteria such as LOOIC or WAIC can be calculated?
 Defaults to \code{FALSE} so that the size of model objects is smaller.}
-
-\item{demean}{Should the spatial knots be centered by subtracting
-their mean at each time slice?}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

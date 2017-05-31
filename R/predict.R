@@ -110,6 +110,11 @@ predict.rrfield <- function(object, newdata = NULL,
     spat_effects <- covmat21 %*% solve(covmat) %*% spat_eff_knots_i
 
     rows <- seq_len(n_locs)
+
+    if (is.null(time)) {
+      newdata$time <- 1
+      time <- "time"
+    }
     cols <- as.numeric(as.factor(newdata[, time][[1]]))
     # check this for > 1 year. B will also have to be modified
     if(object$year_re == FALSE) {

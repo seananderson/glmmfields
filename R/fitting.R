@@ -59,7 +59,8 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
 #'   parameter if the degrees of freedom parameter is fixed. If the degrees of
 #'   freedom parameter is estimated then this argument is ignored. Must be 1 or
-#'   greater.
+#'   greater. Very large values (e.g. the default value) approximate the
+#'   normal distribution.
 #' @param estimate_df Logical: should the degrees of freedom perameter be
 #'   estimated?
 #' @param estimate_ar Logical: should the ar parameter be
@@ -67,12 +68,15 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @param fixed_ar_value The fixed value for temporal autoregressive parameter,
 #'   between random fields at time(t) and time(t-1). If the ar parameter
 #'   is estimated then this argument is ignored.
-#' @param obs_error Character object indicating the observation process
-#'   distribution (i.e. the GLM "family"). Links are hardcoded. Gamma, NB2,
-#'   and Poisson have a log link. Binomial has a logit link.
+#' @param family Family object describing the observation model. Note that only
+#'   one link is implemented for each distribution. Gamma, negative binomial
+#'   nbinom2, and Poisson must have a log link. Binomial must have a logit link.
+#'   Also implemented is lognormal(link = "log") (which must be specified
+#'   exactly like that).
 #' @param covariance Character object describing the covariance
 #'   function of the Gaussian Process ("squared-exponential", "exponential", "matern")
-#' @param matern_kappa Optional parameter for the Matern covariance function. Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.
+#' @param matern_kappa Optional parameter for the Matern covariance function.
+#'   Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.
 #' @param algorithm Character object describing whether the model should be fit
 #'   with full NUTS MCMC or via the variational inference mean-field approach.
 #'   See \code{\link[rstan]{vb}}. Note that the variational inference approach
@@ -86,8 +90,6 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
-#' @param demean Should the spatial knots be centered by subtracting
-#'   their mean at each time slice?
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @export
@@ -96,7 +98,10 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 #' @importFrom assertthat assert_that is.count is.number
 
-rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
+rrfield <- function(formula, data, lon, lat,
+  time = NULL,
+  station = NULL,
+  nknots = 15L,
   prior_gp_scale = half_t(3, 0, 5),
   prior_gp_sigma = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5),
@@ -104,11 +109,11 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 3),
   prior_ar = student_t(1e6, 0, 0.5),
-  fixed_df_value = 5,
+  fixed_df_value = 1e6,
   fixed_ar_value = 0,
-  estimate_df = TRUE,
+  estimate_df = FALSE,
   estimate_ar = FALSE,
-  obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
+  family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5,
   algorithm = c("sampling", "meanfield"),
@@ -116,7 +121,6 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9),
   save_log_lik = FALSE,
-  demean = TRUE,
   ...) {
 
   # argument checks:
@@ -124,9 +128,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   assert_that(nb_lower_truncation >= 0)
   assert_that(fixed_df_value >= 1)
   is.number(fixed_ar_value)
-  assert_that(all(unlist(lapply(list(obs_error, covariance, algorithm), is.character))))
-  assert_that(
-    obs_error[[1]] %in% c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"))
+  assert_that(all(unlist(lapply(list(covariance, algorithm), is.character))))
+
   assert_that(covariance[[1]] %in% c("squared-exponential", "exponential", "matern"))
   assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
   assert_that(matern_kappa %in% c(0.5, 1.5, 2.5))
@@ -135,6 +138,11 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   assert_that(is.logical(estimate_ar))
   assert_that(is.logical(year_re))
   assert_that(is.list(control))
+
+  family <- check_family(family)
+  obs_error <- tolower(family$family)
+  assert_that(obs_error[[1]] %in% c("normal", "gamma", "poisson", "negbin2",
+    "binomial", "lognormal"))
 
   if(covariance[[1]] == "matern" & matern_kappa %in% c(1.5,2.5) == FALSE) {
     warning(paste0(c("Matern covariance specified, but Matern kappa not 1.5 or 2.5",
@@ -159,8 +167,9 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 
-  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, nb2 = 2L, binomial = 4L,
-    poisson = 5L, lognormal = 6L, stop(paste("observation model", obs_error[[1]], "is not defined.")))
+  obs_model <- switch(obs_error[[1]], normal = 1L, gamma = 0L, negbin2 = 2L,
+    binomial = 4L, poisson = 5L, lognormal = 6L,
+    stop(paste("observation model", obs_error[[1]], "is not defined.")))
 
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
@@ -179,14 +188,13 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
       est_ar = as.integer(estimate_ar),
       gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
       norm_params = ifelse(obs_error[[1]] %in% c("normal", "lognormal"), 1L, 0L),
-      nb2_params = ifelse(obs_error[[1]] == "nb2", 1L, 0L),
+      nb2_params = ifelse(obs_error[[1]] == "negbin2", 1L, 0L),
       fixed_df_value = fixed_df_value,
       fixed_ar_value = fixed_ar_value,
       est_temporalRE = est_temporalRE,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L),
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
-      demean = as.integer(demean),
       matern_kappa = matern_kappa))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # NB2 or binomial or poisson obs model
@@ -213,7 +221,8 @@ rrfield <- function(formula, data, time, lon, lat, station = NULL, nknots = 25L,
 
   out <- list(model = m, knots = dplyr::as.tbl(as.data.frame(data_knots)), y = y, X = X,
     data = dplyr::as.tbl(data), formula = formula,
-    covariance = covariance[[1]], matern_kappa = matern_kappa, lon = lon, lat = lat, time = time, year_re = year_re,
+    covariance = covariance[[1]], matern_kappa = matern_kappa, lon = lon, lat = lat,
+    time = time, year_re = year_re,
     station = data_list$stationID, obs_model = obs_model, fixed_intercept = fixed_intercept)
   out <- structure(out, class = "rrfield")
 }
