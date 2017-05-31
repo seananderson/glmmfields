@@ -3,7 +3,7 @@
 #' @param link The link, it must be log
 #' @export
 lognormal <- function(link = "log") {
-  assert_that(identical("log", link))
+  assert_that(identical("log", as.character(link)))
   list(family = "lognormal", link = "log")
 }
 
@@ -15,7 +15,7 @@ lognormal <- function(link = "log") {
 #' @param link The link, it must be log
 #' @export
 nbinom2 <- function(link = "log") {
-  assert_that(identical("log", link))
+  assert_that(identical("log", as.character(link)))
   list(family = "nbinom2", link = "log")
 }
 
