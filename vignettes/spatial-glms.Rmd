@@ -13,7 +13,7 @@ Here we will use the `rrfields` package to fit a spatial GLM. While the `rrfield
 
 ```{r set-knitr-options, cache=FALSE, echo=FALSE}
 library("knitr")
-opts_chunk$set(message=FALSE, cache = TRUE, autodep = TRUE)
+opts_chunk$set(message=FALSE, cache = TRUE, autodep = TRUE, fig.width = 5)
 ```
 
 Let's load the necessary packages: 
@@ -68,8 +68,8 @@ Let's instead fit a spatial GLM with random fields:
 ```{r, results='hide'}
 m_spatial <- rrfield(y ~ temperature, data = d, obs_error = "gamma", 
   time = "time", station = "station_id",
-  lat = "lat", lon = "lon", estimate_df = FALSE, nknots = 15, iter = 400, 
-  fixed_df_value = 1000, chains = 4)
+  lat = "lat", lon = "lon", estimate_df = FALSE, nknots = 15, iter = 800, 
+  fixed_df_value = 1000)
 ```
 
 ```{r}
@@ -95,7 +95,8 @@ And the predictions from our model itself:
 ```{r}
 ggplot(d, aes(lon, lat, colour = exp(m_spatial_predictions))) + 
   viridis::scale_colour_viridis() +
-  geom_point(size = 3)
+  geom_point(size = 3) +
+  labs(colour = "Predictions")
 ```
 
 Compare that to our data at the top. Note that the original data also includes observation error with a CV of 0.2.
