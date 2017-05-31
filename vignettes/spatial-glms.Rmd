@@ -51,7 +51,7 @@ ggplot(s$dat, aes(lon, lat, colour = y)) +
   geom_point(size = 3)
 ```
 
-If we fit a regular GLM we can see that there is spatial autocorrelation in the residuals and our confidence intervals are quite tight:
+If we fit a regular GLM we can see that there is spatial autocorrelation in the residuals:
 
 ```{r}
 m_glm <- glm(y ~ temperature, data = d, family = Gamma(link = "log"))
