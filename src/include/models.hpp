@@ -58,6 +58,7 @@ private:
     int n_year_effects;
     int lower_truncation;
     int fixed_intercept;
+    double matern_kappa;
 public:
     model_rrfield(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -336,6 +337,11 @@ public:
         vals_i__ = context__.vals_i("fixed_intercept");
         pos__ = 0;
         fixed_intercept = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "matern_kappa", "double", context__.to_vec());
+        matern_kappa = double(0);
+        vals_r__ = context__.vals_r("matern_kappa");
+        pos__ = 0;
+        matern_kappa = vals_r__[pos__++];
 
         // validate, data variables
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -782,6 +788,20 @@ public:
 
         stan::math::initialize(SigmaKnots, DUMMY_VAR__);
         stan::math::fill(SigmaKnots,DUMMY_VAR__);
+        validate_non_negative_index("transformed_dist", "nKnots", nKnots);
+        validate_non_negative_index("transformed_dist", "nKnots", nKnots);
+        Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  transformed_dist(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+        (void) transformed_dist;  // dummy to suppress unused var warning
+
+        stan::math::initialize(transformed_dist, DUMMY_VAR__);
+        stan::math::fill(transformed_dist,DUMMY_VAR__);
+        validate_non_negative_index("transformed_dist21", "nLocs", nLocs);
+        validate_non_negative_index("transformed_dist21", "nKnots", nKnots);
+        Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  transformed_dist21(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+        (void) transformed_dist21;  // dummy to suppress unused var warning
+
+        stan::math::initialize(transformed_dist21, DUMMY_VAR__);
+        stan::math::fill(transformed_dist21,DUMMY_VAR__);
         validate_non_negative_index("SigmaOffDiag", "nLocs", nLocs);
         validate_non_negative_index("SigmaOffDiag", "nKnots", nKnots);
         Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  SigmaOffDiag(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
@@ -827,8 +847,20 @@ public:
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
+                if (as_bool(logical_eq(matern_kappa,1.5))) {
+
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_scale));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_scale));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
+                }
+                if (as_bool(logical_eq(matern_kappa,2.5))) {
+
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_scale));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_scale));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
+                }
             }
             for (int k = 1; k <= nKnots; ++k) {
 
@@ -887,6 +919,24 @@ public:
                 if (stan::math::is_uninitialized(SigmaKnots(i0__,i1__))) {
                     std::stringstream msg__;
                     msg__ << "Undefined transformed parameter: SigmaKnots" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                    throw std::runtime_error(msg__.str());
+                }
+            }
+        }
+        for (int i0__ = 0; i0__ < nKnots; ++i0__) {
+            for (int i1__ = 0; i1__ < nKnots; ++i1__) {
+                if (stan::math::is_uninitialized(transformed_dist(i0__,i1__))) {
+                    std::stringstream msg__;
+                    msg__ << "Undefined transformed parameter: transformed_dist" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                    throw std::runtime_error(msg__.str());
+                }
+            }
+        }
+        for (int i0__ = 0; i0__ < nLocs; ++i0__) {
+            for (int i1__ = 0; i1__ < nKnots; ++i1__) {
+                if (stan::math::is_uninitialized(transformed_dist21(i0__,i1__))) {
+                    std::stringstream msg__;
+                    msg__ << "Undefined transformed parameter: transformed_dist21" << '[' << i0__ << ']' << '[' << i1__ << ']';
                     throw std::runtime_error(msg__.str());
                 }
             }
@@ -1063,6 +1113,8 @@ public:
         names__.push_back("muZeros");
         names__.push_back("spatialEffects");
         names__.push_back("SigmaKnots");
+        names__.push_back("transformed_dist");
+        names__.push_back("transformed_dist21");
         names__.push_back("SigmaOffDiag");
         names__.push_back("invSigmaKnots");
         names__.push_back("y_hat");
@@ -1119,6 +1171,14 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nKnots);
+        dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nKnots);
+        dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nLocs);
         dims__.push_back(nKnots);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -1265,6 +1325,20 @@ public:
 
         stan::math::initialize(SigmaKnots, std::numeric_limits<double>::quiet_NaN());
         stan::math::fill(SigmaKnots,DUMMY_VAR__);
+        validate_non_negative_index("transformed_dist", "nKnots", nKnots);
+        validate_non_negative_index("transformed_dist", "nKnots", nKnots);
+        matrix_d transformed_dist(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+        (void) transformed_dist;  // dummy to suppress unused var warning
+
+        stan::math::initialize(transformed_dist, std::numeric_limits<double>::quiet_NaN());
+        stan::math::fill(transformed_dist,DUMMY_VAR__);
+        validate_non_negative_index("transformed_dist21", "nLocs", nLocs);
+        validate_non_negative_index("transformed_dist21", "nKnots", nKnots);
+        matrix_d transformed_dist21(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+        (void) transformed_dist21;  // dummy to suppress unused var warning
+
+        stan::math::initialize(transformed_dist21, std::numeric_limits<double>::quiet_NaN());
+        stan::math::fill(transformed_dist21,DUMMY_VAR__);
         validate_non_negative_index("SigmaOffDiag", "nLocs", nLocs);
         validate_non_negative_index("SigmaOffDiag", "nKnots", nKnots);
         matrix_d SigmaOffDiag(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
@@ -1310,8 +1384,20 @@ public:
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
+                if (as_bool(logical_eq(matern_kappa,1.5))) {
+
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_scale));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_scale));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
+                }
+                if (as_bool(logical_eq(matern_kappa,2.5))) {
+
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_scale));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_scale));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
+                }
             }
             for (int k = 1; k <= nKnots; ++k) {
 
@@ -1366,6 +1452,16 @@ public:
         for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
             for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
                 vars__.push_back(SigmaKnots(k_0__, k_1__));
+            }
+        }
+        for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
+            for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
+                vars__.push_back(transformed_dist(k_0__, k_1__));
+            }
+        }
+        for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
+            for (int k_0__ = 0; k_0__ < nLocs; ++k_0__) {
+                vars__.push_back(transformed_dist21(k_0__, k_1__));
             }
         }
         for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
@@ -1552,6 +1648,20 @@ public:
             }
         }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "transformed_dist" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "transformed_dist21" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "SigmaOffDiag" << '.' << k_0__ << '.' << k_1__;
@@ -1668,6 +1778,20 @@ public:
             for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "SigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "transformed_dist" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "transformed_dist21" << '.' << k_0__ << '.' << k_1__;
                 param_names__.push_back(param_name_stream__.str());
             }
         }
