@@ -32,7 +32,8 @@ Suggests:
     parallel,
     bayesplot,
     knitr,
-    rmarkdown
+    rmarkdown,
+    viridis
 URL: https://github.com/seananderson/rrfields
 BugReports: https://github.com/seananderson/rrfields/issues
 RoxygenNote: 6.0.1
