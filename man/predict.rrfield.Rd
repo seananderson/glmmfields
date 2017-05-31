@@ -7,20 +7,26 @@
 \method{predict}{rrfield}(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
   interval = c("confidence", "prediction"), type = c("link", "response"),
-  ...)
+  return_mcmc = FALSE, ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link{rrfield}}.}
 
 \item{newdata}{Optionally, a data frame to predict on}
 
-\item{estimate_method}{Method for computing point estimate ("mean" or median")}
+\item{estimate_method}{Method for computing point estimate ("mean" or
+median")}
 
 \item{conf_level}{Probability level for CI}
 
-\item{interval}{Type of interval calculation. Same as \code{\link[stats]{predict.lm}}}
+\item{interval}{Type of interval calculation. Same as
+\code{\link[stats]{predict.lm}}}
 
-\item{type}{Whether the predictions are returned on "link" scale or "response" scale (Same as \code{\link[stats]{predict.glm}})}
+\item{type}{Whether the predictions are returned on "link" scale or
+"response" scale (Same as \code{\link[stats]{predict.glm}})}
+
+\item{return_mcmc}{Logical. Should the full MCMC draws be returned for the
+predictions?}
 
 \item{...}{Ignored currently}
 }
