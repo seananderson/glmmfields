@@ -2,10 +2,15 @@
 #'
 #' @param object An object returned by \code{\link{rrfield}}.
 #' @param newdata Optionally, a data frame to predict on
-#' @param interval Type of interval calculation. Same as \code{\link[stats]{predict.lm}}
-#' @param estimate_method Method for computing point estimate ("mean" or median")
+#' @param interval Type of interval calculation. Same as
+#'   \code{\link[stats]{predict.lm}}
+#' @param estimate_method Method for computing point estimate ("mean" or
+#'   median")
 #' @param conf_level Probability level for CI
-#' @param type Whether the predictions are returned on "link" scale or "response" scale (Same as \code{\link[stats]{predict.glm}})
+#' @param type Whether the predictions are returned on "link" scale or
+#'   "response" scale (Same as \code{\link[stats]{predict.glm}})
+#' @param return_mcmc Logical. Should the full MCMC draws be returned for the
+#'   predictions?
 #' @param ... Ignored currently
 #'
 #' @importFrom stats median quantile predict rgamma rnbinom
@@ -14,7 +19,8 @@
 #' @export
 predict.rrfield <- function(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
-  interval = c("confidence", "prediction"), type = c("link", "response"), ...) {
+  interval = c("confidence", "prediction"), type = c("link", "response"),
+  return_mcmc = FALSE, ...) {
 
   assert_that(is.character(estimate_method[[1]]))
   assert_that(is.character(interval[[1]]))
@@ -165,5 +171,7 @@ predict.rrfield <- function(object, newdata = NULL,
     out$conf_high <- apply(pp, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
 
-  dplyr::as.tbl(out)
+  out <- dplyr::as.tbl(out)
+  if (return_mcmc) out <- pred_values
+  out
 }
