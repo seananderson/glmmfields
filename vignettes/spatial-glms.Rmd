@@ -1,0 +1,101 @@
+---
+title: "Spatial GLMs with rrfields"
+author: "Sean C. Anderson and Eric J. Ward"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Spatial GLMs with rrfields}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Here we will use the `rrfields` package to fit a spatial GLM. While the `rrfields` package was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), poisson (link = log), negative binomial (link = log), and binomial (link = logit). Although outside the formal GLM family, the package can also fit lognormal (link = log).
+
+```{r set-knitr-options, cache=FALSE, echo=FALSE}
+library("knitr")
+opts_chunk$set(message=FALSE, cache = TRUE, autodep = TRUE)
+```
+
+Let's load the necessary packages: 
+
+```{r}
+library(rrfields)
+library(ggplot2)
+library(dplyr)
+```
+
+Set up parallel processing:
+
+```{r, echo=TRUE}
+if (interactive()) options(mc.cores = parallel::detectCores())
+```
+
+Let's simulate some data to fit our model to. We will use the built-in function `sim_rrfield()`, but normally you would start with your own data. We will simulate 300 data points, some temperature data, an underlying random field spatial pattern, and add some observation error. 
+
+In this example we will fit a Gamma GLM with a log link.
+
+The underlying intercept is 0.5 and the slope between temperature and are observed variable (say biomass or density of something) is 0.2.
+
+```{r simulate-data}
+set.seed(123)
+N <- 300 # number of data points
+temperature <- rnorm(N, 0, 1)
+X <- cbind(1, temperature) # our design matrix
+s <- sim_rrfield(df = 1000, n_draws = 1, gp_scale = 2, n_data_points = N,
+  gp_sigma = 0.3, sd_obs = 0.2, n_knots = 15, obs_error = "gamma",
+  X = X, B = c(0.5, 0.2))
+d <- s$dat
+d$temperature <- temperature
+ggplot(s$dat, aes(lon, lat, colour = y)) + 
+  viridis::scale_colour_viridis() +
+  geom_point(size = 3)
+```
+
+If we fit a regular GLM we can see that there is spatial autocorrelation in the residuals and our confidence intervals are quite tight:
+
+```{r}
+m_glm <- glm(y ~ temperature, data = d, family = Gamma(link = "log"))
+m_glm
+confint(m_glm)
+d$m_glm_residuals <- residuals(m_glm)
+ggplot(d, aes(lon, lat, colour = m_glm_residuals)) + 
+  scale_color_gradient2() +
+  geom_point(size = 3)
+```
+
+Let's instead fit a spatial GLM with random fields:
+
+```{r, results='hide'}
+m_spatial <- rrfield(y ~ temperature, data = d, obs_error = "gamma", 
+  time = "time", station = "station_id",
+  lat = "lat", lon = "lon", estimate_df = FALSE, nknots = 15, iter = 400, 
+  fixed_df_value = 1000, chains = 4)
+```
+
+```{r}
+m_spatial
+```
+
+We can see that the 95% credible intervals are considerably wider on the intercept term and narrower on the slope coefficient in the spatial GLM vs. the model that ignored the spatial autocorrelation.
+
+Let's look at the residuals in space this time:
+
+```{r}
+d <- mutate(d, m_spatial_predictions = predict(m_spatial)$estimate,
+  m_spatial_residuals = m_spatial_predictions - log(y))
+ggplot(d, aes(lon, lat, colour = m_spatial_residuals)) + 
+  scale_color_gradient2() +
+  geom_point(size = 3)
+```
+
+That looks better. 
+
+And the predictions from our model itself:
+
+```{r}
+ggplot(d, aes(lon, lat, colour = exp(m_spatial_predictions))) + 
+  viridis::scale_colour_viridis() +
+  geom_point(size = 3)
+```
+
+Compare that to our data at the top. Note that the original data also includes observation error with a CV of 0.2.
