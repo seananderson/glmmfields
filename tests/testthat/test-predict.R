@@ -29,12 +29,14 @@ test_that("predict.rrfield works", {
 
   p <- predict(m)
   p_newdata <- predict(m, newdata = s$dat)
+  p_newdata2 <- predict(m, newdata = m$data)
 
   plot(s$dat$y, p$estimate)
   plot(s$dat$y, p_newdata$estimate)
+  plot(s$dat$y, p_newdata2$estimate)
 
-  # expect_identical(p, p_newdata)
+  expect_identical(p, p_newdata)
 
-  # expect_gte(cor(s$dat$y, p$estimate), 0.75)
+  expect_gte(cor(s$dat$y, p$estimate), 0.75)
   expect_gte(cor(s$dat$y, p_newdata$estimate), 0.75)
 })
