@@ -24,7 +24,8 @@ Imports:
     mvtnorm,
     broom,
     methods,
-    assertthat
+    assertthat,
+    nlme
 LinkingTo: StanHeaders (>= 2.14.0), rstan (>= 2.14.0), BH (>= 1.60.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:

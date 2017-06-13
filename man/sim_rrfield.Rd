@@ -8,7 +8,9 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
   mvt = TRUE, df = 1e+06, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential", matern_kappa = 0.5,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
-  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points))
+  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points),
+  g = data.frame(lon = runif(n_data_points, 0, 10), lat = runif(n_data_points,
+  0, 10)))
 }
 \arguments{
 \item{n_knots}{The number of knots}
@@ -40,6 +42,8 @@ sim_rrfield(n_knots = 15, n_draws = 10, gp_scale = 0.5, gp_sigma = 0.2,
 \item{ar}{The auto regressive parameter on the mean of the random field knots}
 
 \item{X}{The model matrix}
+
+\item{g}{Grid of points}
 }
 \description{
 Simulate a random field with a MVT distribution

@@ -46,4 +46,8 @@ test_that("predict.rrfield works", {
   p_newdata <- predict(m, newdata = s$dat[random_subset, ])
   plot(s$dat$y[random_subset], p_newdata$estimate)
   expect_gte(cor(s$dat$y[random_subset], p_newdata$estimate), 0.75)
+
+  nd <- s$dat
+  nd$y <- NULL
+  p <- predict(m, newdata = nd)
 })

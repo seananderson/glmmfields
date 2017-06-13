@@ -40,7 +40,11 @@ predict.rrfield <- function(object, newdata = NULL,
 
   # newdata is df with time, y, lon, lat
   # if null, defaults to data used to fit model
-  if(is.null(newdata)) newdata <- object$data
+  if (is.null(newdata)) newdata <- object$data
+
+  response <- all.vars(nlme::getResponseFormula(object$formula))
+  newdata[[response]] <- NA
+
   newdata <- dplyr::as.tbl(newdata)
   # create model.matrix() as in fitting function, only with newdata
   X <- model.matrix(object$formula, model.frame(object$formula, newdata))
