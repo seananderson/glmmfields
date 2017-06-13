@@ -43,7 +43,7 @@ predict.rrfield <- function(object, newdata = NULL,
   if (is.null(newdata)) newdata <- object$data
 
   response <- all.vars(nlme::getResponseFormula(object$formula))
-  newdata[[response]] <- NA
+  newdata[[response]] <- 1.0
 
   newdata <- dplyr::as.tbl(newdata)
   # create model.matrix() as in fitting function, only with newdata
