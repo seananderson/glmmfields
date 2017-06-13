@@ -38,7 +38,7 @@ The underlying intercept is 0.5 and the slope between temperature and are observ
 
 ```{r simulate-data}
 set.seed(123)
-N <- 200 # number of data points
+N <- 100 # number of data points
 temperature <- rnorm(N, 0, 1)
 X <- cbind(1, temperature) # our design matrix
 s <- sim_rrfield(n_draws = 1, gp_scale = 2, n_data_points = N,
