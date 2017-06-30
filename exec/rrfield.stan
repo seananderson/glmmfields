@@ -48,8 +48,8 @@ parameters {
   real<lower=0> W[nT];
 }
 transformed parameters {
-	vector[nKnots] muZeros;
-	vector[nLocs] spatialEffects[nT];
+  vector[nKnots] muZeros;
+  vector[nLocs] spatialEffects[nT];
   matrix[nKnots, nKnots] SigmaKnots;
   matrix[nKnots, nKnots] transformed_dist;
   matrix[nLocs, nKnots] transformed_dist21;
@@ -94,31 +94,31 @@ transformed parameters {
     }
   }
 
-	for(k in 1:nKnots) {
-		muZeros[k] = 0;
-	}
-	// multiply and invert once, used below:
-	SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
-	for(t in 1:nT) {
+  for(k in 1:nKnots) {
+    muZeros[k] = 0;
+  }
+  // multiply and invert once, used below:
+  SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
+  for(t in 1:nT) {
     spatialEffects[t] = SigmaOffDiag * spatialEffectsKnots[t];
-	}
+  }
 
-	// calculate predicted value of each observation
-	for(i in 1:N) {
-	  if(est_temporalRE == 0) {
-	    if(fixed_intercept == 0) {
-	      y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
-	    } else {
-	      y_hat[i] = spatialEffects[yearID[i], stationID[i]];
-	    }
-	  } else {
-	    y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
-	  }
-	}
+  // calculate predicted value of each observation
+  for(i in 1:N) {
+    if(est_temporalRE == 0) {
+      if(fixed_intercept == 0) {
+        y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
+      } else {
+        y_hat[i] = spatialEffects[yearID[i], stationID[i]];
+      }
+    } else {
+      y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+    }
+  }
 
-	if(obs_model==0) {
-	  gammaA[1] = inv(pow(CV[1], 2.0));
-	}
+  if(obs_model==0) {
+    gammaA[1] = inv(pow(CV[1], 2.0));
+  }
 
 }
 model {
@@ -159,31 +159,19 @@ model {
     W ~ scaled_inv_chi_square(fixed_df_value, 1);
   }
 
-  # spatial deviates in first time slice
-
+  // spatial deviates in first time slice
   spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1]*SigmaKnots);
 
-  // if(est_ar == 1) {
-  //   # for AR model, constrain first draw: e.g. Blangiardo et al. (2012)
-  //   spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-ar[1]*ar[1]))*SigmaKnots);
-  // }
-  // else {
-  //   spatialEffectsKnots[1] ~ multi_normal(muZeros, (W[1]/(1-fixed_ar_value*fixed_ar_value))*SigmaKnots);
-  // }
-  # spatial deviates in remaining time slices
-    for(t in 2:nT) {
-      if(est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(
-          // ar[1] * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
-          ar[1] * spatialEffectsKnots[t-1],
+  // spatial deviates in remaining time slices
+  for(t in 2:nT) {
+    if(est_ar == 1) {
+      spatialEffectsKnots[t] ~ multi_normal(ar[1] * spatialEffectsKnots[t-1],
           W[t]*SigmaKnots);
-      } else {
-        spatialEffectsKnots[t] ~ multi_normal(
-          // fixed_ar_value * (spatialEffectsKnots[t-1] - mean(spatialEffectsKnots[t-1])),
-          fixed_ar_value * spatialEffectsKnots[t-1],
+    } else {
+      spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value * spatialEffectsKnots[t-1],
           W[t]*SigmaKnots);
-      }
     }
+  }
 
   // switch between observation error models: normal (1), gamma (0), NB2 (2), binomial (4), poisson (5)
   // lognormal (6)
@@ -199,9 +187,9 @@ model {
     if (lower_truncation == 0) {
       y_int ~ neg_binomial_2_log(y_hat, nb2_phi[1]);
     } else {
-     for (i in 1:N) {
-      y_int[i] ~ neg_binomial_2(exp(y_hat[i]), nb2_phi[1]) T[lower_truncation, ];
-     }
+      for (i in 1:N) {
+        y_int[i] ~ neg_binomial_2(exp(y_hat[i]), nb2_phi[1]) T[lower_truncation, ];
+      }
     }
   }
   if(obs_model == 1) {
