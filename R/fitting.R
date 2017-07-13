@@ -31,22 +31,31 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 
 #' Fit a robust spatiotemporal random fields model
 #'
+#' Fit a spatiotemporal random fields model that optionally uses the MVT
+#' distribution instead of a MVN distribution to allow for spatial extremes
+#' through time. It is also possible to fit a spatial random fields model
+#' without a time component.
+#'
 #' @param formula The model formula
 #' @param data A data frame
 #' @param time A character object giving the name of the time column
 #' @param lon A character object giving the name of the longitude column
 #' @param lat A character object giving the name of the latitude column
 #' @param station A numeric vector giving the integer ID of the station
-#' @param nknots The number of knots to use in the predictive process model
+#' @param nknots The number of knots to use in the predictive process model.
+#'   Smaller values will be faster but may not adequately represent the shape
+#'   of the spatial pattern.
 #' @param prior_gp_scale The prior on the Gaussian Process scale parameter. Must
-#'   be declared with \code{\link{half_t}}.
+#'   be declared with \code{\link{half_t}}. Here, and throughout, priors that
+#'   are normal or half-normal can be implemented by setting the first
+#'   parameter in the half-t or student-t distribution to a large value.
 #' @param prior_gp_sigma The prior on the Gaussian Process sigma parameter. Must
 #'   be declared with \code{\link{half_t}}.
 #' @param prior_sigma The prior on the observation process scale parameter. Must
-#'   be declared with \code{\link{half_t}}. This acts as a
-#'   substitute for the scale parameter in whatever observation distribution is
-#'   being used. I.e. the CV for the Gamma or the dispersion parameter for
-#'   the negative binomial.
+#'   be declared with \code{\link{half_t}}. This acts as a substitute for the
+#'   scale parameter in whatever observation distribution is being used. I.e.
+#'   the CV for the Gamma or the dispersion parameter for the negative
+#'   binomial.
 #' @param prior_rw_sigma The prior on the standard deviation parameter of the
 #'   random walk process (if specified). Must be declared with
 #'   \code{\link{half_t}}.
@@ -57,24 +66,27 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #' @param prior_ar The prior on the AR parameter. Must be
 #'   declared with \code{\link{student_t}}.
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
-#'   parameter if the degrees of freedom parameter is fixed. If the degrees of
-#'   freedom parameter is estimated then this argument is ignored. Must be 1 or
-#'   greater. Very large values (e.g. the default value) approximate the
-#'   normal distribution.
+#'   parameter if the degrees of freedom parameter is fixed in the MVT. If the
+#'   degrees of freedom parameter is estimated then this argument is ignored.
+#'   Must be 1 or greater. Very large values (e.g. the default value)
+#'   approximate the normal distribution.
 #' @param estimate_df Logical: should the degrees of freedom perameter be
 #'   estimated?
-#' @param estimate_ar Logical: should the ar parameter be
-#'   estimated?
+#' @param estimate_ar Logical: should the AR (autoregressive) parameter be
+#'   estimated? Here, this refers to a autoregressive process in the evolution
+#'   of the spatial field through time.
 #' @param fixed_ar_value The fixed value for temporal autoregressive parameter,
-#'   between random fields at time(t) and time(t-1). If the ar parameter
+#'   between random fields at time(t) and time(t-1). If the AR parameter
 #'   is estimated then this argument is ignored.
 #' @param family Family object describing the observation model. Note that only
 #'   one link is implemented for each distribution. Gamma, negative binomial
-#'   nbinom2, and Poisson must have a log link. Binomial must have a logit link.
-#'   Also implemented is lognormal(link = "log") (which must be specified
-#'   exactly like that).
-#' @param covariance Character object describing the covariance
-#'   function of the Gaussian Process ("squared-exponential", "exponential", "matern")
+#'   (specified as \code{nbinom2(link = "log")}, and Poisson must have a log
+#'   link. Binomial must have a logit link. Also implemented is
+#'   \code{lognormal(link = "log")}. Besides the negative binomial and
+#'   lognormal, other families are specified as shown in
+#'   \code{\link[stats]{family}}.
+#' @param covariance The covariance function of the Gaussian Process.
+#'   One of "squared-exponential", "exponential", or "matern".
 #' @param matern_kappa Optional parameter for the Matern covariance function.
 #'   Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.
 #' @param algorithm Character object describing whether the model should be fit
@@ -84,13 +96,24 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
 #'   incorrect inference than MCMC.
 #' @param year_re Logical: estimate a random walk for the time variable? If
 #'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
-#' @param nb_lower_truncation For NB2: lower truncation value. E.g. 0 for no
-#'   truncation, 1 for 1 and all values above
+#'   \code{TRUE}, then \code{prior_intercept} will be used as the prior for
+#'   the initial value in time.
+#' @param nb_lower_truncation For NB2 only: lower truncation value. E.g. 0 for
+#'   no truncation, 1 for 1 and all values above. Note that estimation is
+#'   likely to be considerably slower with lower truncation because the
+#'   sampling is not vectorized. Also note that the log likelihood values
+#'   returned for estimating quantities like LOOIC will not be correct if
+#'   lower truncation is implemented.
 #' @param control List to pass to \code{\link[rstan]{sampling}}
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
+#'
+#' @details
+#' Note that there is no guarantee the priors will remain the same in future
+#' versions. Therefore it is important that you specify any priors that are
+#' used in your model, even if they replicate the defaults in the package.
 #'
 #' @export
 #' @importFrom rstan sampling vb
@@ -109,8 +132,8 @@ rrfield <- function(formula, data, lon, lat,
   prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 3),
-  prior_ar = student_t(1e6, 0, 0.5),
-  fixed_df_value = 1e6,
+  prior_ar = student_t(1000, 0, 0.5),
+  fixed_df_value = 1000,
   fixed_ar_value = 0,
   estimate_df = FALSE,
   estimate_ar = FALSE,
@@ -182,7 +205,8 @@ rrfield <- function(formula, data, lon, lat,
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
       prior_ar = parse_t_prior(prior_ar),
-      cov_func = switch(covariance[[1]], exponential = 0L, `squared-exponential` = 1L, matern = 2L,
+      cov_func = switch(covariance[[1]], exponential = 0L, `squared-exponential` = 1L, 
+        matern = 2L, 
         stop(paste("covariance function", covariance[[1]], "is not defined."))),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
@@ -198,7 +222,7 @@ rrfield <- function(formula, data, lon, lat,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa))
 
-  if (obs_model %in% c(2L, 4L, 5L)) { # NB2 or binomial or poisson obs model
+  if (obs_model %in% c(2L, 4L, 5L)) { # integers: NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
   } else {
     stan_data <- c(stan_data, list(y_int = rep(0L, stan_data$N)))

@@ -8,8 +8,8 @@ rrfield(formula, data, lon, lat, time = NULL, station = NULL,
   nknots = 15L, prior_gp_scale = half_t(3, 0, 5),
   prior_gp_sigma = half_t(3, 0, 5), prior_sigma = half_t(3, 0, 5),
   prior_rw_sigma = half_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
-  prior_beta = student_t(3, 0, 3), prior_ar = student_t(1e+06, 0, 0.5),
-  fixed_df_value = 1e+06, fixed_ar_value = 0, estimate_df = FALSE,
+  prior_beta = student_t(3, 0, 3), prior_ar = student_t(1000, 0, 0.5),
+  fixed_df_value = 1000, fixed_ar_value = 0, estimate_df = FALSE,
   estimate_ar = FALSE, family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
@@ -29,19 +29,23 @@ rrfield(formula, data, lon, lat, time = NULL, station = NULL,
 
 \item{station}{A numeric vector giving the integer ID of the station}
 
-\item{nknots}{The number of knots to use in the predictive process model}
+\item{nknots}{The number of knots to use in the predictive process model.
+Smaller values will be faster but may not adequately represent the shape
+of the spatial pattern.}
 
 \item{prior_gp_scale}{The prior on the Gaussian Process scale parameter. Must
-be declared with \code{\link{half_t}}.}
+be declared with \code{\link{half_t}}. Here, and throughout, priors that
+are normal or half-normal can be implemented by setting the first
+parameter in the half-t or student-t distribution to a large value.}
 
 \item{prior_gp_sigma}{The prior on the Gaussian Process sigma parameter. Must
 be declared with \code{\link{half_t}}.}
 
 \item{prior_sigma}{The prior on the observation process scale parameter. Must
-be declared with \code{\link{half_t}}. This acts as a
-substitute for the scale parameter in whatever observation distribution is
-being used. I.e. the CV for the Gamma or the dispersion parameter for
-the negative binomial.}
+be declared with \code{\link{half_t}}. This acts as a substitute for the
+scale parameter in whatever observation distribution is being used. I.e.
+the CV for the Gamma or the dispersion parameter for the negative
+binomial.}
 
 \item{prior_rw_sigma}{The prior on the standard deviation parameter of the
 random walk process (if specified). Must be declared with
@@ -57,29 +61,32 @@ declared with \code{\link{student_t}}.}
 declared with \code{\link{student_t}}.}
 
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
-parameter if the degrees of freedom parameter is fixed. If the degrees of
-freedom parameter is estimated then this argument is ignored. Must be 1 or
-greater. Very large values (e.g. the default value) approximate the
-normal distribution.}
+parameter if the degrees of freedom parameter is fixed in the MVT. If the
+degrees of freedom parameter is estimated then this argument is ignored.
+Must be 1 or greater. Very large values (e.g. the default value)
+approximate the normal distribution.}
 
 \item{fixed_ar_value}{The fixed value for temporal autoregressive parameter,
-between random fields at time(t) and time(t-1). If the ar parameter
+between random fields at time(t) and time(t-1). If the AR parameter
 is estimated then this argument is ignored.}
 
 \item{estimate_df}{Logical: should the degrees of freedom perameter be
 estimated?}
 
-\item{estimate_ar}{Logical: should the ar parameter be
-estimated?}
+\item{estimate_ar}{Logical: should the AR (autoregressive) parameter be
+estimated? Here, this refers to a autoregressive process in the evolution
+of the spatial field through time.}
 
 \item{family}{Family object describing the observation model. Note that only
 one link is implemented for each distribution. Gamma, negative binomial
-nbinom2, and Poisson must have a log link. Binomial must have a logit link.
-Also implemented is lognormal(link = "log") (which must be specified
-exactly like that).}
+(specified as \code{nbinom2(link = "log")}, and Poisson must have a log
+link. Binomial must have a logit link. Also implemented is
+\code{lognormal(link = "log")}. Besides the negative binomial and
+lognormal, other families are specified as shown in
+\code{\link[stats]{family}}.}
 
-\item{covariance}{Character object describing the covariance
-function of the Gaussian Process ("squared-exponential", "exponential", "matern")}
+\item{covariance}{The covariance function of the Gaussian Process.
+One of "squared-exponential", "exponential", or "matern".}
 
 \item{matern_kappa}{Optional parameter for the Matern covariance function.
 Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.}
@@ -91,10 +98,16 @@ should not be trusted for final inference and is much more likely to give
 incorrect inference than MCMC.}
 
 \item{year_re}{Logical: estimate a random walk for the time variable? If
-\code{TRUE}, then no fixed effects (B coefficients) will be estimated.}
+\code{TRUE}, then no fixed effects (B coefficients) will be estimated.
+\code{TRUE}, then \code{prior_intercept} will be used as the prior for
+the initial value in time.}
 
-\item{nb_lower_truncation}{For NB2: lower truncation value. E.g. 0 for no
-truncation, 1 for 1 and all values above}
+\item{nb_lower_truncation}{For NB2 only: lower truncation value. E.g. 0 for
+no truncation, 1 for 1 and all values above. Note that estimation is
+likely to be considerably slower with lower truncation because the
+sampling is not vectorized. Also note that the log likelihood values
+returned for estimating quantities like LOOIC will not be correct if
+lower truncation is implemented.}
 
 \item{control}{List to pass to \code{\link[rstan]{sampling}}}
 
@@ -105,5 +118,13 @@ Defaults to \code{FALSE} so that the size of model objects is smaller.}
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }
 \description{
-Fit a robust spatiotemporal random fields model
+Fit a spatiotemporal random fields model that optionally uses the MVT
+distribution instead of a MVN distribution to allow for spatial extremes
+through time. It is also possible to fit a spatial random fields model
+without a time component.
+}
+\details{
+Note that there is no guarantee the priors will remain the same in future
+versions. Therefore it is important that you specify any priors that are
+used in your model, even if they replicate the defaults in the package.
 }
