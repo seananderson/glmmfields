@@ -38,7 +38,8 @@
 #'   parameter if the degrees of freedom parameter is fixed in the MVT. If the
 #'   degrees of freedom parameter is estimated then this argument is ignored.
 #'   Must be 1 or greater. Very large values (e.g. the default value)
-#'   approximate the normal distribution.
+#'   approximate the normal distribution. If the value is >=1000 then a true
+#'   MVN distribution will be fit.
 #' @param estimate_df Logical: should the degrees of freedom perameter be
 #'   estimated?
 #' @param estimate_ar Logical: should the AR (autoregressive) parameter be
@@ -189,7 +190,7 @@ rrfield <- function(formula, data, lon, lat,
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa,
-      nW = ifelse(fixed_df_value > 999 & !estimate_df, 0L, stan_data$nT)))
+      nW = ifelse(fixed_df_value[[1]] > 999 & !estimate_df, 0L, stan_data$nT)))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # integers: NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))

@@ -64,7 +64,8 @@ declared with \code{\link{student_t}}.}
 parameter if the degrees of freedom parameter is fixed in the MVT. If the
 degrees of freedom parameter is estimated then this argument is ignored.
 Must be 1 or greater. Very large values (e.g. the default value)
-approximate the normal distribution.}
+approximate the normal distribution. If the value is >=1000 then a true
+MVN distribution will be fit.}
 
 \item{fixed_ar_value}{The fixed value for temporal autoregressive parameter,
 between random fields at time(t) and time(t-1). If the AR parameter
