@@ -2,7 +2,7 @@
 % Please edit documentation in R/fitting.R
 \name{rrfield}
 \alias{rrfield}
-\title{Fit a robust spatiotemporal random fields model}
+\title{Fit a spatiotemporal random fields GLMM}
 \usage{
 rrfield(formula, data, lon, lat, time = NULL, station = NULL,
   nknots = 15L, prior_gp_scale = half_t(3, 0, 5),

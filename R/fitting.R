@@ -1,35 +1,4 @@
-#' Return a vector of parameters
-#'
-#' @param obs_error The observation error distribution
-#' @param estimate_df Logical indicating whether the degrees of freedom
-#'   parameter should be estimated
-#' @param est_temporalRE Logical: estimate a random walk for the time variable?
-#' @param estimate_ar Logical indicating whether the ar
-#'   parameter should be estimated
-#' @param fixed_intercept Should the intercept be fixed?
-#' @param save_log_lik Logical: should the log likelihood for each data point be
-#'   saved so that information criteria such as LOOIC or WAIC can be calculated?
-#'   Defaults to \code{FALSE} so that the size of model objects is smaller.
-stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
-  estimate_ar = FALSE, fixed_intercept = FALSE, save_log_lik = FALSE) {
-  p <- c("gp_sigma",
-    "gp_scale",
-    "B",
-    switch(obs_error[[1]], lognormal = "sigma", gaussian = "sigma",
-      gamma = "CV", nb2 = "nb2_phi"),
-    "spatialEffectsKnots")
-  if (estimate_df) p <- c("df", p)
-  if (estimate_ar) p <- c("ar", p)
-  if (est_temporalRE) {
-    p <- c("year_sigma", "yearEffects", p)
-    p <- p[!p=="B"] # no main effects if random walk for now
-  }
-  if (fixed_intercept) p <- p[p != "B"]
-  if (save_log_lik) p <- c(p, "log_lik")
-  p
-}
-
-#' Fit a robust spatiotemporal random fields model
+#' Fit a spatiotemporal random fields GLMM
 #'
 #' Fit a spatiotemporal random fields model that optionally uses the MVT
 #' distribution instead of a MVN distribution to allow for spatial extremes
@@ -153,7 +122,6 @@ rrfield <- function(formula, data, lon, lat,
   assert_that(fixed_df_value >= 1)
   is.number(fixed_ar_value)
   assert_that(all(unlist(lapply(list(covariance, algorithm), is.character))))
-
   assert_that(covariance[[1]] %in% c("squared-exponential", "exponential", "matern"))
   assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
   assert_that(matern_kappa %in% c(0.5, 1.5, 2.5))
@@ -168,7 +136,7 @@ rrfield <- function(formula, data, lon, lat,
   assert_that(obs_error[[1]] %in% c("gaussian", "gamma", "poisson", "nbinom2",
     "binomial", "lognormal"))
 
-  if(covariance[[1]] == "matern" & matern_kappa %in% c(1.5,2.5) == FALSE) {
+  if(covariance[[1]] == "matern" & matern_kappa %in% c(1.5, 2.5) == FALSE) {
     warning(paste0(c("Matern covariance specified, but Matern kappa not 1.5 or 2.5",
       ": defaulting to 0.5, or exponential")))
     covariance[[1]] = "exponential"
@@ -177,7 +145,7 @@ rrfield <- function(formula, data, lon, lat,
   if (nb_lower_truncation > 0)
     warning(paste0(c("Lower truncation with negative binomial has not been ",
       "extensively tested and calculation of log likelihood for information ",
-      "criteria purposes has not been checked.")))
+      "criteria purposes is likely to be incorrect.")))
 
   mf <- model.frame(formula, data)
   X <- model.matrix(formula, mf)
@@ -205,8 +173,8 @@ rrfield <- function(formula, data, lon, lat,
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
       prior_ar = parse_t_prior(prior_ar),
-      cov_func = switch(covariance[[1]], exponential = 0L, `squared-exponential` = 1L, 
-        matern = 2L, 
+      cov_func = switch(covariance[[1]], exponential = 0L, `squared-exponential` = 1L,
+        matern = 2L,
         stop(paste("covariance function", covariance[[1]], "is not defined."))),
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
@@ -220,7 +188,8 @@ rrfield <- function(formula, data, lon, lat,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L),
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
-      matern_kappa = matern_kappa))
+      matern_kappa = matern_kappa,
+      nW = ifelse(fixed_df_value > 999 & !est_df, 0L, stan_data$nT)))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # integers: NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
@@ -244,10 +213,14 @@ rrfield <- function(formula, data, lon, lat,
     m <- do.call(sampling, sampling_args)
   }
 
-  out <- list(model = m, knots = dplyr::as.tbl(as.data.frame(data_knots)), y = y, X = X,
+  out <- list(model = m,
+    knots = dplyr::as.tbl(as.data.frame(data_knots)),
+    y = y, X = X,
     data = dplyr::as.tbl(data), formula = formula,
-    covariance = covariance[[1]], matern_kappa = matern_kappa, lon = lon, lat = lat,
+    covariance = covariance[[1]], matern_kappa = matern_kappa,
+    lon = lon, lat = lat,
     time = time, year_re = year_re,
-    station = data_list$stationID, obs_model = obs_model, fixed_intercept = fixed_intercept)
+    station = data_list$stationID, obs_model = obs_model,
+    fixed_intercept = fixed_intercept)
   out <- structure(out, class = "rrfield")
 }
