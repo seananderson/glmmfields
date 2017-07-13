@@ -18,7 +18,7 @@ data {
   matrix[nLocs,nKnots] distKnots21;
   int<lower=0> nCov;
   matrix[N,nCov] X;
-  int<lower=0,upper=1> cov_func; # 0 exp, 1 = sq_exp, 2 = matern
+  int<lower=0,upper=1> cov_func; // 0 exp, 1 = sq_exp, 2 = matern
   int<lower=0,upper=1> est_df;
   int<lower=0,upper=1> est_ar;
   int<lower=0,upper=1> norm_params;
