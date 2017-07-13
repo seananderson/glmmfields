@@ -46,7 +46,7 @@ parameters {
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
   real<lower=-1, upper=1> ar[est_ar];
-  real<lower=0> W[nT];
+  real<lower=0> W[nW];
 }
 transformed parameters {
   vector[nKnots] muZeros;
