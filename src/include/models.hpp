@@ -426,8 +426,8 @@ public:
         num_params_r__ += nCov;
         validate_non_negative_index("ar", "est_ar", est_ar);
         num_params_r__ += est_ar;
-        validate_non_negative_index("W", "nT", nT);
-        num_params_r__ += nT;
+        validate_non_negative_index("W", "nW", nW);
+        num_params_r__ += nW;
     }
 
     ~model_rrfield() { }
@@ -629,13 +629,13 @@ public:
             throw std::runtime_error("variable W missing");
         vals_r__ = context__.vals_r("W");
         pos__ = 0U;
-        validate_non_negative_index("W", "nT", nT);
-        context__.validate_dims("initialization", "W", "double", context__.to_vec(nT));
+        validate_non_negative_index("W", "nW", nW);
+        context__.validate_dims("initialization", "W", "double", context__.to_vec(nW));
         // generate_declaration W
-        std::vector<double> W(nT,double(0));
-        for (int i0__ = 0U; i0__ < nT; ++i0__)
+        std::vector<double> W(nW,double(0));
+        for (int i0__ = 0U; i0__ < nW; ++i0__)
             W[i0__] = vals_r__[pos__++];
-        for (int i0__ = 0U; i0__ < nT; ++i0__)
+        for (int i0__ = 0U; i0__ < nW; ++i0__)
             try {
             writer__.scalar_lb_unconstrain(0,W[i0__]);
         } catch (const std::exception& e) { 
@@ -774,7 +774,7 @@ public:
         }
 
         vector<T__> W;
-        size_t dim_W_0__ = nT;
+        size_t dim_W_0__ = nW;
         W.reserve(dim_W_0__);
         for (size_t k_0__ = 0; k_0__ < dim_W_0__; ++k_0__) {
             if (jacobian__)
@@ -1194,7 +1194,7 @@ public:
         dims__.push_back(est_ar);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(nT);
+        dims__.push_back(nW);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nKnots);
@@ -1293,7 +1293,7 @@ public:
             ar.push_back(in__.scalar_lub_constrain(-(1),1));
         }
         vector<double> W;
-        size_t dim_W_0__ = nT;
+        size_t dim_W_0__ = nW;
         for (size_t k_0__ = 0; k_0__ < dim_W_0__; ++k_0__) {
             W.push_back(in__.scalar_lb_constrain(0));
         }
@@ -1328,7 +1328,7 @@ public:
         for (int k_0__ = 0; k_0__ < est_ar; ++k_0__) {
             vars__.push_back(ar[k_0__]);
         }
-        for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
+        for (int k_0__ = 0; k_0__ < nW; ++k_0__) {
             vars__.push_back(W[k_0__]);
         }
 
@@ -1655,7 +1655,7 @@ public:
             param_name_stream__ << "ar" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= nW; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "W" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
@@ -1789,7 +1789,7 @@ public:
             param_name_stream__ << "ar" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= nW; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "W" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());

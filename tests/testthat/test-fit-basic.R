@@ -171,3 +171,38 @@ test_that("predictions work with one time slice", {
   p <- predict(m)
 
 })
+
+# -------------------------------------------------
+# make sure large degrees of freedom values
+# return values very close to the true MVN distribution
+
+test_that("mvt-norm model fits with an exponential covariance function", {
+  skip_on_cran()
+  skip_on_travis()
+  skip_on_appveyor()
+
+  gp_sigma <- 0.2
+  sigma <- 0.1
+  gp_scale <- 1.2
+  n_draws <- 4
+  nknots <- 9
+
+  set.seed(SEED)
+  s <- sim_rrfield(n_draws = n_draws, gp_scale = gp_scale,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
+    df = 800)
+
+  m_mvt <- rrfield(y ~ 1, data = s$dat, time = "time",
+    lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
+    iter = ITER, chains = CHAINS, seed = SEED,
+    estimate_df = FALSE, fixed_df_value = 800)
+
+  m_mvn <- rrfield(y ~ 1, data = s$dat, time = "time",
+    lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
+    iter = ITER, chains = CHAINS, seed = SEED,
+    estimate_df = FALSE, fixed_df_value = 1e9) # internally switched to true MVN
+
+  b_mvt <- tidy(m_mvt, estimate.method = "median")
+  b_mvn <- tidy(m_mvn, estimate.method = "median")
+  expect_equal(b_mvn$estimate, b_mvt$estimate, tol = 0.01)
+})
