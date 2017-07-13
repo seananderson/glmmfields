@@ -189,7 +189,7 @@ rrfield <- function(formula, data, lon, lat,
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa,
-      nW = ifelse(fixed_df_value > 999 & !est_df, 0L, stan_data$nT)))
+      nW = ifelse(fixed_df_value > 999 & !estimate_df, 0L, stan_data$nT)))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # integers: NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))
