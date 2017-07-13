@@ -176,7 +176,7 @@ test_that("predictions work with one time slice", {
 # make sure large degrees of freedom values
 # return values very close to the true MVN distribution
 
-test_that("mvt-norm model fits with an exponential covariance function", {
+test_that("true MVN model closely resembles MVT model with a large fixed df", {
   skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
