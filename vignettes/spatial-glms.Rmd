@@ -1,17 +1,16 @@
 ---
 title: "Spatial GLMs with glmmfields"
 author: "Sean C. Anderson and Eric J. Ward"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Spatial GLMs with glmmfields}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-  ---
+  \usepackage[utf8]{inputenc}
+---
   
-  Here we will use the `glmmfields` package to fit a spatial GLM. While the `glmmfields` package was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), poisson (link = log), negative binomial (link = log), and binomial (link = logit). Although outside the formal GLM family, the package can also fit lognormal (link = log).
+Here we will use the `glmmfields` package to fit a spatial GLM. While the `glmmfields` package was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), poisson (link = log), negative binomial (link = log), and binomial (link = logit). Although outside the formal GLM family, the package can also fit lognormal (link = log).
   
-  ```{r set-knitr-options, cache=FALSE, echo=FALSE}
+```{r set-knitr-options, cache=FALSE, echo=FALSE}
 library("knitr")
 opts_chunk$set(message=FALSE, fig.width = 5)
 ```
