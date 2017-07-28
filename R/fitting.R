@@ -92,7 +92,7 @@
 #' @importFrom assertthat assert_that is.count is.number
 #' @importFrom stats gaussian
 
-rrfield <- function(formula, data, lon, lat,
+glmmfields <- function(formula, data, lon, lat,
   time = NULL,
   station = NULL,
   nknots = 15L,
@@ -199,7 +199,7 @@ rrfield <- function(formula, data, lon, lat,
   }
 
   sampling_args <- list(
-    object = stanmodels$rrfield,
+    object = stanmodels$glmmfields,
     data = stan_data,
     pars = stan_pars(obs_error = obs_error, estimate_df = estimate_df,
       est_temporalRE = est_temporalRE, estimate_ar = estimate_ar,
@@ -223,5 +223,5 @@ rrfield <- function(formula, data, lon, lat,
     time = time, year_re = year_re,
     station = data_list$stationID, obs_model = obs_model,
     fixed_intercept = fixed_intercept)
-  out <- structure(out, class = "rrfield")
+  out <- structure(out, class = "glmmfields")
 }

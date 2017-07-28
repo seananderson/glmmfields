@@ -1,5 +1,5 @@
 test_that("format_data() formats some data", {
-  s <- sim_rrfield(n_data_points = 50, n_knots = 5, n_draws = 2)
+  s <- sim_glmmfields(n_data_points = 50, n_knots = 5, n_draws = 2)
   mf <- model.frame(y~1, s$dat)
   X <- model.matrix(y~1, mf)
   y <- model.response(mf, "numeric")

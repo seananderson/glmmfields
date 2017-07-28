@@ -13,16 +13,16 @@ gp_scale <- 1.2
 n_draws <- 15
 nknots <- 10
 
-test_that("predict.rrfield works", {
+test_that("predict.glmmfields works", {
   skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
   set.seed(SEED)
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)

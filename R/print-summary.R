@@ -1,13 +1,13 @@
 #' @export
 #' @import methods
-print.rrfield <- function(x, pars = c("spatialEffectsKnots", "log_lik"),
+print.glmmfields <- function(x, pars = c("spatialEffectsKnots", "log_lik"),
   include = FALSE, ...) {
   print(x$model, pars = pars, include = include, ...)
 }
 
 #' Tidy model output
 #'
-#' @param x Output from \code{\link{rrfield}}
+#' @param x Output from \code{\link{glmmfields}}
 #' @param ... Other arguments
 #' @export
 tidy <- function(x, ...){
@@ -16,10 +16,10 @@ tidy <- function(x, ...){
 
 #' Tidy model output
 #'
-#' @param x Output from \code{\link{rrfield}}
+#' @param x Output from \code{\link{glmmfields}}
 #' @param ... Other arguments
 #' @export
-tidy.rrfield <- function(x, ...) {
+tidy.glmmfields <- function(x, ...) {
   broom::tidyMCMC(x$model, ...)
 }
 

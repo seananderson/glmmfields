@@ -24,12 +24,12 @@ test_that("mvt-nb2 model fits", {
   n_draws <- 8
   gp_scale <- 1.6
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     obs_error = "nb2", B = b0)
   # print(s$plot)
 
-  m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = nbinom2(link = "log"),
     estimate_df = FALSE, fixed_df_value = df,
@@ -60,12 +60,12 @@ test_that("mvt-gamma model fits", {
   n_draws <- 15
   gp_scale <- 1.6
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     obs_error = "gamma", B = b0)
   # print(s$plot)
 
-  m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = Gamma(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
@@ -96,7 +96,7 @@ test_that("mvt-binomial model fits", {
   n_draws <- 15
   gp_scale <- 2.1
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     obs_error = "binomial", B = b0)
   # print(s$plot)
@@ -108,7 +108,7 @@ test_that("mvt-binomial model fits", {
   # ggplot2::ggplot(out, ggplot2::aes(lon, lat, colour = plogis(y))) + ggplot2::geom_point() +
   #   ggplot2::facet_wrap(~time)
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = binomial(link = "logit"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
@@ -139,13 +139,13 @@ test_that("mvt-poisson model fits", {
   n_draws <- 15
   gp_scale <- 2.1
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     obs_error = "poisson", B = b0)
   # print(s$plot)
   # hist(s$dat$y)
 
-  m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = poisson(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)

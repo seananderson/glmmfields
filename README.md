@@ -1,16 +1,16 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-rrfields
+glmmfields
 ========
 
-[![Travis-CI Build Status](https://travis-ci.org/seananderson/rrfields.svg?branch=master)](https://travis-ci.org/seananderson/rrfields) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/rrfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/rrfields) <!-- [![codecov](https://codecov.io/github/seananderson/rrfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/rrfields) -->
+[![Travis-CI Build Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields) <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
 
-The rrfields R package implements Bayesian spatiotemporal models that allow for extreme spatial deviations through time. It uses a predictive process approach with random fields implemented through a multivariate-t distribution instead of a multivariate normal. The models are fit with [Stan](http://mc-stan.org/).
+The glmmfields R package implements Bayesian spatiotemporal models that allow for extreme spatial deviations through time. It uses a predictive process approach with random fields implemented through a multivariate-t distribution instead of a multivariate normal. The models are fit with [Stan](http://mc-stan.org/).
 
 You can install the development version of the package with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("seananderson/rrfields")
+devtools::install_github("seananderson/glmmfields")
 ```
 
 An example model
@@ -19,10 +19,10 @@ An example model
 Simulate data:
 
 ``` r
-library(rrfields)
+library(glmmfields)
 #> Loading required package: Rcpp
 set.seed(123)
-s <- sim_rrfield(df = 2.3, n_draws = 12, n_knots = 14, gp_scale = 2.5, 
+s <- sim_glmmfields(df = 2.3, n_draws = 12, n_knots = 14, gp_scale = 2.5, 
   gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
 #>   time pt          y      lon      lat station_id
@@ -44,13 +44,13 @@ Fit the model:
 
 ``` r
 options(mc.cores = parallel::detectCores()) # for parallel processing
-m <- rrfield(y ~ 0, data = s$dat, time = "time",
+m <- glmmfields(y ~ 0, data = s$dat, time = "time",
   lat = "lat", lon = "lon", station = "station_id", nknots = 12, iter = 600)
 ```
 
 ``` r
 print(m)
-#> Inference for Stan model: rrfield.
+#> Inference for Stan model: glmmfields.
 #> 4 chains, each with iter=600; warmup=300; thin=1; 
 #> post-warmup draws per chain=300, total post-warmup draws=1200.
 #> 

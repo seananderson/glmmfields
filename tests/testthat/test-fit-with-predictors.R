@@ -23,13 +23,13 @@ test_that("mvt-norm estimates betas", {
   set.seed(SEED)
   B <- rnorm(n_draws, 0, 1)
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
     X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
-  m <- rrfield(y ~ as.factor(time) - 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ as.factor(time) - 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,

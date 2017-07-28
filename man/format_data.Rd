@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_data.R
 \name{format_data}
 \alias{format_data}
-\title{Format data for fitting an rrfield model}
+\title{Format data for fitting an glmmfields model}
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
   nknots = 25L, covariance = "squared-exponential",
@@ -30,5 +30,5 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 \item{fixed_intercept}{Should the intercept be fixed?}
 }
 \description{
-Format data for fitting an rrfield model
+Format data for fitting an glmmfields model
 }

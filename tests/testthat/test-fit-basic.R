@@ -27,11 +27,11 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   skip_on_cran()
   set.seed(SEED)
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
   # s$plot
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -70,16 +70,16 @@ test_that("mvt-norm model fits without station argument", {
 
   set.seed(SEED)
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
   b <- broom::tidyMCMC(m$model, estimate.method = "median")
 
-  m_nostation <- rrfield(y ~ 0, data = s$dat, time = "time",
+  m_nostation <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -104,12 +104,12 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   nknots <- 9
 
   set.seed(SEED)
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     covariance = "exponential")
   # print(s$plot)
 
-  m <- rrfield(y ~ 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
@@ -138,12 +138,12 @@ test_that("mvt-norm model fits with repeat stations but missing in some years", 
 
   set.seed(SEED)
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
   s$dat <- s$dat[-1, ] # remove some
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -160,10 +160,10 @@ test_that("predictions work with one time slice", {
   skip_on_appveyor()
   set.seed(SEED)
 
-  s <- sim_rrfield(df = df, n_draws = 1, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = 1, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -188,16 +188,16 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
   nknots <- 9
 
   set.seed(SEED)
-  s <- sim_rrfield(n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
     df = 800)
 
-  m_mvt <- rrfield(y ~ 1, data = s$dat, time = "time",
+  m_mvt <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = 800)
 
-  m_mvn <- rrfield(y ~ 1, data = s$dat, time = "time",
+  m_mvn <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = 1e9) # internally switched to true MVN

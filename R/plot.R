@@ -1,15 +1,15 @@
-#' Plot predictions from an rrfield model
+#' Plot predictions from an glmmfields model
 #'
-#' @param x An object returned by \code{\link{rrfield}}
+#' @param x An object returned by \code{\link{glmmfields}}
 #' @param type Type of plot
-#' @param ... Other arguments passed to \code{\link{predict.rrfield}}
+#' @param ... Other arguments passed to \code{\link{predict.glmmfields}}
 #'
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point
 #'   scale_color_gradient2 geom_smooth geom_hline facet_wrap
 
 #' @export
 
-plot.rrfield <- function(x,
+plot.glmmfields <- function(x,
   type = c("prediction", "spatial-residual", "residual-vs-fitted"), ...)  {
 
   p <- predict(x, ...)

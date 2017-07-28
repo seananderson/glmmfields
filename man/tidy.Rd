@@ -7,7 +7,7 @@
 tidy(x, ...)
 }
 \arguments{
-\item{x}{Output from \code{\link{rrfield}}}
+\item{x}{Output from \code{\link{glmmfields}}}
 
 \item{...}{Other arguments}
 }

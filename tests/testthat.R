@@ -1,4 +1,4 @@
 library(testthat)
-library(rrfields)
+library(glmmfields)
 
-test_check("rrfields")
+test_check("glmmfields")

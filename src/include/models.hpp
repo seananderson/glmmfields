@@ -7,7 +7,7 @@
 
 #include <stan/model/model_header.hpp>
 
-namespace model_rrfield_namespace {
+namespace model_glmmfields_namespace {
 
 using std::istream;
 using std::string;
@@ -26,12 +26,12 @@ static int current_statement_begin__;
 
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
-    reader.add_event(0, 0, "start", "model_rrfield");
-    reader.add_event(257, 257, "end", "model_rrfield");
+    reader.add_event(0, 0, "start", "model_glmmfields");
+    reader.add_event(257, 257, "end", "model_glmmfields");
     return reader;
 }
 
-class model_rrfield : public prob_grad {
+class model_glmmfields : public prob_grad {
 private:
     int nKnots;
     int nLocs;
@@ -68,13 +68,13 @@ private:
     double matern_kappa;
     int nW;
 public:
-    model_rrfield(stan::io::var_context& context__,
+    model_glmmfields(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
         ctor_body(context__, 0, pstream__);
     }
 
-    model_rrfield(stan::io::var_context& context__,
+    model_glmmfields(stan::io::var_context& context__,
         unsigned int random_seed__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
@@ -90,7 +90,7 @@ public:
 
         current_statement_begin__ = -1;
 
-        static const char* function__ = "model_rrfield_namespace::model_rrfield";
+        static const char* function__ = "model_glmmfields_namespace::model_glmmfields";
         (void) function__;  // dummy to suppress unused var warning
         size_t pos__;
         (void) pos__;  // dummy to suppress unused var warning
@@ -430,7 +430,7 @@ public:
         num_params_r__ += nW;
     }
 
-    ~model_rrfield() { }
+    ~model_glmmfields() { }
 
 
     void transform_inits(const stan::io::var_context& context__,
@@ -1246,7 +1246,7 @@ public:
                      std::ostream* pstream__ = 0) const {
         vars__.resize(0);
         stan::io::reader<double> in__(params_r__,params_i__);
-        static const char* function__ = "model_rrfield_namespace::write_array";
+        static const char* function__ = "model_glmmfields_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
         double gp_scale = in__.scalar_lb_constrain(0);
@@ -1594,7 +1594,7 @@ public:
     }
 
     static std::string model_name() {
-        return "model_rrfield";
+        return "model_glmmfields";
     }
 
 

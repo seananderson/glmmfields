@@ -18,7 +18,7 @@
 # This file is only intended to be used during the installation process
 # nocov start
 
-#' @useDynLib rrfields, .registration = TRUE
+#' @useDynLib glmmfields, .registration = TRUE
 
 MODELS_HOME <- "exec"
 if (!file.exists(MODELS_HOME)) MODELS_HOME <- sub("R$", "exec", getwd())

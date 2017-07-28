@@ -29,13 +29,13 @@ test_that("mvt-norm estimates random walk year effects", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
     X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
@@ -69,13 +69,13 @@ test_that("mvt-norm estimates ar process", {
   nknots <- 10
   ar <- 0.5
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar)
   print(s$plot)
   library(ggplot2); ggplot(s$dat, aes(time, y)) +
     geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = TRUE,
@@ -115,14 +115,14 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   print(s$plot)
   library(ggplot2); ggplot(s$dat, aes(time, y)) +
     geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
-  m <- rrfield(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER * 2, chains = CHAINS, seed = SEED,
     estimate_df = TRUE, year_re = TRUE,
@@ -163,14 +163,14 @@ test_that("mvt-norm estimates global int + AR RF", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   print(s$plot)
   library(ggplot2); ggplot(s$dat, aes(time, y)) +
     geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
-  m <- rrfield(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = TRUE, year_re = FALSE,
@@ -212,7 +212,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   plot(B)
 
 
-  s <- sim_rrfield(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   # print(s$plot)
@@ -227,7 +227,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     geom_point(data = data.frame(B = B, time = seq_len(n_draws)),
       aes(x = time, y = B), inherit.aes = FALSE, col = "red")
 
-  m <- rrfield(y ~ 0 + as.factor(time), data = s$dat,
+  m <- glmmfields(y ~ 0 + as.factor(time), data = s$dat,
     time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
@@ -235,7 +235,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     estimate_ar = FALSE, fixed_ar_value = 1, prior_intercept = student_t(99, 0, 30))
   m
 
-  m2 <- rrfield(y ~ -1, data = s$dat,
+  m2 <- glmmfields(y ~ -1, data = s$dat,
     time = "time", station = "station_id",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,

@@ -1,6 +1,6 @@
-#' Predict from an rrfield model
+#' Predict from an glmmfields model
 #'
-#' @param object An object returned by \code{\link{rrfield}}.
+#' @param object An object returned by \code{\link{glmmfields}}.
 #' @param newdata Optionally, a data frame to predict on
 #' @param interval Type of interval calculation. Same as
 #'   \code{\link[stats]{predict.lm}}
@@ -17,7 +17,7 @@
 #' @importFrom assertthat assert_that
 #'
 #' @export
-predict.rrfield <- function(object, newdata = NULL,
+predict.glmmfields <- function(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
   interval = c("confidence", "prediction"), type = c("link", "response"),
   return_mcmc = FALSE, ...) {
@@ -28,7 +28,7 @@ predict.rrfield <- function(object, newdata = NULL,
   assert_that(is.numeric(conf_level))
   assert_that(identical(length(conf_level), 1L))
   assert_that(conf_level > 0 & conf_level < 1)
-  assert_that(identical(class(object), "rrfield"))
+  assert_that(identical(class(object), "glmmfields"))
   assert_that(type[[1]] %in% c("link", "response"))
   assert_that(estimate_method[[1]] %in% c("median", "mean"))
   assert_that(interval[[1]] %in% c("confidence", "prediction"))

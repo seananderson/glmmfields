@@ -1,4 +1,4 @@
-#' Format data for fitting an rrfield model
+#' Format data for fitting an glmmfields model
 #'
 #' @param data A data frame to be formatted
 #' @param y A numeric vector of the response
