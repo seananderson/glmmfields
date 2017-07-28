@@ -153,6 +153,11 @@ glmmfields <- function(formula, data, lon, lat,
   y <- model.response(mf, "numeric")
   fixed_intercept <- ifelse(ncol(X) == 0, TRUE, FALSE)
 
+  if (is.null(time)) {
+    data$time <- 1
+    time <- "time"
+  }
+
   # user inputs raw data. this function formats it for STAN
   data_list <- format_data(data = data, y = y, X = X, time = time,
     lon = lon, lat = lat, station=station, nknots = nknots, covariance = covariance,
