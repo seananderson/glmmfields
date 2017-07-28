@@ -227,6 +227,6 @@ glmmfields <- function(formula, data, lon, lat,
     lon = lon, lat = lat,
     time = time, year_re = year_re,
     station = data_list$stationID, obs_model = obs_model,
-    fixed_intercept = fixed_intercept)
+    fixed_intercept = fixed_intercept, family = family)
   out <- structure(out, class = "glmmfields")
 }

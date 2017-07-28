@@ -2,6 +2,8 @@
 #'
 #' @param x An object returned by \code{\link{glmmfields}}
 #' @param type Type of plot
+#' @param link Logical: should the plots be made on the link scale
+#'  or on the natural scale?
 #' @param ... Other arguments passed to \code{\link{predict.glmmfields}}
 #'
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point
@@ -10,11 +12,14 @@
 #' @export
 
 plot.glmmfields <- function(x,
-  type = c("prediction", "spatial-residual", "residual-vs-fitted"), ...)  {
+  type = c("prediction", "spatial-residual", "residual-vs-fitted"),
+  link = TRUE, ...)  {
 
-  p <- predict(x, ...)
+  p <- predict(x, type = ifelse(link, "link", "response"), ...)
   d <- data.frame(x$data, p)
-  d$residual <- x$y - p$estimate
+  y <- x$y
+  if (link) y <- do.call(x$family$link, list(y))
+  d$residual <- y - p$estimate
 
   g <- NULL
 

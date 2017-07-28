@@ -38,3 +38,5 @@ check_family <- function(family) {
 
   list(family = family$family, link = family$link)
 }
+
+logit <- function(x) qlogis(x)
