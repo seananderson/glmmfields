@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# glmmfields
+# glmmfields <img src="inst/logo.png" align="right" />
 
 [![Travis-CI Build Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields)
@@ -39,8 +39,8 @@ Simulate data:
 
 ```{r simulate, cache=TRUE}
 library(glmmfields)
-set.seed(123)
-s <- sim_glmmfields(df = 2.3, n_draws = 12, n_knots = 14, gp_scale = 2.5, 
+set.seed(42)
+s <- sim_glmmfields(df = 2.8, n_draws = 12, n_knots = 12, gp_scale = 2.5, 
   gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
 ```
@@ -54,7 +54,8 @@ Fit the model:
 ```{r fit, cache=TRUE, warning=FALSE, message=FALSE, results='hide', dependson="simulate", cache.comments=FALSE}
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0, data = s$dat, time = "time",
-  lat = "lat", lon = "lon", station = "station_id", nknots = 12, iter = 600)
+  lat = "lat", lon = "lon", station = "station_id", 
+  nknots = 12, estimate_df = TRUE, iter = 800)
 ```
 
 ```{r print, cache=FALSE, dependson="fit"}
@@ -72,7 +73,7 @@ Predictions with credible intervals:
 
 ```{r prediction-cis, dependson="fit"}
 p <- predict(m)
-pp <- predict(m, interval = "prediction")
+pp <- predict(m, interval = "prediction", type = "response")
 plot(s$dat$y, p$estimate, col = "#00000080", xlab = "Observed", ylab = "Predicted")
 segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000020")
 segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1, col = "#00000030")
@@ -91,10 +92,8 @@ mcmc_areas(as.matrix(m$model), pars = pars)
 
 # References
 
-Predictive-process models:
+Anderson, S. A., Ward, E. J. In prep. Black swans in space: modelling spatiotemporal processes with extremes.
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A. Silander Jr. 2009. Hierarchical models facilitate spatial analysis of large data sets: a case study on invasive plant species in the northeastern United States. Ecology Letters 12:144–154.
 
 Shelton, A. O., J. T. Thorson, E. J. Ward, and B. E. Feist. 2014. Spatial semiparametric models improve estimates of species abundance and distribution. Canadian Journal of Fisheries and Aquatic Sciences 71:1655–1666.
-
-...
