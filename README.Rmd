@@ -72,10 +72,8 @@ plot(m, type = "spatial-residual")
 Predictions with credible intervals:
 
 ```{r prediction-cis, dependson="fit"}
-p <- predict(m)
-pp <- predict(m, interval = "prediction", type = "response")
+p <- predict(m, interval = "prediction", type = "response")
 plot(s$dat$y, p$estimate, col = "#00000080", xlab = "Observed", ylab = "Predicted")
-segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000020")
 segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1, col = "#00000030")
 abline(a = 0, b = 1)
 ```
