@@ -5,12 +5,15 @@
 \title{Plot predictions from an glmmfields model}
 \usage{
 \method{plot}{glmmfields}(x, type = c("prediction", "spatial-residual",
-  "residual-vs-fitted"), ...)
+  "residual-vs-fitted"), link = TRUE, ...)
 }
 \arguments{
 \item{x}{An object returned by \code{\link{glmmfields}}}
 
 \item{type}{Type of plot}
+
+\item{link}{Logical: should the plots be made on the link scale
+or on the natural scale?}
 
 \item{...}{Other arguments passed to \code{\link{predict.glmmfields}}}
 }

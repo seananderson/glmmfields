@@ -4,13 +4,13 @@
 \alias{glmmfields}
 \title{Fit a spatiotemporal random fields GLMM}
 \usage{
-glmmfields(formula, data, lon, lat, time = NULL, station = NULL,
-  nknots = 15L, prior_gp_scale = half_t(3, 0, 5),
-  prior_gp_sigma = half_t(3, 0, 5), prior_sigma = half_t(3, 0, 5),
-  prior_rw_sigma = half_t(3, 0, 5), prior_intercept = student_t(3, 0, 10),
-  prior_beta = student_t(3, 0, 3), prior_ar = student_t(1000, 0, 0.5),
-  fixed_df_value = 1000, fixed_ar_value = 0, estimate_df = FALSE,
-  estimate_ar = FALSE, family = gaussian(link = "identity"),
+glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
+  prior_gp_scale = half_t(3, 0, 5), prior_gp_sigma = half_t(3, 0, 5),
+  prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
+  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
+  prior_ar = student_t(1000, 0, 0.5), fixed_df_value = 1000,
+  fixed_ar_value = 0, estimate_df = FALSE, estimate_ar = FALSE,
+  family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
@@ -26,8 +26,6 @@ glmmfields(formula, data, lon, lat, time = NULL, station = NULL,
 \item{lat}{A character object giving the name of the latitude column}
 
 \item{time}{A character object giving the name of the time column}
-
-\item{station}{A numeric vector giving the integer ID of the station}
 
 \item{nknots}{The number of knots to use in the predictive process model.
 Smaller values will be faster but may not adequately represent the shape

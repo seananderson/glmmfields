@@ -10,7 +10,6 @@
 #' @param time A character object giving the name of the time column
 #' @param lon A character object giving the name of the longitude column
 #' @param lat A character object giving the name of the latitude column
-#' @param station A numeric vector giving the integer ID of the station
 #' @param nknots The number of knots to use in the predictive process model.
 #'   Smaller values will be faster but may not adequately represent the shape
 #'   of the spatial pattern.
@@ -94,7 +93,6 @@
 
 glmmfields <- function(formula, data, lon, lat,
   time = NULL,
-  station = NULL,
   nknots = 15L,
   prior_gp_scale = half_t(3, 0, 5),
   prior_gp_sigma = half_t(3, 0, 5),
@@ -158,9 +156,15 @@ glmmfields <- function(formula, data, lon, lat,
     time <- "time"
   }
 
+  if ("station" %in% names(list(...)))
+    stop(paste("The 'station' argument is no longer needed when calling glmmfields().",
+      "Please remove it."))
+  data$station_ <- paste(data[[lon]], data[[lat]])
+
   # user inputs raw data. this function formats it for STAN
   data_list <- format_data(data = data, y = y, X = X, time = time,
-    lon = lon, lat = lat, station=station, nknots = nknots, covariance = covariance,
+    lon = lon, lat = lat, station = "station_", nknots = nknots,
+    covariance = covariance,
     fixed_intercept = fixed_intercept)
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots

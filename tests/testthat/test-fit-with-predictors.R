@@ -30,7 +30,7 @@ test_that("mvt-norm estimates betas", {
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
   m <- glmmfields(y ~ as.factor(time) - 1, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
+    lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
     prior_beta = student_t(50, 0, 2))

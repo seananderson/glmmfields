@@ -22,7 +22,7 @@ test_that("predict.glmmfields works", {
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)

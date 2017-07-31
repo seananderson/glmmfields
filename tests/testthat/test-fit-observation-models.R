@@ -29,7 +29,7 @@ test_that("mvt-nb2 model fits", {
     obs_error = "nb2", B = b0)
   # print(s$plot)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = nbinom2(link = "log"),
     estimate_df = FALSE, fixed_df_value = df,
@@ -65,7 +65,7 @@ test_that("mvt-gamma model fits", {
     obs_error = "gamma", B = b0)
   # print(s$plot)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = Gamma(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
@@ -108,7 +108,7 @@ test_that("mvt-binomial model fits", {
   # ggplot2::ggplot(out, ggplot2::aes(lon, lat, colour = plogis(y))) + ggplot2::geom_point() +
   #   ggplot2::facet_wrap(~time)
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = binomial(link = "logit"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)
@@ -145,7 +145,7 @@ test_that("mvt-poisson model fits", {
   # print(s$plot)
   # hist(s$dat$y)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = poisson(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED)

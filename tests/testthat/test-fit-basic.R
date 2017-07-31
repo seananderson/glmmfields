@@ -31,7 +31,7 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
   # s$plot
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -73,7 +73,7 @@ test_that("mvt-norm model fits without station argument", {
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -110,7 +110,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   # print(s$plot)
 
   m <- glmmfields(y ~ 1, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
+    lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
     covariance = "exponential")
@@ -143,7 +143,7 @@ test_that("mvt-norm model fits with repeat stations but missing in some years", 
 
   s$dat <- s$dat[-1, ] # remove some
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -163,7 +163,7 @@ test_that("predictions work with one time slice", {
   s <- sim_glmmfields(df = df, n_draws = 1, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time", station = "station_id",
+  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df)
@@ -193,12 +193,12 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
     df = 800)
 
   m_mvt <- glmmfields(y ~ 1, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
+    lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = 800)
 
   m_mvn <- glmmfields(y ~ 1, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots, station = "station_id",
+    lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = 1e9) # internally switched to true MVN
 
