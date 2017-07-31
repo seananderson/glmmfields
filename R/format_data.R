@@ -25,7 +25,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
   if (is.null(station)) {
     stationID <- seq(1, nrow(data))
   } else {
-    stationID <- as.numeric(as.factor(data[,station]))
+    stationID <- as.numeric(forcats::as_factor(data[,station]))
   }
 
   # if stationID is duplicated, perform clustering on the subset of data
