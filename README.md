@@ -44,7 +44,7 @@ Fit the model:
 ``` r
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0, data = s$dat, time = "time",
-  lat = "lat", lon = "lon", station = "station_id", 
+  lat = "lat", lon = "lon",
   nknots = 12, estimate_df = TRUE, iter = 800)
 ```
 

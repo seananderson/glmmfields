@@ -61,34 +61,6 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
 })
 
 # ------------------------------------------------------
-# without repeat stations
-
-test_that("mvt-norm model fits without station argument", {
-  skip_on_cran()
-  skip_on_travis()
-  skip_on_appveyor()
-
-  set.seed(SEED)
-
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
-
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
-  b <- broom::tidyMCMC(m$model, estimate.method = "median")
-
-  m_nostation <- glmmfields(y ~ 0, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
-  b_nostation <- broom::tidyMCMC(m_nostation$model, estimate.method = "median")
-
-  expect_equal(b$estimate, b_nostation$estimate, tol = 0.02) # w or w/o station arg
-})
-
-# ------------------------------------------------------
 # a Gaussian observation model exponential covariance function
 
 test_that("mvt-norm model fits with an exponential covariance function", {
