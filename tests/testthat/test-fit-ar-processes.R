@@ -97,7 +97,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   skip_on_travis()
   skip_on_appveyor()
 
-  set.seed(SEED*)
+  set.seed(SEED)
 
   gp_sigma <- 0.2
   sigma <- 0.1
