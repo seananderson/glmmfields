@@ -32,16 +32,12 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
   # if stationID is duplicated, perform clustering on the subset of data
   if(length(unique(stationID)) < length(stationID)) {
     first_instance = which(!duplicated(stationID))
-    # sorted_index = sort(stationID[first_instance], index.return = TRUE)
 
     knots = cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     distKnots = as.matrix(dist(knots))
-
-    # Calculate distance from knots to grid
-    # browser()
-
     ix <- sort(data[first_instance,"stationID"], index.return=T)$ix
 
+    # Calculate distance from knots to grid
     distAll = as.matrix(stats::dist(rbind(data[first_instance, c(lon, lat)][ix, ], knots)))
     nLocs = length(first_instance)
   } else {
