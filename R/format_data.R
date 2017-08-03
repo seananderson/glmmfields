@@ -27,6 +27,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
   } else {
     stationID <- as.numeric(forcats::as_factor(data[,station]))
   }
+  data$stationID <- stationID
 
   # if stationID is duplicated, perform clustering on the subset of data
   if(length(unique(stationID)) < length(stationID)) {
@@ -39,7 +40,7 @@ format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NU
     # Calculate distance from knots to grid
     # browser()
 
-    ix <- sort(data[first_instance,"station_id"], index.return=T)$ix
+    ix <- sort(data[first_instance,"stationID"], index.return=T)$ix
 
     distAll = as.matrix(stats::dist(rbind(data[first_instance, c(lon, lat)][ix, ], knots)))
     nLocs = length(first_instance)
