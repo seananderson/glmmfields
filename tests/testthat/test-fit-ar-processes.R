@@ -3,8 +3,9 @@ if (interactive()) options(mc.cores = parallel::detectCores())
 ITER <- 600
 CHAINS <- 2
 SEED <- 9999
-TOL <- 0.25 # %
+TOL <- 0.1 # %
 TOL_df <- .25 # %
+n_data_points <- 50
 
 # ------------------------------------------------------
 # a Gaussian observation model with random walk year effects
@@ -18,10 +19,10 @@ test_that("mvt-norm estimates random walk year effects", {
 
   gp_sigma <- 0.2
   sigma <- 0.1
-  df <- 10
+  df <- 1000
   gp_scale <- 1.8
-  n_draws <- 15
-  nknots <- 10
+  n_draws <- 12
+  nknots <- 5
   year_sigma <- 0.5
   B <- vector(mode = "double", length = n_draws)
   B[1] <- 0
@@ -59,35 +60,32 @@ test_that("mvt-norm estimates ar process", {
   skip_on_travis()
   skip_on_appveyor()
 
-  set.seed(SEED*2)
+  set.seed(SEED)
 
   gp_sigma <- 0.2
   sigma <- 0.1
-  df <- 8
+  df <- 1000
   gp_scale <- 1.8
   n_draws <- 20
-  nknots <- 10
+  nknots <- 7
   ar <- 0.5
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar)
-  print(s$plot)
-  library(ggplot2); ggplot(s$dat, aes(time, y)) +
-    geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
+    n_data_points = 100)
+  # print(s$plot)
+  # library(ggplot2); ggplot(s$dat, aes(time, y)) +
+    # geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = TRUE,
-    control = list(adapt_delta = 0.9),
     estimate_ar = TRUE)
   m
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "df[1]", "estimate"], df, tol = df * TOL_df)
-  expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
   expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
 })
 
@@ -99,15 +97,15 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   skip_on_travis()
   skip_on_appveyor()
 
-  set.seed(SEED*2)
+  set.seed(SEED*)
 
   gp_sigma <- 0.2
   sigma <- 0.1
-  df <- 8
+  df <- 1000
   gp_scale <- 1.8
   n_draws <- 20
-  nknots <- 10
-  ar <- 0.5
+  nknots <- 7
+  ar <- 0.3
   B <- vector(mode = "double", length = n_draws)
   B[1] <- 0
   year_sigma <- 0.3
@@ -117,24 +115,24 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
-  print(s$plot)
-  library(ggplot2); ggplot(s$dat, aes(time, y)) +
-    geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
+    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
+    n_data_points = n_data_points)
+  # print(s$plot)
+  # library(ggplot2); ggplot(s$dat, aes(time, y)) +
+    # geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER * 2, chains = CHAINS, seed = SEED,
-    estimate_df = TRUE, year_re = TRUE,
-    control = list(adapt_delta = 0.9),
+    iter = ITER, chains = CHAINS, seed = SEED,
+    year_re = TRUE,
     estimate_ar = TRUE)
   m
 
+  TOL <- 0.15
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "df[1]", "estimate"], df, tol = df * TOL_df)
-  expect_equal(b[b$term == "year_sigma[1]", "estimate"], year_sigma, tol = year_sigma * TOL_df)
+  expect_equal(b[b$term == "year_sigma[1]", "estimate"], year_sigma, tol = year_sigma * 0.2)
   expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
   expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
 })
@@ -151,7 +149,7 @@ test_that("mvt-norm estimates global int + AR RF", {
 
   gp_sigma <- 0.2
   sigma <- 0.2
-  df <- 6
+  df <- 1000
   gp_scale <- 1.8
   n_draws <- 20
   nknots <- 10
@@ -165,15 +163,16 @@ test_that("mvt-norm estimates global int + AR RF", {
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
-  print(s$plot)
-  library(ggplot2); ggplot(s$dat, aes(time, y)) +
-    geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
+    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
+    n_data_points = n_data_points)
+  # print(s$plot)
+  # library(ggplot2); ggplot(s$dat, aes(time, y)) +
+    # geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
   m <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = TRUE, year_re = FALSE,
+    year_re = FALSE,
     control = list(adapt_delta = 0.95),
     estimate_ar = TRUE, prior_intercept = student_t(99, 0, 30))
   m
@@ -181,7 +180,6 @@ test_that("mvt-norm estimates global int + AR RF", {
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "df[1]", "estimate"], df, tol = df * TOL_df)
   expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
 })
 
@@ -209,12 +207,11 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  plot(B)
-
-
+  # plot(B)
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, ar = ar,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
+    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
+    n_data_points = n_data_points)
   # print(s$plot)
 
   library(dplyr)

@@ -18,7 +18,8 @@ sigma <- 0.1
 df <- 4
 gp_scale <- 1.2
 n_draws <- 15
-nknots <- 10
+nknots <- 7
+n_data_points <- 50
 
 # ------------------------------------------------------
 # with repeat stations
@@ -28,7 +29,7 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   set.seed(SEED)
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
   # s$plot
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
@@ -40,10 +41,10 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
 
   p <- predict(m)
   pp <- predict(m, type = "response", interval = "prediction")
-  plot(s$dat$y, p$estimate)
-  segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000020")
-  segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1, col = "#00000060")
-  abline(a = 0, b = 1)
+  # plot(s$dat$y, p$estimate)
+  # segments(s$dat$y, pp$conf_low, s$dat$y, pp$conf_high, lwd = 0.5, col = "#00000020")
+  # segments(s$dat$y, p$conf_low, s$dat$y, p$conf_high, lwd = 1, col = "#00000060")
+  # abline(a = 0, b = 1)
 
   expect_equal(mean((p$estimate - s$dat$y)^2), 0, tol = 0.01)
 
@@ -77,7 +78,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
 
   set.seed(SEED)
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points,
     covariance = "exponential")
   # print(s$plot)
 
@@ -93,39 +94,6 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
 })
 
-# ------------------------------------------------------
-# with repeat stations but missing in some years
-
-test_that("mvt-norm model fits with repeat stations but missing in some years", {
-  skip_on_cran()
-  skip_on_travis()
-  skip_on_appveyor()
-
-  gp_sigma <- 0.2
-  sigma <- 0.1
-  df <- 20
-  gp_scale <- 1.2
-  n_draws <- 15
-  nknots <- 10
-
-  set.seed(SEED)
-
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
-
-  s$dat <- s$dat[-1, ] # remove some
-
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
-
-  b <- broom::tidyMCMC(m$model, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
-})
-
 test_that("predictions work with one time slice", {
   skip_on_cran()
   skip_on_travis()
@@ -133,7 +101,7 @@ test_that("predictions work with one time slice", {
   set.seed(SEED)
 
   s <- sim_glmmfields(df = df, n_draws = 1, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots)
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -162,7 +130,7 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
   set.seed(SEED)
   s <- sim_glmmfields(n_draws = n_draws, gp_scale = gp_scale,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    df = 800)
+    df = 800, n_data_points = n_data_points)
 
   m_mvt <- glmmfields(y ~ 1, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -176,5 +144,5 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
 
   b_mvt <- tidy(m_mvt, estimate.method = "median")
   b_mvn <- tidy(m_mvn, estimate.method = "median")
-  expect_equal(b_mvn$estimate, b_mvt$estimate, tol = 0.01)
+  expect_equal(b_mvn$estimate, b_mvt$estimate, tol = 0.02)
 })
