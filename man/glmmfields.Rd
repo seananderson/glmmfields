@@ -14,7 +14,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
-  0.9), save_log_lik = FALSE, ...)
+  0.9), save_log_lik = FALSE, gp_sigma_scaling_factor = 1, ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -113,6 +113,12 @@ lower truncation is implemented.}
 \item{save_log_lik}{Logical: should the log likelihood for each data point be
 saved so that information criteria such as LOOIC or WAIC can be calculated?
 Defaults to \code{FALSE} so that the size of model objects is smaller.}
+
+\item{gp_sigma_scaling_factor}{An optional factor to scale the spatial
+variance parameter gp_sigma by to help sampling. Sometimes, especially in
+the case of an auto regressive model, gp_sigma could be quite small and
+Stan can struggle with tiny parameters. If so, try setting the scaling
+factor to a value less than 1.}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

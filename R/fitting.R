@@ -77,6 +77,11 @@
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
+#' @param gp_sigma_scaling_factor An optional factor to scale the spatial
+#'   variance parameter gp_sigma by to help sampling. Sometimes, especially in
+#'   the case of an auto regressive model, gp_sigma could be quite small and
+#'   Stan can struggle with tiny parameters. If so, try setting the scaling
+#'   factor to a value less than 1.
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @details
@@ -113,6 +118,7 @@ glmmfields <- function(formula, data, lon, lat,
   nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9),
   save_log_lik = FALSE,
+  gp_sigma_scaling_factor = 1,
   ...) {
 
   # argument checks:
@@ -199,6 +205,7 @@ glmmfields <- function(formula, data, lon, lat,
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa,
+      gp_sigma_scaling_factor = gp_sigma_scaling_factor,
       nW = ifelse(fixed_df_value[[1]] > 999 & !estimate_df, 0L, stan_data$nT)))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # integers: NB2 or binomial or poisson obs model

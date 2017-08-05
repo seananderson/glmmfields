@@ -27,7 +27,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_glmmfields");
-    reader.add_event(257, 257, "end", "model_glmmfields");
+    reader.add_event(258, 258, "end", "model_glmmfields");
     return reader;
 }
 
@@ -67,6 +67,7 @@ private:
     int fixed_intercept;
     double matern_kappa;
     int nW;
+    double gp_sigma_scaling_factor;
 public:
     model_glmmfields(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -355,6 +356,11 @@ public:
         vals_i__ = context__.vals_i("nW");
         pos__ = 0;
         nW = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "gp_sigma_scaling_factor", "double", context__.to_vec());
+        gp_sigma_scaling_factor = double(0);
+        vals_r__ = context__.vals_r("gp_sigma_scaling_factor");
+        pos__ = 0;
+        gp_sigma_scaling_factor = vals_r__[pos__++];
 
         // validate, data variables
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -391,6 +397,7 @@ public:
         check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
         check_greater_or_equal(function__,"nW",nW,0);
         check_less_or_equal(function__,"nW",nW,nT);
+        check_greater_or_equal(function__,"gp_sigma_scaling_factor",gp_sigma_scaling_factor,0);
         // initialize data variables
 
         try {
@@ -849,7 +856,7 @@ public:
 
 
         try {
-            stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
+            stan::math::assign(gp_sigma_sq, pow((gp_sigma * gp_sigma_scaling_factor),2.0));
             if (as_bool(logical_eq(cov_func,0))) {
 
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(divide(minus(distKnots),gp_scale))));
@@ -1405,7 +1412,7 @@ public:
 
 
         try {
-            stan::math::assign(gp_sigma_sq, pow(gp_sigma,2.0));
+            stan::math::assign(gp_sigma_sq, pow((gp_sigma * gp_sigma_scaling_factor),2.0));
             if (as_bool(logical_eq(cov_func,0))) {
 
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(divide(minus(distKnots),gp_scale))));

@@ -33,6 +33,7 @@ data {
   int<lower=0, upper=1> fixed_intercept;
   real matern_kappa;
   int<lower=0, upper=nT> nW; // if fixed nu is large, use MVN by setting nW = 0
+  real<lower=0> gp_sigma_scaling_factor; // a scaling factor to help sampling if gp_sigma is too small
 }
 parameters {
   real<lower=0> gp_scale;
@@ -59,7 +60,7 @@ transformed parameters {
   vector[N] y_hat;
   real<lower=0> gammaA[gamma_params];
   real<lower=0> gp_sigma_sq;
-  gp_sigma_sq = pow(gp_sigma, 2.0);
+  gp_sigma_sq = pow(gp_sigma*gp_sigma_scaling_factor, 2.0);
 
   // allow user to switch between covariance functions
   if (cov_func == 0) {
