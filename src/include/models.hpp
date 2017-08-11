@@ -27,7 +27,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_glmmfields");
-    reader.add_event(258, 258, "end", "model_glmmfields");
+    reader.add_event(259, 259, "end", "model_glmmfields");
     return reader;
 }
 
@@ -68,6 +68,7 @@ private:
     double matern_kappa;
     int nW;
     double gp_sigma_scaling_factor;
+    double df_lower_bound;
 public:
     model_glmmfields(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -361,6 +362,11 @@ public:
         vals_r__ = context__.vals_r("gp_sigma_scaling_factor");
         pos__ = 0;
         gp_sigma_scaling_factor = vals_r__[pos__++];
+        context__.validate_dims("data initialization", "df_lower_bound", "double", context__.to_vec());
+        df_lower_bound = double(0);
+        vals_r__ = context__.vals_r("df_lower_bound");
+        pos__ = 0;
+        df_lower_bound = vals_r__[pos__++];
 
         // validate, data variables
         check_greater_or_equal(function__,"nKnots",nKnots,1);
@@ -398,6 +404,7 @@ public:
         check_greater_or_equal(function__,"nW",nW,0);
         check_less_or_equal(function__,"nW",nW,nT);
         check_greater_or_equal(function__,"gp_sigma_scaling_factor",gp_sigma_scaling_factor,0);
+        check_greater_or_equal(function__,"df_lower_bound",df_lower_bound,1);
         // initialize data variables
 
         try {
@@ -490,7 +497,7 @@ public:
             df[i0__] = vals_r__[pos__++];
         for (int i0__ = 0U; i0__ < est_df; ++i0__)
             try {
-            writer__.scalar_lb_unconstrain(2,df[i0__]);
+            writer__.scalar_lb_unconstrain(df_lower_bound,df[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable df: ") + e.what());
         }
@@ -698,9 +705,9 @@ public:
         df.reserve(dim_df_0__);
         for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
             if (jacobian__)
-                df.push_back(in__.scalar_lb_constrain(2,lp__));
+                df.push_back(in__.scalar_lb_constrain(df_lower_bound,lp__));
             else
-                df.push_back(in__.scalar_lb_constrain(2));
+                df.push_back(in__.scalar_lb_constrain(df_lower_bound));
         }
 
         vector<T__> sigma;
@@ -1261,7 +1268,7 @@ public:
         vector<double> df;
         size_t dim_df_0__ = est_df;
         for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
-            df.push_back(in__.scalar_lb_constrain(2));
+            df.push_back(in__.scalar_lb_constrain(df_lower_bound));
         }
         vector<double> sigma;
         size_t dim_sigma_0__ = norm_params;

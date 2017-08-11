@@ -82,6 +82,9 @@
 #'   the case of an auto regressive model, gp_sigma could be quite small and
 #'   Stan can struggle with tiny parameters. If so, try setting the scaling
 #'   factor to a value less than 1.
+#' @param df_lower_bound The lower bound on the degrees of freedom parameter.
+#'   Values that are too low, e.g. below 2 or 3, it might affect chain
+#'   convergence.
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @details
@@ -119,6 +122,7 @@ glmmfields <- function(formula, data, lon, lat,
   control = list(adapt_delta = 0.9),
   save_log_lik = FALSE,
   gp_sigma_scaling_factor = 1,
+  df_lower_bound = 2,
   ...) {
 
   # argument checks:
@@ -206,7 +210,8 @@ glmmfields <- function(formula, data, lon, lat,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa,
       gp_sigma_scaling_factor = gp_sigma_scaling_factor,
-      nW = ifelse(fixed_df_value[[1]] > 999 & !estimate_df, 0L, stan_data$nT)))
+      nW = ifelse(fixed_df_value[[1]] > 999 & !estimate_df, 0L, stan_data$nT),
+      df_lower_bound = df_lower_bound))
 
   if (obs_model %in% c(2L, 4L, 5L)) { # integers: NB2 or binomial or poisson obs model
     stan_data <- c(stan_data, list(y_int = stan_data$y))

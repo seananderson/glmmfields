@@ -34,11 +34,12 @@ data {
   real matern_kappa;
   int<lower=0, upper=nT> nW; // if fixed nu is large, use MVN by setting nW = 0
   real<lower=0> gp_sigma_scaling_factor; // a scaling factor to help sampling if gp_sigma is too small
+   real<lower=1> df_lower_bound;
 }
 parameters {
   real<lower=0> gp_scale;
   real<lower=0> gp_sigma;
-  real<lower=2> df[est_df];
+  real<lower=df_lower_bound> df[est_df];
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
