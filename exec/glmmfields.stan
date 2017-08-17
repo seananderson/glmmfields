@@ -13,7 +13,7 @@ data {
   real prior_rw_sigma[3];
   real prior_intercept[3];
   real prior_beta[3];
-  real prior_ar[3];
+  real prior_phi[3];
   matrix[nKnots, nKnots] distKnots;
   matrix[nLocs, nKnots] distKnots21;
   int<lower=0> nCov;
@@ -130,7 +130,7 @@ model {
   gp_eta ~ student_t(prior_gp_eta[1], prior_gp_eta[2], prior_gp_eta[3]);
 
   if (est_ar == 1) {
-    ar ~ student_t(prior_ar[1], prior_ar[2], prior_ar[3]);
+    ar ~ student_t(prior_phi[1], prior_phi[2], prior_phi[3]);
   }
 
   if (nCov >= 1) {

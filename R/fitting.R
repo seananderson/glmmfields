@@ -31,7 +31,7 @@
 #'   with \code{\link{student_t}}.
 #' @param prior_beta The prior on the slope parameters (if any). Must be
 #'   declared with \code{\link{student_t}}.
-#' @param prior_ar The prior on the AR parameter. Must be
+#' @param prior_phi The prior on the AR parameter. Must be
 #'   declared with \code{\link{student_t}}.
 #' @param fixed_df_value The fixed value for the student-t degrees of freedom
 #'   parameter if the degrees of freedom parameter is fixed in the MVT. If the
@@ -108,7 +108,7 @@ glmmfields <- function(formula, data, lon, lat,
   prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10),
   prior_beta = student_t(3, 0, 3),
-  prior_ar = student_t(1000, 0, 0.5),
+  prior_phi = student_t(1000, 0, 0.5),
   fixed_df_value = 1000,
   fixed_ar_value = 0,
   estimate_df = FALSE,
@@ -192,7 +192,7 @@ glmmfields <- function(formula, data, lon, lat,
       prior_intercept = parse_t_prior(prior_intercept),
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
-      prior_ar = parse_t_prior(prior_ar),
+      prior_phi = parse_t_prior(prior_phi),
       cov_func = switch(covariance[[1]], exponential = 0L, `squared-exponential` = 1L,
         matern = 2L,
         stop(paste("covariance function", covariance[[1]], "is not defined."))),

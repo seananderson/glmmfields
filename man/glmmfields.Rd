@@ -8,7 +8,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   prior_gp_rho = half_t(3, 0, 5), prior_gp_eta = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
-  prior_ar = student_t(1000, 0, 0.5), fixed_df_value = 1000,
+  prior_phi = student_t(1000, 0, 0.5), fixed_df_value = 1000,
   fixed_ar_value = 0, estimate_df = FALSE, estimate_ar = FALSE,
   family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
@@ -56,7 +56,7 @@ with \code{\link{student_t}}.}
 \item{prior_beta}{The prior on the slope parameters (if any). Must be
 declared with \code{\link{student_t}}.}
 
-\item{prior_ar}{The prior on the AR parameter. Must be
+\item{prior_phi}{The prior on the AR parameter. Must be
 declared with \code{\link{student_t}}.}
 
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
