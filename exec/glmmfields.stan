@@ -20,7 +20,7 @@ data {
   matrix[N, nCov] X;
   int<lower=0, upper=1> cov_func; // 0 exp, 1 = sq_exp, 2 = matern
   int<lower=0, upper=1> est_df;
-  int<lower=0, upper=1> est_ar;
+  int<lower=0, upper=1> est_phi;
   int<lower=0, upper=1> norm_params;
   int<lower=0, upper=1> gamma_params;
   int<lower=0, upper=1> nb2_params;
@@ -47,7 +47,7 @@ parameters {
   real<lower=0> year_sigma[est_temporalRE];
   vector[nKnots] spatialEffectsKnots[nT];
   vector[nCov] B;
-  real<lower=-1, upper=1> ar[est_ar];
+  real<lower=-1, upper=1> phi[est_phi];
   real<lower=0> W[nW];
 }
 transformed parameters {
@@ -129,8 +129,8 @@ model {
   gp_rho ~ student_t(prior_gp_rho[1], prior_gp_rho[2], prior_gp_rho[3]);
   gp_eta ~ student_t(prior_gp_eta[1], prior_gp_eta[2], prior_gp_eta[3]);
 
-  if (est_ar == 1) {
-    ar ~ student_t(prior_phi[1], prior_phi[2], prior_phi[3]);
+  if (est_phi == 1) {
+    phi ~ student_t(prior_phi[1], prior_phi[2], prior_phi[3]);
   }
 
   if (nCov >= 1) {
@@ -170,8 +170,8 @@ model {
 
     // spatial deviates in remaining time slices
     for (t in 2:nT) {
-      if (est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(ar[1] * spatialEffectsKnots[t-1],
+      if (est_phi == 1) {
+        spatialEffectsKnots[t] ~ multi_normal(phi[1] * spatialEffectsKnots[t-1],
             W[t] * SigmaKnots);
       } else {
         spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],
@@ -181,8 +181,8 @@ model {
   } else { // use MVN instead of MVT
     spatialEffectsKnots[1] ~ multi_normal(muZeros, SigmaKnots);
     for (t in 2:nT) {
-      if (est_ar == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(ar[1] * spatialEffectsKnots[t-1],
+      if (est_phi == 1) {
+        spatialEffectsKnots[t] ~ multi_normal(phi[1] * spatialEffectsKnots[t-1],
           SigmaKnots);
       } else {
         spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],

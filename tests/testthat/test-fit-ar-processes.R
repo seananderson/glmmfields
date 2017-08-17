@@ -68,10 +68,10 @@ test_that("mvt-norm estimates ar process", {
   gp_rho <- 1.8
   n_draws <- 20
   nknots <- 7
-  ar <- 0.5
+  phi <- 0.5
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
-    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, phi = phi,
     n_data_points = 100)
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) +
@@ -86,7 +86,7 @@ test_that("mvt-norm estimates ar process", {
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
+  expect_equal(b[b$term == "phi[1]", "estimate"], phi, tol = phi * TOL)
 })
 
 # -------------------
@@ -105,7 +105,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   gp_rho <- 1.8
   n_draws <- 20
   nknots <- 7
-  ar <- 0.3
+  phi <- 0.3
   B <- vector(mode = "double", length = n_draws)
   B[1] <- 0
   year_sigma <- 0.3
@@ -114,7 +114,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   }
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
-    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, phi = phi,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points)
   # print(s$plot)
@@ -133,8 +133,8 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
   expect_equal(b[b$term == "year_sigma[1]", "estimate"], year_sigma, tol = year_sigma * 0.2)
-  expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
-  expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
+  expect_equal(b[b$term == "phi[1]", "estimate"], phi, tol = phi * TOL)
+  expect_equal(b[b$term == "phi[1]", "estimate"], phi, tol = phi * TOL)
 })
 
 # --------------------------
@@ -153,7 +153,7 @@ test_that("mvt-norm estimates global int + AR RF", {
   gp_rho <- 1.8
   n_draws <- 20
   nknots <- 10
-  ar <- 0.75
+  phi <- 0.75
   B <- vector(mode = "double", length = n_draws)
   B[1] <- 6
   year_sigma <- 0.0001
@@ -162,7 +162,7 @@ test_that("mvt-norm estimates global int + AR RF", {
   }
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
-    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, phi = phi,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points)
   # print(s$plot)
@@ -180,7 +180,7 @@ test_that("mvt-norm estimates global int + AR RF", {
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "ar[1]", "estimate"], ar, tol = ar * TOL)
+  expect_equal(b[b$term == "phi[1]", "estimate"], phi, tol = phi * TOL)
 })
 
 # --------------------------
@@ -199,7 +199,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   gp_rho <- 1.8
   n_draws <- 20
   nknots <- 10
-  ar <- 1
+  phi <- 1
   B <- vector(mode = "double", length = n_draws)
   B[1] <- 6
   year_sigma <- 0.4
@@ -209,7 +209,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
 
   # plot(B)
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
-    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, phi = phi,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points)
   # print(s$plot)
