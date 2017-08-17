@@ -13,7 +13,7 @@
 #' @param matern_kappa The optional matern parameter. Can be 1.5 or 2.5. Values of 0.5 equivalent to exponential model.
 #' @param obs_error The observation error distribution
 #' @param B A vector of parameters. The first element is the intercept
-#' @param ar The auto regressive parameter on the mean of the random field knots
+#' @param phi The auto regressive parameter on the mean of the random field knots
 #' @param X The model matrix
 #' @param g Grid of points
 #'
@@ -23,7 +23,7 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_rho = 0.5,
   gp_eta = 0.2, mvt = TRUE, df = 1e6, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential", matern_kappa = 0.5,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
-  B = c(0), ar = 0, X = rep(1, n_draws * n_data_points),
+  B = c(0), phi = 0, X = rep(1, n_draws * n_data_points),
   g = data.frame(lon = runif(n_data_points, 0, 10),
     lat = runif(n_data_points, 0, 10))) {
 
@@ -118,13 +118,13 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_rho = 0.5,
       if (mvt) {
         re_knots[i, ] <- mvtnorm::rmvt(1,
           # delta = ar * (re_knots[i - 1, ] - mean(re_knots[i - 1, ])),
-          delta = ar * (re_knots[i - 1, ]),
+          delta = phi * (re_knots[i - 1, ]),
           sigma = sigma_knots, df = df)
       }
       if (!mvt) {
         re_knots[i, ] <- mvtnorm::rmvnorm(1,
           # mean = ar * (re_knots[i - 1, ] - mean(re_knots[i - 1, ])),
-          mean = ar * (re_knots[i - 1, ]),
+          mean = phi * (re_knots[i - 1, ]),
           sigma = sigma_knots)
       }
     }

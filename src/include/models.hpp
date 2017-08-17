@@ -41,26 +41,26 @@ private:
     vector<int> yearID;
     vector<double> y;
     vector<int> y_int;
-    vector<double> prior_gp_scale;
+    vector<double> prior_gp_rho;
     vector<double> prior_gp_eta;
     vector<double> prior_sigma;
     vector<double> prior_rw_sigma;
     vector<double> prior_intercept;
     vector<double> prior_beta;
-    vector<double> prior_ar;
+    vector<double> prior_phi;
     matrix_d distKnots;
     matrix_d distKnots21;
     int nCov;
     matrix_d X;
     int cov_func;
     int est_df;
-    int est_ar;
+    int est_phi;
     int norm_params;
     int gamma_params;
     int nb2_params;
     int obs_model;
     double fixed_df_value;
-    double fixed_ar_value;
+    double fixed_phi_value;
     int est_temporalRE;
     int n_year_effects;
     int lower_truncation;
@@ -162,15 +162,15 @@ public:
         for (size_t i_0__ = 0; i_0__ < y_int_limit_0__; ++i_0__) {
             y_int[i_0__] = vals_i__[pos__++];
         }
-        validate_non_negative_index("prior_gp_scale", "3", 3);
-        context__.validate_dims("data initialization", "prior_gp_scale", "double", context__.to_vec(3));
-        validate_non_negative_index("prior_gp_scale", "3", 3);
-        prior_gp_scale = std::vector<double>(3,double(0));
-        vals_r__ = context__.vals_r("prior_gp_scale");
+        validate_non_negative_index("prior_gp_rho", "3", 3);
+        context__.validate_dims("data initialization", "prior_gp_rho", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_gp_rho", "3", 3);
+        prior_gp_rho = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_gp_rho");
         pos__ = 0;
-        size_t prior_gp_scale_limit_0__ = 3;
-        for (size_t i_0__ = 0; i_0__ < prior_gp_scale_limit_0__; ++i_0__) {
-            prior_gp_scale[i_0__] = vals_r__[pos__++];
+        size_t prior_gp_rho_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_gp_rho_limit_0__; ++i_0__) {
+            prior_gp_rho[i_0__] = vals_r__[pos__++];
         }
         validate_non_negative_index("prior_gp_eta", "3", 3);
         context__.validate_dims("data initialization", "prior_gp_eta", "double", context__.to_vec(3));
@@ -222,15 +222,15 @@ public:
         for (size_t i_0__ = 0; i_0__ < prior_beta_limit_0__; ++i_0__) {
             prior_beta[i_0__] = vals_r__[pos__++];
         }
-        validate_non_negative_index("prior_ar", "3", 3);
-        context__.validate_dims("data initialization", "prior_ar", "double", context__.to_vec(3));
-        validate_non_negative_index("prior_ar", "3", 3);
-        prior_ar = std::vector<double>(3,double(0));
-        vals_r__ = context__.vals_r("prior_ar");
+        validate_non_negative_index("prior_phi", "3", 3);
+        context__.validate_dims("data initialization", "prior_phi", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_phi", "3", 3);
+        prior_phi = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_phi");
         pos__ = 0;
-        size_t prior_ar_limit_0__ = 3;
-        for (size_t i_0__ = 0; i_0__ < prior_ar_limit_0__; ++i_0__) {
-            prior_ar[i_0__] = vals_r__[pos__++];
+        size_t prior_phi_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_phi_limit_0__; ++i_0__) {
+            prior_phi[i_0__] = vals_r__[pos__++];
         }
         validate_non_negative_index("distKnots", "nKnots", nKnots);
         validate_non_negative_index("distKnots", "nKnots", nKnots);
@@ -292,11 +292,11 @@ public:
         vals_i__ = context__.vals_i("est_df");
         pos__ = 0;
         est_df = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "est_ar", "int", context__.to_vec());
-        est_ar = int(0);
-        vals_i__ = context__.vals_i("est_ar");
+        context__.validate_dims("data initialization", "est_phi", "int", context__.to_vec());
+        est_phi = int(0);
+        vals_i__ = context__.vals_i("est_phi");
         pos__ = 0;
-        est_ar = vals_i__[pos__++];
+        est_phi = vals_i__[pos__++];
         context__.validate_dims("data initialization", "norm_params", "int", context__.to_vec());
         norm_params = int(0);
         vals_i__ = context__.vals_i("norm_params");
@@ -322,11 +322,11 @@ public:
         vals_r__ = context__.vals_r("fixed_df_value");
         pos__ = 0;
         fixed_df_value = vals_r__[pos__++];
-        context__.validate_dims("data initialization", "fixed_ar_value", "double", context__.to_vec());
-        fixed_ar_value = double(0);
-        vals_r__ = context__.vals_r("fixed_ar_value");
+        context__.validate_dims("data initialization", "fixed_phi_value", "double", context__.to_vec());
+        fixed_phi_value = double(0);
+        vals_r__ = context__.vals_r("fixed_phi_value");
         pos__ = 0;
-        fixed_ar_value = vals_r__[pos__++];
+        fixed_phi_value = vals_r__[pos__++];
         context__.validate_dims("data initialization", "est_temporalRE", "int", context__.to_vec());
         est_temporalRE = int(0);
         vals_i__ = context__.vals_i("est_temporalRE");
@@ -384,8 +384,8 @@ public:
         check_less_or_equal(function__,"cov_func",cov_func,1);
         check_greater_or_equal(function__,"est_df",est_df,0);
         check_less_or_equal(function__,"est_df",est_df,1);
-        check_greater_or_equal(function__,"est_ar",est_ar,0);
-        check_less_or_equal(function__,"est_ar",est_ar,1);
+        check_greater_or_equal(function__,"est_phi",est_phi,0);
+        check_less_or_equal(function__,"est_phi",est_phi,1);
         check_greater_or_equal(function__,"norm_params",norm_params,0);
         check_less_or_equal(function__,"norm_params",norm_params,1);
         check_greater_or_equal(function__,"gamma_params",gamma_params,0);
@@ -438,8 +438,8 @@ public:
         num_params_r__ += nKnots * nT;
         validate_non_negative_index("B", "nCov", nCov);
         num_params_r__ += nCov;
-        validate_non_negative_index("ar", "est_ar", est_ar);
-        num_params_r__ += est_ar;
+        validate_non_negative_index("phi", "est_phi", est_phi);
+        num_params_r__ += est_phi;
         validate_non_negative_index("W", "nW", nW);
         num_params_r__ += nW;
     }
@@ -457,18 +457,18 @@ public:
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
 
-        if (!(context__.contains_r("gp_scale")))
-            throw std::runtime_error("variable gp_scale missing");
-        vals_r__ = context__.vals_r("gp_scale");
+        if (!(context__.contains_r("gp_rho")))
+            throw std::runtime_error("variable gp_rho missing");
+        vals_r__ = context__.vals_r("gp_rho");
         pos__ = 0U;
-        context__.validate_dims("initialization", "gp_scale", "double", context__.to_vec());
-        // generate_declaration gp_scale
-        double gp_scale(0);
-        gp_scale = vals_r__[pos__++];
+        context__.validate_dims("initialization", "gp_rho", "double", context__.to_vec());
+        // generate_declaration gp_rho
+        double gp_rho(0);
+        gp_rho = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0,gp_scale);
+            writer__.scalar_lb_unconstrain(0,gp_rho);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable gp_scale: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable gp_rho: ") + e.what());
         }
 
         if (!(context__.contains_r("gp_eta")))
@@ -622,21 +622,21 @@ public:
             throw std::runtime_error(std::string("Error transforming variable B: ") + e.what());
         }
 
-        if (!(context__.contains_r("ar")))
-            throw std::runtime_error("variable ar missing");
-        vals_r__ = context__.vals_r("ar");
+        if (!(context__.contains_r("phi")))
+            throw std::runtime_error("variable phi missing");
+        vals_r__ = context__.vals_r("phi");
         pos__ = 0U;
-        validate_non_negative_index("ar", "est_ar", est_ar);
-        context__.validate_dims("initialization", "ar", "double", context__.to_vec(est_ar));
-        // generate_declaration ar
-        std::vector<double> ar(est_ar,double(0));
-        for (int i0__ = 0U; i0__ < est_ar; ++i0__)
-            ar[i0__] = vals_r__[pos__++];
-        for (int i0__ = 0U; i0__ < est_ar; ++i0__)
+        validate_non_negative_index("phi", "est_phi", est_phi);
+        context__.validate_dims("initialization", "phi", "double", context__.to_vec(est_phi));
+        // generate_declaration phi
+        std::vector<double> phi(est_phi,double(0));
+        for (int i0__ = 0U; i0__ < est_phi; ++i0__)
+            phi[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < est_phi; ++i0__)
             try {
-            writer__.scalar_lub_unconstrain(-(1),1,ar[i0__]);
+            writer__.scalar_lub_unconstrain(-(1),1,phi[i0__]);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable ar: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable phi: ") + e.what());
         }
 
         if (!(context__.contains_r("W")))
@@ -686,12 +686,12 @@ public:
         // model parameters
         stan::io::reader<T__> in__(params_r__,params_i__);
 
-        T__ gp_scale;
-        (void) gp_scale;  // dummy to suppress unused var warning
+        T__ gp_rho;
+        (void) gp_rho;  // dummy to suppress unused var warning
         if (jacobian__)
-            gp_scale = in__.scalar_lb_constrain(0,lp__);
+            gp_rho = in__.scalar_lb_constrain(0,lp__);
         else
-            gp_scale = in__.scalar_lb_constrain(0);
+            gp_rho = in__.scalar_lb_constrain(0);
 
         T__ gp_eta;
         (void) gp_eta;  // dummy to suppress unused var warning
@@ -777,14 +777,14 @@ public:
         else
             B = in__.vector_constrain(nCov);
 
-        vector<T__> ar;
-        size_t dim_ar_0__ = est_ar;
-        ar.reserve(dim_ar_0__);
-        for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
+        vector<T__> phi;
+        size_t dim_phi_0__ = est_phi;
+        phi.reserve(dim_phi_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_phi_0__; ++k_0__) {
             if (jacobian__)
-                ar.push_back(in__.scalar_lub_constrain(-(1),1,lp__));
+                phi.push_back(in__.scalar_lub_constrain(-(1),1,lp__));
             else
-                ar.push_back(in__.scalar_lub_constrain(-(1),1));
+                phi.push_back(in__.scalar_lub_constrain(-(1),1));
         }
 
         vector<T__> W;
@@ -866,28 +866,28 @@ public:
             stan::math::assign(gp_eta_sq, pow((gp_eta * gp_eta_scaling_factor),2.0));
             if (as_bool(logical_eq(cov_func,0))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(divide(minus(distKnots),gp_scale))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(divide(minus(distKnots21),gp_scale))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(divide(minus(distKnots),gp_rho))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(divide(minus(distKnots21),gp_rho))));
             }
             if (as_bool(logical_eq(cov_func,1))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_rho,2.0)))),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_rho,2.0)))),distKnots21))));
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
                 if (as_bool(logical_eq(matern_kappa,1.5))) {
 
-                    stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_scale));
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_rho));
                     stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
-                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_scale));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_rho));
                     stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
-                    stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_scale));
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_rho));
                     stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
-                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_scale));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_rho));
                     stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
                 }
             }
@@ -1018,11 +1018,11 @@ public:
         // model body
         try {
 
-            lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
+            lp_accum__.add(student_t_log<propto__>(gp_rho, get_base1(prior_gp_rho,1,"prior_gp_rho",1), get_base1(prior_gp_rho,2,"prior_gp_rho",1), get_base1(prior_gp_rho,3,"prior_gp_rho",1)));
             lp_accum__.add(student_t_log<propto__>(gp_eta, get_base1(prior_gp_eta,1,"prior_gp_eta",1), get_base1(prior_gp_eta,2,"prior_gp_eta",1), get_base1(prior_gp_eta,3,"prior_gp_eta",1)));
-            if (as_bool(logical_eq(est_ar,1))) {
+            if (as_bool(logical_eq(est_phi,1))) {
 
-                lp_accum__.add(student_t_log<propto__>(ar, get_base1(prior_ar,1,"prior_ar",1), get_base1(prior_ar,2,"prior_ar",1), get_base1(prior_ar,3,"prior_ar",1)));
+                lp_accum__.add(student_t_log<propto__>(phi, get_base1(prior_phi,1,"prior_phi",1), get_base1(prior_phi,2,"prior_phi",1), get_base1(prior_phi,3,"prior_phi",1)));
             }
             if (as_bool(logical_gte(nCov,1))) {
 
@@ -1060,12 +1060,12 @@ public:
                 lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
                 for (int t = 2; t <= nT; ++t) {
 
-                    if (as_bool(logical_eq(est_ar,1))) {
+                    if (as_bool(logical_eq(est_phi,1))) {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                     } else {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_phi_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
                     }
                 }
             } else {
@@ -1073,12 +1073,12 @@ public:
                 lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, SigmaKnots));
                 for (int t = 2; t <= nT; ++t) {
 
-                    if (as_bool(logical_eq(est_ar,1))) {
+                    if (as_bool(logical_eq(est_phi,1))) {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(ar,1,"ar",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
                     } else {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_ar_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_phi_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
                     }
                 }
             }
@@ -1146,7 +1146,7 @@ public:
 
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
-        names__.push_back("gp_scale");
+        names__.push_back("gp_rho");
         names__.push_back("gp_eta");
         names__.push_back("df");
         names__.push_back("sigma");
@@ -1156,7 +1156,7 @@ public:
         names__.push_back("year_sigma");
         names__.push_back("spatialEffectsKnots");
         names__.push_back("B");
-        names__.push_back("ar");
+        names__.push_back("phi");
         names__.push_back("W");
         names__.push_back("muZeros");
         names__.push_back("spatialEffects");
@@ -1205,7 +1205,7 @@ public:
         dims__.push_back(nCov);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(est_ar);
+        dims__.push_back(est_phi);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nW);
@@ -1263,7 +1263,7 @@ public:
         static const char* function__ = "model_glmmfields_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        double gp_scale = in__.scalar_lb_constrain(0);
+        double gp_rho = in__.scalar_lb_constrain(0);
         double gp_eta = in__.scalar_lb_constrain(0);
         vector<double> df;
         size_t dim_df_0__ = est_df;
@@ -1301,17 +1301,17 @@ public:
             spatialEffectsKnots.push_back(in__.vector_constrain(nKnots));
         }
         vector_d B = in__.vector_constrain(nCov);
-        vector<double> ar;
-        size_t dim_ar_0__ = est_ar;
-        for (size_t k_0__ = 0; k_0__ < dim_ar_0__; ++k_0__) {
-            ar.push_back(in__.scalar_lub_constrain(-(1),1));
+        vector<double> phi;
+        size_t dim_phi_0__ = est_phi;
+        for (size_t k_0__ = 0; k_0__ < dim_phi_0__; ++k_0__) {
+            phi.push_back(in__.scalar_lub_constrain(-(1),1));
         }
         vector<double> W;
         size_t dim_W_0__ = nW;
         for (size_t k_0__ = 0; k_0__ < dim_W_0__; ++k_0__) {
             W.push_back(in__.scalar_lb_constrain(0));
         }
-        vars__.push_back(gp_scale);
+        vars__.push_back(gp_rho);
         vars__.push_back(gp_eta);
         for (int k_0__ = 0; k_0__ < est_df; ++k_0__) {
             vars__.push_back(df[k_0__]);
@@ -1339,8 +1339,8 @@ public:
         for (int k_0__ = 0; k_0__ < nCov; ++k_0__) {
             vars__.push_back(B[k_0__]);
         }
-        for (int k_0__ = 0; k_0__ < est_ar; ++k_0__) {
-            vars__.push_back(ar[k_0__]);
+        for (int k_0__ = 0; k_0__ < est_phi; ++k_0__) {
+            vars__.push_back(phi[k_0__]);
         }
         for (int k_0__ = 0; k_0__ < nW; ++k_0__) {
             vars__.push_back(W[k_0__]);
@@ -1422,28 +1422,28 @@ public:
             stan::math::assign(gp_eta_sq, pow((gp_eta * gp_eta_scaling_factor),2.0));
             if (as_bool(logical_eq(cov_func,0))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(divide(minus(distKnots),gp_scale))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(divide(minus(distKnots21),gp_scale))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(divide(minus(distKnots),gp_rho))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(divide(minus(distKnots21),gp_rho))));
             }
             if (as_bool(logical_eq(cov_func,1))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_rho,2.0)))),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_rho,2.0)))),distKnots21))));
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
                 if (as_bool(logical_eq(matern_kappa,1.5))) {
 
-                    stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_scale));
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_rho));
                     stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
-                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_scale));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_rho));
                     stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
-                    stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_scale));
+                    stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_rho));
                     stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
-                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_scale));
+                    stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_rho));
                     stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
                 }
             }
@@ -1617,7 +1617,7 @@ public:
                                  bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_scale";
+        param_name_stream__ << "gp_rho";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_eta";
@@ -1664,9 +1664,9 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_0__ = 1; k_0__ <= est_ar; ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= est_phi; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "ar" << '.' << k_0__;
+            param_name_stream__ << "phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
         for (int k_0__ = 1; k_0__ <= nW; ++k_0__) {
@@ -1751,7 +1751,7 @@ public:
                                    bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_scale";
+        param_name_stream__ << "gp_rho";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_eta";
@@ -1798,9 +1798,9 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_0__ = 1; k_0__ <= est_ar; ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= est_phi; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "ar" << '.' << k_0__;
+            param_name_stream__ << "phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
         for (int k_0__ = 1; k_0__ <= nW; ++k_0__) {
