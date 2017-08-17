@@ -6,12 +6,13 @@ SEED <- 9999
 TOL <- 0.2 # %
 TOL_df <- .25 # %
 
-gp_sigma <- 0.2
+gp_eta <- 0.2
 sigma <- 0.1
 df <- 1000
 gp_scale <- 1.2
 n_draws <- 15
 nknots <- 8
+n_data_points <- 50
 
 test_that("predict.glmmfields works", {
   skip_on_cran()
@@ -20,7 +21,7 @@ test_that("predict.glmmfields works", {
   set.seed(SEED)
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,

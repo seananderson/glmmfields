@@ -13,7 +13,7 @@ TOL_df <- .25 # %
 # ------------------------------------------------------
 # a basic fit
 
-gp_sigma <- 0.2
+gp_eta <- 0.2
 sigma <- 0.1
 df <- 4
 gp_scale <- 1.2
@@ -29,7 +29,7 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   set.seed(SEED)
 
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
   # s$plot
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
@@ -57,7 +57,7 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
 })
 
@@ -69,7 +69,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   skip_on_travis()
   skip_on_appveyor()
 
-  gp_sigma <- 0.2
+  gp_eta <- 0.2
   sigma <- 0.1
   df <- 10
   gp_scale <- 1.2
@@ -78,7 +78,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
 
   set.seed(SEED)
   s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points,
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points,
     covariance = "exponential")
   # print(s$plot)
 
@@ -90,7 +90,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
   expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
 })
 
@@ -101,7 +101,7 @@ test_that("predictions work with one time slice", {
   set.seed(SEED)
 
   s <- sim_glmmfields(df = df, n_draws = 1, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
 
   m <- glmmfields(y ~ 0, data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -121,7 +121,7 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
   skip_on_travis()
   skip_on_appveyor()
 
-  gp_sigma <- 0.2
+  gp_eta <- 0.2
   sigma <- 0.1
   gp_scale <- 1.2
   n_draws <- 4
@@ -129,7 +129,7 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
 
   set.seed(SEED)
   s <- sim_glmmfields(n_draws = n_draws, gp_scale = gp_scale,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
+    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots,
     df = 800, n_data_points = n_data_points)
 
   m_mvt <- glmmfields(y ~ 1, data = s$dat, time = "time",

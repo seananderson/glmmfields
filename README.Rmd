@@ -41,7 +41,7 @@ Simulate data:
 library(glmmfields)
 set.seed(42)
 s <- sim_glmmfields(df = 2.8, n_draws = 12, n_knots = 12, gp_scale = 2.5, 
-  gp_sigma = 0.2, sd_obs = 0.1)
+  gp_eta = 0.2, sd_obs = 0.1)
 head(s$dat)
 ```
 
@@ -83,7 +83,7 @@ Work with the Stan model:
 ```{r plot, cache=TRUE, dependson="fit", warning=FALSE, message=FALSE}
 library(bayesplot)
 posterior <- rstan::extract(m$model, inc_warmup = FALSE, permuted = FALSE)
-pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_scale")
+pars <- c("df[1]", "gp_eta", "sigma[1]", "gp_scale")
 mcmc_trace(posterior,  pars = pars)
 mcmc_areas(as.matrix(m$model), pars = pars)
 ```

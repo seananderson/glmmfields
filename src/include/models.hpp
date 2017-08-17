@@ -42,7 +42,7 @@ private:
     vector<double> y;
     vector<int> y_int;
     vector<double> prior_gp_scale;
-    vector<double> prior_gp_sigma;
+    vector<double> prior_gp_eta;
     vector<double> prior_sigma;
     vector<double> prior_rw_sigma;
     vector<double> prior_intercept;
@@ -67,7 +67,7 @@ private:
     int fixed_intercept;
     double matern_kappa;
     int nW;
-    double gp_sigma_scaling_factor;
+    double gp_eta_scaling_factor;
     double df_lower_bound;
 public:
     model_glmmfields(stan::io::var_context& context__,
@@ -172,15 +172,15 @@ public:
         for (size_t i_0__ = 0; i_0__ < prior_gp_scale_limit_0__; ++i_0__) {
             prior_gp_scale[i_0__] = vals_r__[pos__++];
         }
-        validate_non_negative_index("prior_gp_sigma", "3", 3);
-        context__.validate_dims("data initialization", "prior_gp_sigma", "double", context__.to_vec(3));
-        validate_non_negative_index("prior_gp_sigma", "3", 3);
-        prior_gp_sigma = std::vector<double>(3,double(0));
-        vals_r__ = context__.vals_r("prior_gp_sigma");
+        validate_non_negative_index("prior_gp_eta", "3", 3);
+        context__.validate_dims("data initialization", "prior_gp_eta", "double", context__.to_vec(3));
+        validate_non_negative_index("prior_gp_eta", "3", 3);
+        prior_gp_eta = std::vector<double>(3,double(0));
+        vals_r__ = context__.vals_r("prior_gp_eta");
         pos__ = 0;
-        size_t prior_gp_sigma_limit_0__ = 3;
-        for (size_t i_0__ = 0; i_0__ < prior_gp_sigma_limit_0__; ++i_0__) {
-            prior_gp_sigma[i_0__] = vals_r__[pos__++];
+        size_t prior_gp_eta_limit_0__ = 3;
+        for (size_t i_0__ = 0; i_0__ < prior_gp_eta_limit_0__; ++i_0__) {
+            prior_gp_eta[i_0__] = vals_r__[pos__++];
         }
         validate_non_negative_index("prior_sigma", "3", 3);
         context__.validate_dims("data initialization", "prior_sigma", "double", context__.to_vec(3));
@@ -357,11 +357,11 @@ public:
         vals_i__ = context__.vals_i("nW");
         pos__ = 0;
         nW = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "gp_sigma_scaling_factor", "double", context__.to_vec());
-        gp_sigma_scaling_factor = double(0);
-        vals_r__ = context__.vals_r("gp_sigma_scaling_factor");
+        context__.validate_dims("data initialization", "gp_eta_scaling_factor", "double", context__.to_vec());
+        gp_eta_scaling_factor = double(0);
+        vals_r__ = context__.vals_r("gp_eta_scaling_factor");
         pos__ = 0;
-        gp_sigma_scaling_factor = vals_r__[pos__++];
+        gp_eta_scaling_factor = vals_r__[pos__++];
         context__.validate_dims("data initialization", "df_lower_bound", "double", context__.to_vec());
         df_lower_bound = double(0);
         vals_r__ = context__.vals_r("df_lower_bound");
@@ -403,7 +403,7 @@ public:
         check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
         check_greater_or_equal(function__,"nW",nW,0);
         check_less_or_equal(function__,"nW",nW,nT);
-        check_greater_or_equal(function__,"gp_sigma_scaling_factor",gp_sigma_scaling_factor,0);
+        check_greater_or_equal(function__,"gp_eta_scaling_factor",gp_eta_scaling_factor,0);
         check_greater_or_equal(function__,"df_lower_bound",df_lower_bound,1);
         // initialize data variables
 
@@ -471,18 +471,18 @@ public:
             throw std::runtime_error(std::string("Error transforming variable gp_scale: ") + e.what());
         }
 
-        if (!(context__.contains_r("gp_sigma")))
-            throw std::runtime_error("variable gp_sigma missing");
-        vals_r__ = context__.vals_r("gp_sigma");
+        if (!(context__.contains_r("gp_eta")))
+            throw std::runtime_error("variable gp_eta missing");
+        vals_r__ = context__.vals_r("gp_eta");
         pos__ = 0U;
-        context__.validate_dims("initialization", "gp_sigma", "double", context__.to_vec());
-        // generate_declaration gp_sigma
-        double gp_sigma(0);
-        gp_sigma = vals_r__[pos__++];
+        context__.validate_dims("initialization", "gp_eta", "double", context__.to_vec());
+        // generate_declaration gp_eta
+        double gp_eta(0);
+        gp_eta = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0,gp_sigma);
+            writer__.scalar_lb_unconstrain(0,gp_eta);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable gp_sigma: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable gp_eta: ") + e.what());
         }
 
         if (!(context__.contains_r("df")))
@@ -693,12 +693,12 @@ public:
         else
             gp_scale = in__.scalar_lb_constrain(0);
 
-        T__ gp_sigma;
-        (void) gp_sigma;  // dummy to suppress unused var warning
+        T__ gp_eta;
+        (void) gp_eta;  // dummy to suppress unused var warning
         if (jacobian__)
-            gp_sigma = in__.scalar_lb_constrain(0,lp__);
+            gp_eta = in__.scalar_lb_constrain(0,lp__);
         else
-            gp_sigma = in__.scalar_lb_constrain(0);
+            gp_eta = in__.scalar_lb_constrain(0);
 
         vector<T__> df;
         size_t dim_df_0__ = est_df;
@@ -855,40 +855,40 @@ public:
         vector<T__> gammaA(gamma_params);
         stan::math::initialize(gammaA, DUMMY_VAR__);
         stan::math::fill(gammaA,DUMMY_VAR__);
-        T__ gp_sigma_sq;
-        (void) gp_sigma_sq;  // dummy to suppress unused var warning
+        T__ gp_eta_sq;
+        (void) gp_eta_sq;  // dummy to suppress unused var warning
 
-        stan::math::initialize(gp_sigma_sq, DUMMY_VAR__);
-        stan::math::fill(gp_sigma_sq,DUMMY_VAR__);
+        stan::math::initialize(gp_eta_sq, DUMMY_VAR__);
+        stan::math::fill(gp_eta_sq,DUMMY_VAR__);
 
 
         try {
-            stan::math::assign(gp_sigma_sq, pow((gp_sigma * gp_sigma_scaling_factor),2.0));
+            stan::math::assign(gp_eta_sq, pow((gp_eta * gp_eta_scaling_factor),2.0));
             if (as_bool(logical_eq(cov_func,0))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(divide(minus(distKnots),gp_scale))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(divide(minus(distKnots21),gp_scale))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(divide(minus(distKnots),gp_scale))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(divide(minus(distKnots21),gp_scale))));
             }
             if (as_bool(logical_eq(cov_func,1))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
                 if (as_bool(logical_eq(matern_kappa,1.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_scale));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_scale));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_scale));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_scale));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
                 }
             }
             for (int k = 1; k <= nKnots; ++k) {
@@ -1002,9 +1002,9 @@ public:
                 throw std::runtime_error(msg__.str());
             }
         }
-        if (stan::math::is_uninitialized(gp_sigma_sq)) {
+        if (stan::math::is_uninitialized(gp_eta_sq)) {
             std::stringstream msg__;
-            msg__ << "Undefined transformed parameter: gp_sigma_sq";
+            msg__ << "Undefined transformed parameter: gp_eta_sq";
             throw std::runtime_error(msg__.str());
         }
 
@@ -1013,13 +1013,13 @@ public:
         for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
             check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
         }
-        check_greater_or_equal(function__,"gp_sigma_sq",gp_sigma_sq,0);
+        check_greater_or_equal(function__,"gp_eta_sq",gp_eta_sq,0);
 
         // model body
         try {
 
             lp_accum__.add(student_t_log<propto__>(gp_scale, get_base1(prior_gp_scale,1,"prior_gp_scale",1), get_base1(prior_gp_scale,2,"prior_gp_scale",1), get_base1(prior_gp_scale,3,"prior_gp_scale",1)));
-            lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            lp_accum__.add(student_t_log<propto__>(gp_eta, get_base1(prior_gp_eta,1,"prior_gp_eta",1), get_base1(prior_gp_eta,2,"prior_gp_eta",1), get_base1(prior_gp_eta,3,"prior_gp_eta",1)));
             if (as_bool(logical_eq(est_ar,1))) {
 
                 lp_accum__.add(student_t_log<propto__>(ar, get_base1(prior_ar,1,"prior_ar",1), get_base1(prior_ar,2,"prior_ar",1), get_base1(prior_ar,3,"prior_ar",1)));
@@ -1147,7 +1147,7 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("gp_scale");
-        names__.push_back("gp_sigma");
+        names__.push_back("gp_eta");
         names__.push_back("df");
         names__.push_back("sigma");
         names__.push_back("CV");
@@ -1167,7 +1167,7 @@ public:
         names__.push_back("invSigmaKnots");
         names__.push_back("y_hat");
         names__.push_back("gammaA");
-        names__.push_back("gp_sigma_sq");
+        names__.push_back("gp_eta_sq");
         names__.push_back("log_lik");
     }
 
@@ -1264,7 +1264,7 @@ public:
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
         double gp_scale = in__.scalar_lb_constrain(0);
-        double gp_sigma = in__.scalar_lb_constrain(0);
+        double gp_eta = in__.scalar_lb_constrain(0);
         vector<double> df;
         size_t dim_df_0__ = est_df;
         for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
@@ -1312,7 +1312,7 @@ public:
             W.push_back(in__.scalar_lb_constrain(0));
         }
         vars__.push_back(gp_scale);
-        vars__.push_back(gp_sigma);
+        vars__.push_back(gp_eta);
         for (int k_0__ = 0; k_0__ < est_df; ++k_0__) {
             vars__.push_back(df[k_0__]);
         }
@@ -1411,40 +1411,40 @@ public:
         vector<double> gammaA(gamma_params, 0.0);
         stan::math::initialize(gammaA, std::numeric_limits<double>::quiet_NaN());
         stan::math::fill(gammaA,DUMMY_VAR__);
-        double gp_sigma_sq(0.0);
-        (void) gp_sigma_sq;  // dummy to suppress unused var warning
+        double gp_eta_sq(0.0);
+        (void) gp_eta_sq;  // dummy to suppress unused var warning
 
-        stan::math::initialize(gp_sigma_sq, std::numeric_limits<double>::quiet_NaN());
-        stan::math::fill(gp_sigma_sq,DUMMY_VAR__);
+        stan::math::initialize(gp_eta_sq, std::numeric_limits<double>::quiet_NaN());
+        stan::math::fill(gp_eta_sq,DUMMY_VAR__);
 
 
         try {
-            stan::math::assign(gp_sigma_sq, pow((gp_sigma * gp_sigma_scaling_factor),2.0));
+            stan::math::assign(gp_eta_sq, pow((gp_eta * gp_eta_scaling_factor),2.0));
             if (as_bool(logical_eq(cov_func,0))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(divide(minus(distKnots),gp_scale))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(divide(minus(distKnots21),gp_scale))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(divide(minus(distKnots),gp_scale))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(divide(minus(distKnots21),gp_scale))));
             }
             if (as_bool(logical_eq(cov_func,1))) {
 
-                stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
+                stan::math::assign(SigmaKnots, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots))));
+                stan::math::assign(SigmaOffDiag, multiply(gp_eta_sq,exp(multiply(-(inv((2.0 * pow(gp_scale,2.0)))),distKnots21))));
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
                 if (as_bool(logical_eq(matern_kappa,1.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(3),distKnots),gp_scale));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(1,transformed_dist)),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(3),distKnots21),gp_scale));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(1,transformed_dist21)),exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(5),distKnots),gp_scale));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3))),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(5),distKnots21),gp_scale));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_eta_sq,add(add(1,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3))),exp(minus(transformed_dist21))));
                 }
             }
             for (int k = 1; k <= nKnots; ++k) {
@@ -1486,7 +1486,7 @@ public:
         for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
             check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
         }
-        check_greater_or_equal(function__,"gp_sigma_sq",gp_sigma_sq,0);
+        check_greater_or_equal(function__,"gp_eta_sq",gp_eta_sq,0);
 
         // write transformed parameters
         for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
@@ -1528,7 +1528,7 @@ public:
         for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
             vars__.push_back(gammaA[k_0__]);
         }
-        vars__.push_back(gp_sigma_sq);
+        vars__.push_back(gp_eta_sq);
 
         if (!include_gqs__) return;
         // declare and define generated quantities
@@ -1620,7 +1620,7 @@ public:
         param_name_stream__ << "gp_scale";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigma";
+        param_name_stream__ << "gp_eta";
         param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= est_df; ++k_0__) {
             param_name_stream__.str(std::string());
@@ -1734,7 +1734,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigma_sq";
+        param_name_stream__ << "gp_eta_sq";
         param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
@@ -1754,7 +1754,7 @@ public:
         param_name_stream__ << "gp_scale";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigma";
+        param_name_stream__ << "gp_eta";
         param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= est_df; ++k_0__) {
             param_name_stream__.str(std::string());
@@ -1868,7 +1868,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "gp_sigma_sq";
+        param_name_stream__ << "gp_eta_sq";
         param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
