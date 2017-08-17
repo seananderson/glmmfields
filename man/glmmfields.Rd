@@ -9,7 +9,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
   prior_phi = student_t(1000, 0, 0.5), fixed_df_value = 1000,
-  fixed_ar_value = 0, estimate_df = FALSE, estimate_ar = FALSE,
+  fixed_phi_value = 0, estimate_df = FALSE, estimate_ar = FALSE,
   family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
@@ -66,8 +66,8 @@ Must be 1 or greater. Very large values (e.g. the default value)
 approximate the normal distribution. If the value is >=1000 then a true
 MVN distribution will be fit.}
 
-\item{fixed_ar_value}{The fixed value for temporal autoregressive parameter,
-between random fields at time(t) and time(t-1). If the AR parameter
+\item{fixed_phi_value}{The fixed value for temporal autoregressive parameter,
+between random fields at time(t) and time(t-1). If the phi parameter
 is estimated then this argument is ignored.}
 
 \item{estimate_df}{Logical: should the degrees of freedom perameter be

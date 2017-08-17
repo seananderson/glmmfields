@@ -44,8 +44,8 @@
 #' @param estimate_ar Logical: should the AR (autoregressive) parameter be
 #'   estimated? Here, this refers to a autoregressive process in the evolution
 #'   of the spatial field through time.
-#' @param fixed_ar_value The fixed value for temporal autoregressive parameter,
-#'   between random fields at time(t) and time(t-1). If the AR parameter
+#' @param fixed_phi_value The fixed value for temporal autoregressive parameter,
+#'   between random fields at time(t) and time(t-1). If the phi parameter
 #'   is estimated then this argument is ignored.
 #' @param family Family object describing the observation model. Note that only
 #'   one link is implemented for each distribution. Gamma, negative binomial
@@ -110,7 +110,7 @@ glmmfields <- function(formula, data, lon, lat,
   prior_beta = student_t(3, 0, 3),
   prior_phi = student_t(1000, 0, 0.5),
   fixed_df_value = 1000,
-  fixed_ar_value = 0,
+  fixed_phi_value = 0,
   estimate_df = FALSE,
   estimate_ar = FALSE,
   family = gaussian(link = "identity"),
@@ -129,7 +129,7 @@ glmmfields <- function(formula, data, lon, lat,
   is.count(nb_lower_truncation)
   assert_that(nb_lower_truncation >= 0)
   assert_that(fixed_df_value >= 1)
-  is.number(fixed_ar_value)
+  is.number(fixed_phi_value)
   assert_that(all(unlist(lapply(list(covariance, algorithm), is.character))))
   assert_that(covariance[[1]] %in% c("squared-exponential", "exponential", "matern"))
   assert_that(algorithm[[1]] %in% c("sampling", "meanfield"))
@@ -203,7 +203,7 @@ glmmfields <- function(formula, data, lon, lat,
       norm_params = ifelse(obs_error[[1]] %in% c("gaussian", "lognormal"), 1L, 0L),
       nb2_params = ifelse(obs_error[[1]] == "nbinom2", 1L, 0L),
       fixed_df_value = fixed_df_value,
-      fixed_ar_value = fixed_ar_value,
+      fixed_phi_value = fixed_phi_value,
       est_temporalRE = est_temporalRE,
       n_year_effects = ifelse(year_re, stan_data$nT, 0L),
       lower_truncation = nb_lower_truncation,

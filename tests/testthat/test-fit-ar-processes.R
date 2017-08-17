@@ -229,7 +229,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     fixed_df_value = 6, estimate_df = FALSE,
-    estimate_ar = FALSE, fixed_ar_value = 1, prior_intercept = student_t(99, 0, 30))
+    estimate_ar = FALSE, fixed_phi_value = 1, prior_intercept = student_t(99, 0, 30))
   m
 
   m2 <- glmmfields(y ~ -1, data = s$dat,
@@ -237,7 +237,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     fixed_df_value = 6, estimate_df = FALSE,
-    estimate_ar = FALSE, fixed_ar_value = 1, prior_intercept = student_t(99, 0, 30))
+    estimate_ar = FALSE, fixed_phi_value = 1, prior_intercept = student_t(99, 0, 30))
   m2
 
   b <- tidy(m, estimate.method = "median")

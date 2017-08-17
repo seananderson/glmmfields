@@ -26,7 +26,7 @@ data {
   int<lower=0, upper=1> nb2_params;
   int<lower=0, upper=6> obs_model;
   real<lower=1> fixed_df_value;
-  real fixed_ar_value;
+  real fixed_phi_value;
   int<lower=0, upper=1> est_temporalRE;
   int<lower=0> n_year_effects;
   int<lower=0> lower_truncation;
@@ -174,7 +174,7 @@ model {
         spatialEffectsKnots[t] ~ multi_normal(ar[1] * spatialEffectsKnots[t-1],
             W[t] * SigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value * spatialEffectsKnots[t-1],
+        spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],
             W[t] * SigmaKnots);
       }
     }
@@ -185,7 +185,7 @@ model {
         spatialEffectsKnots[t] ~ multi_normal(ar[1] * spatialEffectsKnots[t-1],
           SigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_ar_value * spatialEffectsKnots[t-1],
+        spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],
           SigmaKnots);
       }
     }
