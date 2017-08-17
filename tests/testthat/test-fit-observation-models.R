@@ -22,9 +22,9 @@ test_that("mvt-nb2 model fits", {
   df <- 5
   b0 <- 7
   n_draws <- 8
-  gp_scale <- 1.6
+  gp_rho <- 1.6
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots,
     obs_error = "nb2", B = b0)
   # print(s$plot)
@@ -40,8 +40,8 @@ test_that("mvt-nb2 model fits", {
   b <- tidy(m, estimate.method = "median")
   #expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_rho * TOL)
 })
 
 # ------------------------------------------------------
@@ -58,9 +58,9 @@ test_that("mvt-gamma model fits", {
   df <- 10
   b0 <- 2
   n_draws <- 15
-  gp_scale <- 1.6
+  gp_rho <- 1.6
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots,
     obs_error = "gamma", B = b0)
   # print(s$plot)
@@ -75,8 +75,8 @@ test_that("mvt-gamma model fits", {
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "CV[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_rho * TOL)
 })
 
 # ------------------------------------------------------
@@ -94,9 +94,9 @@ test_that("mvt-binomial model fits", {
   df <- 10
   b0 <- 0
   n_draws <- 15
-  gp_scale <- 2.1
+  gp_rho <- 2.1
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots,
     obs_error = "binomial", B = b0)
   # print(s$plot)
@@ -119,7 +119,7 @@ test_that("mvt-binomial model fits", {
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
 })
 
 # ------------------------------------------------------
@@ -137,9 +137,9 @@ test_that("mvt-poisson model fits", {
   df <- 10
   b0 <- 3
   n_draws <- 15
-  gp_scale <- 2.1
+  gp_rho <- 2.1
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots,
     obs_error = "poisson", B = b0)
   # print(s$plot)
@@ -153,6 +153,6 @@ test_that("mvt-poisson model fits", {
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_rho * TOL)
 })

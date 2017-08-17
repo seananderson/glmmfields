@@ -17,13 +17,13 @@ test_that("mvt-norm estimates betas", {
   gp_eta <- 0.2
   sigma <- 0.1
   df <- 10
-  gp_scale <- 1.2
+  gp_rho <- 1.2
   n_draws <- 15
   nknots <- 9
   set.seed(SEED)
   B <- rnorm(n_draws, 0, 1)
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, B = B,
     X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   # print(s$plot)
@@ -38,6 +38,6 @@ test_that("mvt-norm estimates betas", {
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
   expect_equal(b[grep("B\\[*", b$term), "estimate"], B, tol = 0.05)
 })

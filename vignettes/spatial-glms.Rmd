@@ -40,7 +40,7 @@ set.seed(123)
 N <- 100 # number of data points
 temperature <- rnorm(N, 0, 1) # simulated temperature data
 X <- cbind(1, temperature) # our design matrix
-s <- sim_glmmfields(n_draws = 1, gp_scale = 2, n_data_points = N,
+s <- sim_glmmfields(n_draws = 1, gp_rho = 2, n_data_points = N,
   gp_eta = 0.3, sd_obs = 0.2, n_knots = 12, obs_error = "gamma",
   covariance = "squared-exponential", X = X,
   B = c(0.5, 0.2)) # B represents our intercept and slope

@@ -13,7 +13,7 @@
 #' @param nknots The number of knots to use in the predictive process model.
 #'   Smaller values will be faster but may not adequately represent the shape
 #'   of the spatial pattern.
-#' @param prior_gp_scale The prior on the Gaussian Process scale parameter. Must
+#' @param prior_gp_rho The prior on the Gaussian Process scale parameter. Must
 #'   be declared with \code{\link{half_t}}. Here, and throughout, priors that
 #'   are normal or half-normal can be implemented by setting the first
 #'   parameter in the half-t or student-t distribution to a large value.
@@ -102,7 +102,7 @@
 glmmfields <- function(formula, data, lon, lat,
   time = NULL,
   nknots = 15L,
-  prior_gp_scale = half_t(3, 0, 5),
+  prior_gp_rho = half_t(3, 0, 5),
   prior_gp_eta = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5),
   prior_rw_sigma = half_t(3, 0, 5),
@@ -186,7 +186,7 @@ glmmfields <- function(formula, data, lon, lat,
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
   stan_data <- c(stan_data,
-    list(prior_gp_scale = parse_t_prior(prior_gp_scale),
+    list(prior_gp_rho = parse_t_prior(prior_gp_rho),
       prior_gp_eta = parse_t_prior(prior_gp_eta),
       prior_sigma = parse_t_prior(prior_sigma),
       prior_intercept = parse_t_prior(prior_intercept),

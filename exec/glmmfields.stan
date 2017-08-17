@@ -7,7 +7,7 @@ data {
   int<lower=1> yearID[N];
   real y[N]; // y for normal and gamma obs. model
   int y_int[N]; // y for NB2 obs. model
-  real prior_gp_scale[3];
+  real prior_gp_rho[3];
   real prior_gp_eta[3];
   real prior_sigma[3];
   real prior_rw_sigma[3];
@@ -37,7 +37,7 @@ data {
    real<lower=1> df_lower_bound;
 }
 parameters {
-  real<lower=0> gp_scale;
+  real<lower=0> gp_rho;
   real<lower=0> gp_eta;
   real<lower=df_lower_bound> df[est_df];
   real<lower=0> sigma[norm_params];
@@ -66,33 +66,33 @@ transformed parameters {
   // allow user to switch between covariance functions
   if (cov_func == 0) {
     // cov matrix between knots
-    SigmaKnots = gp_eta_sq * exp(-distKnots / gp_scale);
+    SigmaKnots = gp_eta_sq * exp(-distKnots / gp_rho);
     // cov matrix between knots and projected locs
-    SigmaOffDiag = gp_eta_sq * exp(-distKnots21 / gp_scale);
+    SigmaOffDiag = gp_eta_sq * exp(-distKnots21 / gp_rho);
   }
   if (cov_func == 1) {
     // cov matrix between knots:
     SigmaKnots = gp_eta_sq *
-      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots); // dist^2 as data
+      exp(-inv(2.0 * pow(gp_rho, 2.0)) * distKnots); // dist^2 as data
     // cov matrix between knots and projected locs:
     SigmaOffDiag = gp_eta_sq *
-      exp(-inv(2.0 * pow(gp_scale, 2.0)) * distKnots21); // dist^2 as data
+      exp(-inv(2.0 * pow(gp_rho, 2.0)) * distKnots21); // dist^2 as data
   }
   if (cov_func == 2) {
     if (matern_kappa == 1.5) {
       // cov matrix between knots
-      transformed_dist = sqrt(3) * distKnots / gp_scale;
+      transformed_dist = sqrt(3) * distKnots / gp_rho;
       SigmaKnots = gp_eta_sq * (1 + transformed_dist) * exp (-transformed_dist);
       // cov matrix between knots and projected locs
-      transformed_dist21 = sqrt(3) * distKnots21 / gp_scale;
+      transformed_dist21 = sqrt(3) * distKnots21 / gp_rho;
       SigmaOffDiag = gp_eta_sq * (1 + transformed_dist21) * exp (-transformed_dist21);
     }
     if (matern_kappa == 2.5) {
       // cov matrix between knots
-      transformed_dist = sqrt(5) * distKnots / gp_scale;
+      transformed_dist = sqrt(5) * distKnots / gp_rho;
       SigmaKnots = gp_eta_sq * (1 + transformed_dist + (transformed_dist .* transformed_dist)/3) * exp (-transformed_dist);
       // cov matrix between knots and projected locs
-      transformed_dist21 = sqrt(5) * distKnots21 / gp_scale;
+      transformed_dist21 = sqrt(5) * distKnots21 / gp_rho;
       SigmaOffDiag = gp_eta_sq * (1 + transformed_dist21 + (transformed_dist21 .* transformed_dist21)/3) * exp (-transformed_dist21);
     }
   }
@@ -126,7 +126,7 @@ transformed parameters {
 }
 model {
   // priors:
-  gp_scale ~ student_t(prior_gp_scale[1], prior_gp_scale[2], prior_gp_scale[3]);
+  gp_rho ~ student_t(prior_gp_rho[1], prior_gp_rho[2], prior_gp_rho[3]);
   gp_eta ~ student_t(prior_gp_eta[1], prior_gp_eta[2], prior_gp_eta[3]);
 
   if (est_ar == 1) {

@@ -20,7 +20,7 @@ test_that("mvt-norm estimates random walk year effects", {
   gp_eta <- 0.2
   sigma <- 0.1
   df <- 1000
-  gp_scale <- 1.8
+  gp_rho <- 1.8
   n_draws <- 12
   nknots <- 5
   year_sigma <- 0.5
@@ -30,7 +30,7 @@ test_that("mvt-norm estimates random walk year effects", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, B = B,
     X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   # print(s$plot)
@@ -47,7 +47,7 @@ test_that("mvt-norm estimates random walk year effects", {
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_scale", "estimate"], gp_scale, tol = gp_scale * TOL)
+  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
   expect_equal(b[grep("yearEffects\\[*", b$term), "estimate"], B, tol = 0.1)
   expect_equal(b[grep("year_sigma", b$term), "estimate"], year_sigma, tol = 0.1)
 })
@@ -65,12 +65,12 @@ test_that("mvt-norm estimates ar process", {
   gp_eta <- 0.2
   sigma <- 0.1
   df <- 1000
-  gp_scale <- 1.8
+  gp_rho <- 1.8
   n_draws <- 20
   nknots <- 7
   ar <- 0.5
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
     n_data_points = 100)
   # print(s$plot)
@@ -102,7 +102,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   gp_eta <- 0.2
   sigma <- 0.1
   df <- 1000
-  gp_scale <- 1.8
+  gp_rho <- 1.8
   n_draws <- 20
   nknots <- 7
   ar <- 0.3
@@ -113,7 +113,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points)
@@ -150,7 +150,7 @@ test_that("mvt-norm estimates global int + AR RF", {
   gp_eta <- 0.2
   sigma <- 0.2
   df <- 1000
-  gp_scale <- 1.8
+  gp_rho <- 1.8
   n_draws <- 20
   nknots <- 10
   ar <- 0.75
@@ -161,7 +161,7 @@ test_that("mvt-norm estimates global int + AR RF", {
     B[i] <- B[i-1] + rnorm(1, 0, year_sigma) # random walk
   }
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points)
@@ -196,7 +196,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   gp_eta <- 0.2
   sigma <- 0.2
   df <- 6
-  gp_scale <- 1.8
+  gp_rho <- 1.8
   n_draws <- 20
   nknots <- 10
   ar <- 1
@@ -208,7 +208,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   }
 
   # plot(B)
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_scale = gp_scale,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
     gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, ar = ar,
     B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points)

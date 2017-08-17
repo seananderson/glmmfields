@@ -5,7 +5,7 @@
 \title{Fit a spatiotemporal random fields GLMM}
 \usage{
 glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
-  prior_gp_scale = half_t(3, 0, 5), prior_gp_eta = half_t(3, 0, 5),
+  prior_gp_rho = half_t(3, 0, 5), prior_gp_eta = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
   prior_ar = student_t(1000, 0, 0.5), fixed_df_value = 1000,
@@ -32,7 +32,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
 Smaller values will be faster but may not adequately represent the shape
 of the spatial pattern.}
 
-\item{prior_gp_scale}{The prior on the Gaussian Process scale parameter. Must
+\item{prior_gp_rho}{The prior on the Gaussian Process scale parameter. Must
 be declared with \code{\link{half_t}}. Here, and throughout, priors that
 are normal or half-normal can be implemented by setting the first
 parameter in the half-t or student-t distribution to a large value.}
