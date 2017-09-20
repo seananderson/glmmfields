@@ -7,8 +7,8 @@ data {
   int<lower=1> yearID[N];
   real y[N]; // y for normal and gamma obs. model
   int y_int[N]; // y for NB2 obs. model
-  real prior_gp_rho[3];
-  real prior_gp_eta[3];
+  real prior_gp_theta[3];
+  real prior_gp_sigma[3];
   real prior_sigma[3];
   real prior_rw_sigma[3];
   real prior_intercept[3];
@@ -33,12 +33,12 @@ data {
   int<lower=0, upper=1> fixed_intercept;
   real matern_kappa;
   int<lower=0, upper=nT> nW; // if fixed nu is large, use MVN by setting nW = 0
-  real<lower=0> gp_eta_scaling_factor; // a scaling factor to help sampling if gp_eta is too small
+  real<lower=0> gp_sigma_scaling_factor; // a scaling factor to help sampling if gp_sigma is too small
    real<lower=1> df_lower_bound;
 }
 parameters {
-  real<lower=0> gp_rho;
-  real<lower=0> gp_eta;
+  real<lower=0> gp_theta;
+  real<lower=0> gp_sigma;
   real<lower=df_lower_bound> df[est_df];
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
@@ -60,40 +60,40 @@ transformed parameters {
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
   real<lower=0> gammaA[gamma_params];
-  real<lower=0> gp_eta_sq;
-  gp_eta_sq = pow(gp_eta*gp_eta_scaling_factor, 2.0);
+  real<lower=0> gp_sigma_sq;
+  gp_sigma_sq = pow(gp_sigma*gp_sigma_scaling_factor, 2.0);
 
   // allow user to switch between covariance functions
   if (cov_func == 0) {
     // cov matrix between knots
-    SigmaKnots = gp_eta_sq * exp(-distKnots / gp_rho);
+    SigmaKnots = gp_sigma_sq * exp(-distKnots / gp_theta);
     // cov matrix between knots and projected locs
-    SigmaOffDiag = gp_eta_sq * exp(-distKnots21 / gp_rho);
+    SigmaOffDiag = gp_sigma_sq * exp(-distKnots21 / gp_theta);
   }
   if (cov_func == 1) {
     // cov matrix between knots:
-    SigmaKnots = gp_eta_sq *
-      exp(-inv(2.0 * pow(gp_rho, 2.0)) * distKnots); // dist^2 as data
+    SigmaKnots = gp_sigma_sq *
+      exp(-inv(2.0 * pow(gp_theta, 2.0)) * distKnots); // dist^2 as data
     // cov matrix between knots and projected locs:
-    SigmaOffDiag = gp_eta_sq *
-      exp(-inv(2.0 * pow(gp_rho, 2.0)) * distKnots21); // dist^2 as data
+    SigmaOffDiag = gp_sigma_sq *
+      exp(-inv(2.0 * pow(gp_theta, 2.0)) * distKnots21); // dist^2 as data
   }
   if (cov_func == 2) {
     if (matern_kappa == 1.5) {
       // cov matrix between knots
-      transformed_dist = sqrt(3) * distKnots / gp_rho;
-      SigmaKnots = gp_eta_sq * (1 + transformed_dist) * exp (-transformed_dist);
+      transformed_dist = sqrt(3) * distKnots / gp_theta;
+      SigmaKnots = gp_sigma_sq * (1 + transformed_dist) * exp (-transformed_dist);
       // cov matrix between knots and projected locs
-      transformed_dist21 = sqrt(3) * distKnots21 / gp_rho;
-      SigmaOffDiag = gp_eta_sq * (1 + transformed_dist21) * exp (-transformed_dist21);
+      transformed_dist21 = sqrt(3) * distKnots21 / gp_theta;
+      SigmaOffDiag = gp_sigma_sq * (1 + transformed_dist21) * exp (-transformed_dist21);
     }
     if (matern_kappa == 2.5) {
       // cov matrix between knots
-      transformed_dist = sqrt(5) * distKnots / gp_rho;
-      SigmaKnots = gp_eta_sq * (1 + transformed_dist + (transformed_dist .* transformed_dist)/3) * exp (-transformed_dist);
+      transformed_dist = sqrt(5) * distKnots / gp_theta;
+      SigmaKnots = gp_sigma_sq * (1 + transformed_dist + (transformed_dist .* transformed_dist)/3) * exp (-transformed_dist);
       // cov matrix between knots and projected locs
-      transformed_dist21 = sqrt(5) * distKnots21 / gp_rho;
-      SigmaOffDiag = gp_eta_sq * (1 + transformed_dist21 + (transformed_dist21 .* transformed_dist21)/3) * exp (-transformed_dist21);
+      transformed_dist21 = sqrt(5) * distKnots21 / gp_theta;
+      SigmaOffDiag = gp_sigma_sq * (1 + transformed_dist21 + (transformed_dist21 .* transformed_dist21)/3) * exp (-transformed_dist21);
     }
   }
 
@@ -126,8 +126,8 @@ transformed parameters {
 }
 model {
   // priors:
-  gp_rho ~ student_t(prior_gp_rho[1], prior_gp_rho[2], prior_gp_rho[3]);
-  gp_eta ~ student_t(prior_gp_eta[1], prior_gp_eta[2], prior_gp_eta[3]);
+  gp_theta ~ student_t(prior_gp_theta[1], prior_gp_theta[2], prior_gp_theta[3]);
+  gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
   if (est_phi == 1) {
     phi ~ student_t(prior_phi[1], prior_phi[2], prior_phi[3]);

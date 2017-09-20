@@ -21,8 +21,8 @@ Simulate data:
 ``` r
 library(glmmfields)
 set.seed(42)
-s <- sim_glmmfields(df = 2.8, n_draws = 12, n_knots = 12, gp_rho = 2.5, 
-  gp_eta = 0.2, sd_obs = 0.1)
+s <- sim_glmmfields(df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5, 
+  gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
 #>   time pt           y      lon      lat station_id
 #> 1    1  1  0.02818963 9.148060 6.262453          1
@@ -56,14 +56,14 @@ print(m)
 #> 
 #>             mean se_mean   sd    2.5%     25%     50%     75%   97.5%
 #> df[1]       3.68    0.04 1.42    2.05    2.65    3.36    4.36    7.51
-#> gp_eta    0.30    0.00 0.04    0.21    0.27    0.30    0.33    0.38
-#> gp_rho    2.58    0.00 0.06    2.46    2.54    2.58    2.63    2.71
+#> gp_sigma    0.30    0.00 0.04    0.21    0.27    0.30    0.33    0.38
+#> gp_theta    2.58    0.00 0.06    2.46    2.54    2.58    2.63    2.71
 #> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10
 #> lp__     2290.67    0.36 9.37 2270.92 2284.75 2290.96 2297.20 2308.32
 #>          n_eff Rhat
 #> df[1]     1054 1.00
-#> gp_eta   421 1.01
-#> gp_rho  1600 1.00
+#> gp_sigma   421 1.01
+#> gp_theta  1600 1.00
 #> sigma[1]  1600 1.00
 #> lp__       677 1.00
 #> 
@@ -103,7 +103,7 @@ Work with the Stan model:
 ``` r
 library(bayesplot)
 posterior <- rstan::extract(m$model, inc_warmup = FALSE, permuted = FALSE)
-pars <- c("df[1]", "gp_eta", "sigma[1]", "gp_rho")
+pars <- c("df[1]", "gp_sigma", "sigma[1]", "gp_theta")
 mcmc_trace(posterior,  pars = pars)
 ```
 

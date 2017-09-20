@@ -13,11 +13,11 @@
 #' @param nknots The number of knots to use in the predictive process model.
 #'   Smaller values will be faster but may not adequately represent the shape
 #'   of the spatial pattern.
-#' @param prior_gp_rho The prior on the Gaussian Process scale parameter. Must
+#' @param prior_gp_theta The prior on the Gaussian Process scale parameter. Must
 #'   be declared with \code{\link{half_t}}. Here, and throughout, priors that
 #'   are normal or half-normal can be implemented by setting the first
 #'   parameter in the half-t or student-t distribution to a large value.
-#' @param prior_gp_eta The prior on the Gaussian Process eta parameter. Must
+#' @param prior_gp_sigma The prior on the Gaussian Process eta parameter. Must
 #'   be declared with \code{\link{half_t}}.
 #' @param prior_sigma The prior on the observation process scale parameter. Must
 #'   be declared with \code{\link{half_t}}. This acts as a substitute for the
@@ -77,9 +77,9 @@
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
-#' @param gp_eta_scaling_factor An optional factor to scale the spatial
-#'   variance parameter gp_eta by to help sampling. Sometimes, especially in
-#'   the case of an auto regressive model, gp_eta could be quite small and
+#' @param gp_sigma_scaling_factor An optional factor to scale the spatial
+#'   variance parameter gp_sigma by to help sampling. Sometimes, especially in
+#'   the case of an auto regressive model, gp_sigma could be quite small and
 #'   Stan can struggle with tiny parameters. If so, try setting the scaling
 #'   factor to a value less than 1.
 #' @param df_lower_bound The lower bound on the degrees of freedom parameter.
@@ -102,8 +102,8 @@
 glmmfields <- function(formula, data, lon, lat,
   time = NULL,
   nknots = 15L,
-  prior_gp_rho = half_t(3, 0, 5),
-  prior_gp_eta = half_t(3, 0, 5),
+  prior_gp_theta = half_t(3, 0, 5),
+  prior_gp_sigma = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5),
   prior_rw_sigma = half_t(3, 0, 5),
   prior_intercept = student_t(3, 0, 10),
@@ -121,7 +121,7 @@ glmmfields <- function(formula, data, lon, lat,
   nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9),
   save_log_lik = FALSE,
-  gp_eta_scaling_factor = 1,
+  gp_sigma_scaling_factor = 1,
   df_lower_bound = 2,
   ...) {
 
@@ -186,8 +186,8 @@ glmmfields <- function(formula, data, lon, lat,
   est_temporalRE <- ifelse(year_re, 1L, 0L)
 
   stan_data <- c(stan_data,
-    list(prior_gp_rho = parse_t_prior(prior_gp_rho),
-      prior_gp_eta = parse_t_prior(prior_gp_eta),
+    list(prior_gp_theta = parse_t_prior(prior_gp_theta),
+      prior_gp_sigma = parse_t_prior(prior_gp_sigma),
       prior_sigma = parse_t_prior(prior_sigma),
       prior_intercept = parse_t_prior(prior_intercept),
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
@@ -209,7 +209,7 @@ glmmfields <- function(formula, data, lon, lat,
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa,
-      gp_eta_scaling_factor = gp_eta_scaling_factor,
+      gp_sigma_scaling_factor = gp_sigma_scaling_factor,
       nW = ifelse(fixed_df_value[[1]] > 999 & !estimate_df, 0L, stan_data$nT),
       df_lower_bound = df_lower_bound))
 

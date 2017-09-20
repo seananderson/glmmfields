@@ -74,35 +74,35 @@ predict.glmmfields <- function(object, newdata = NULL,
   for(i in seq_len(mcmc_draws)) {
     # create cov matrix @ knots
     if(object$covariance == "exponential") {
-      covmat <- pars$gp_eta[mcmc.i[i]] *
-        exp(-distKnots/pars$gp_rho[mcmc.i[i]])
-      covmat21 <- pars$gp_eta[mcmc.i[i]] *
-        exp(-dist_knots21/pars$gp_rho[mcmc.i[i]])
+      covmat <- pars$gp_sigma[mcmc.i[i]] *
+        exp(-distKnots/pars$gp_theta[mcmc.i[i]])
+      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
+        exp(-dist_knots21/pars$gp_theta[mcmc.i[i]])
     }
     if(object$covariance == "squared-exponential") {
-      covmat <- pars$gp_eta[mcmc.i[i]] *
-        exp(-(distKnots^2)/(2 * pars$gp_rho[mcmc.i[i]]^2))
-      covmat21 <- pars$gp_eta[mcmc.i[i]] *
-        exp(-(dist_knots21^2)/(2 * pars$gp_rho[mcmc.i[i]]^2))
+      covmat <- pars$gp_sigma[mcmc.i[i]] *
+        exp(-(distKnots^2)/(2 * pars$gp_theta[mcmc.i[i]]^2))
+      covmat21 <- pars$gp_sigma[mcmc.i[i]] *
+        exp(-(dist_knots21^2)/(2 * pars$gp_theta[mcmc.i[i]]^2))
     }
     if(object$covariance == "matern") {
       if(object$matern_kappa == 1.5) {
-        transformed_dist <- sqrt(3) * distKnots / pars$gp_rho[mcmc.i[i]]
+        transformed_dist <- sqrt(3) * distKnots / pars$gp_theta[mcmc.i[i]]
         covmat <-
-          pars$gp_eta[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
 
-        transformed_dist <- sqrt(3) * dist_knots21 / pars$gp_rho[mcmc.i[i]]
+        transformed_dist <- sqrt(3) * dist_knots21 / pars$gp_theta[mcmc.i[i]]
         covmat21 <-
-          pars$gp_eta[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
       }
       if(object$matern_kappa == 2.5) {
-        transformed_dist <- sqrt(5) * distKnots / pars$gp_rho[mcmc.i[i]]
+        transformed_dist <- sqrt(5) * distKnots / pars$gp_theta[mcmc.i[i]]
         covmat <-
-          pars$gp_eta[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
 
-        transformed_dist <- sqrt(5) * dist_knots21 / pars$gp_rho[mcmc.i[i]]
+        transformed_dist <- sqrt(5) * dist_knots21 / pars$gp_theta[mcmc.i[i]]
         covmat21 <-
-          pars$gp_eta[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
       }
   }
     # these are projected spatial effects, dim = new data points x time

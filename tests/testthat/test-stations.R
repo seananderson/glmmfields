@@ -2,8 +2,8 @@ if (interactive()) options(mc.cores = 1)
 
 set.seed(42)
 
-s <- sim_glmmfields(df = 1000, n_draws = 2, gp_rho = 1.5,
-  gp_eta = 0.3, sd_obs = 0.1, n_knots = 8, n_data_points = 30)
+s <- sim_glmmfields(df = 1000, n_draws = 2, gp_theta = 1.5,
+  gp_sigma = 0.3, sd_obs = 0.1, n_knots = 8, n_data_points = 30)
 
 test_that("Stations in second time slice can be in different order from first time slice", {
   skip_on_cran()

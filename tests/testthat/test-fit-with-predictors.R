@@ -14,17 +14,17 @@ test_that("mvt-norm estimates betas", {
   skip_on_travis()
   skip_on_appveyor()
 
-  gp_eta <- 0.2
+  gp_sigma <- 0.2
   sigma <- 0.1
   df <- 10
-  gp_rho <- 1.2
+  gp_theta <- 1.2
   n_draws <- 15
   nknots <- 9
   set.seed(SEED)
   B <- rnorm(n_draws, 0, 1)
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_rho = gp_rho,
-    gp_eta = gp_eta, sd_obs = sigma, n_knots = nknots, B = B,
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
     X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
@@ -37,7 +37,7 @@ test_that("mvt-norm estimates betas", {
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_eta", "estimate"], gp_eta, tol = gp_eta * TOL)
-  expect_equal(b[b$term == "gp_rho", "estimate"], gp_rho, tol = gp_rho * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
   expect_equal(b[grep("B\\[*", b$term), "estimate"], B, tol = 0.05)
 })

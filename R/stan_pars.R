@@ -12,8 +12,8 @@
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
 stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
   estimate_ar = FALSE, fixed_intercept = FALSE, save_log_lik = FALSE) {
-  p <- c("gp_eta",
-    "gp_rho",
+  p <- c("gp_sigma",
+    "gp_theta",
     "B",
     switch(obs_error[[1]], lognormal = "sigma", gaussian = "sigma",
       gamma = "CV", nb2 = "nb2_phi"),

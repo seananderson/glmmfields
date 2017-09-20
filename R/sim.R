@@ -2,8 +2,8 @@
 #'
 #' @param n_knots The number of knots
 #' @param n_draws The number of draws (for example, the number of years)
-#' @param gp_rho The Gaussian Process scale parameter
-#' @param gp_eta The Gaussian Process variance parameter
+#' @param gp_theta The Gaussian Process scale parameter
+#' @param gp_sigma The Gaussian Process variance parameter
 #' @param mvt Logical: MVT? (vs. MVN)
 #' @param df The degrees of freedom parameter for the MVT distribution
 #' @param seed The random seed value
@@ -19,8 +19,8 @@
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
-sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_rho = 0.5,
-  gp_eta = 0.2, mvt = TRUE, df = 1e6, seed = NULL, n_data_points = 100,
+sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
+  gp_sigma = 0.2, mvt = TRUE, df = 1e6, seed = NULL, n_data_points = 100,
   sd_obs = 0.1, covariance = "squared-exponential", matern_kappa = 0.5,
   obs_error = c("normal", "gamma", "poisson", "nb2", "binomial", "lognormal"),
   B = c(0), phi = 0, X = rep(1, n_draws * n_data_points),
@@ -50,26 +50,26 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_rho = 0.5,
     else {
       if(matern_kappa == 1.5) {
         dist_knots_sq <- distKnots # NOT squared distances despite name
-        transformed_dist = sqrt(3) * dist_knots_sq / gp_rho;
+        transformed_dist = sqrt(3) * dist_knots_sq / gp_theta;
         cor_knots <- (1 + transformed_dist) * exp (-transformed_dist)
       }
       if(matern_kappa == 2.5) {
         dist_knots_sq <- distKnots # NOT squared distances despite name
-        transformed_dist = sqrt(5) * dist_knots_sq / gp_rho;
+        transformed_dist = sqrt(5) * dist_knots_sq / gp_theta;
         cor_knots <- (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
       }
     }
   }
   if (covariance[[1]] == "squared-exponential") {
     dist_knots_sq <- distKnots^2 # squared distances
-    cor_knots <- exp(-dist_knots_sq / (2 * gp_rho^2))
+    cor_knots <- exp(-dist_knots_sq / (2 * gp_theta^2))
   }
   if (covariance[[1]] == "exponential") {
     dist_knots_sq <- distKnots # NOT squared distances despite name
-    cor_knots <- exp(-dist_knots_sq / (gp_rho))
+    cor_knots <- exp(-dist_knots_sq / (gp_theta))
   }
 
-  sigma_knots <- gp_eta^2 * cor_knots
+  sigma_knots <- gp_sigma^2 * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 
   # this is the transpose of the lower left corner
@@ -78,14 +78,14 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_rho = 0.5,
     dist_all <- as.matrix(dist(rbind(g, knots)))^2
     dist_knots21_sq <- t(
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-    sigma21 <- gp_eta^2 * exp(-dist_knots21_sq / (2 * gp_rho^2))
+    sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (2 * gp_theta^2))
   }
   if (covariance[[1]] == "exponential") {
     # calculate distance from knots to grid
     dist_all <- as.matrix(dist(rbind(g, knots)))
     dist_knots21_sq <- t( # NOT squared distances despite name
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-    sigma21 <- gp_eta^2 * exp(-dist_knots21_sq / (gp_rho))
+    sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (gp_theta))
   }
   if (covariance[[1]] == "matern") {
     # calculate distance from knots to grid
@@ -93,12 +93,12 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_rho = 0.5,
     dist_knots21_sq <- t( # NOT squared distances despite name
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
     if(matern_kappa == 1.5) {
-      transformed_dist = sqrt(3) * dist_knots21_sq / gp_rho;
-      sigma21 <- gp_eta^2 * (1 + transformed_dist) * exp (-transformed_dist)
+      transformed_dist = sqrt(3) * dist_knots21_sq / gp_theta;
+      sigma21 <- gp_sigma^2 * (1 + transformed_dist) * exp (-transformed_dist)
     }
     if(matern_kappa == 2.5) {
-      transformed_dist = sqrt(5) * dist_knots21_sq / gp_rho;
-      sigma21 <- gp_eta^2 * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
+      transformed_dist = sqrt(5) * dist_knots21_sq / gp_theta;
+      sigma21 <- gp_sigma^2 * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
     }
   }
 
