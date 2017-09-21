@@ -1,6 +1,5 @@
 language: r
 sudo: false
-cache: packages
 r: devel
 
 r_build_args: '--no-build-vignettes'
