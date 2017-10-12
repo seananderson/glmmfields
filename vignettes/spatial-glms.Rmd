@@ -8,16 +8,16 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
   
-Here we will use the `glmmfields` package to fit a spatial GLM. While the `glmmfields` package was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), poisson (link = log), negative binomial (link = log), and binomial (link = logit). Although outside the formal GLM family, the package can also fit lognormal (link = log).
+Here we will use the `glmmfields` package to fit a spatial GLM with a predictor. While the `glmmfields` package was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), poisson (link = log), negative binomial (link = log), and binomial (link = logit). Although outside the formal GLM family, the package can also fit lognormal (link = log).
   
 ```{r set-knitr-options, cache=FALSE, echo=FALSE}
 library("knitr")
-opts_chunk$set(message=FALSE, fig.width = 5)
+opts_chunk$set(message=FALSE, fig.width = 5.5)
 ```
 
 Let's load the necessary packages:
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(glmmfields)
 library(ggplot2)
 library(dplyr)
@@ -29,18 +29,18 @@ Set up parallel processing:
 if (interactive()) options(mc.cores = parallel::detectCores())
 ```
 
-Let's simulate some data to fit our model to. We will use the built-in function `sim_glmmfields()`, but normally you would start with your own data. We will simulate 100 data points, some temperature data, an underlying random field spatial pattern, and add some observation error. 
+Let's simulate some data to fit our model to. We will use the built-in function `sim_glmmfields()`, but normally you would start with your own data. We will simulate 200 data points, some temperature data, an underlying random field spatial pattern, and add some observation error. 
 
 In this example we will fit a Gamma GLM with a log link.
 
-The underlying intercept is 0.5 and the slope between temperature and our observed variable (say biomass or density of something) is 0.2.
+The underlying intercept is 0.5 and the slope between temperature and our observed variable (say biomass or density of individuals in a quadrat) is 0.2.
 
 ```{r simulate-data}
 set.seed(123)
-N <- 100 # number of data points
+N <- 200 # number of data points
 temperature <- rnorm(N, 0, 1) # simulated temperature data
 X <- cbind(1, temperature) # our design matrix
-s <- sim_glmmfields(n_draws = 1, gp_theta = 2, n_data_points = N,
+s <- sim_glmmfields(n_draws = 1, gp_theta = 1.5, n_data_points = N,
   gp_sigma = 0.3, sd_obs = 0.2, n_knots = 12, obs_error = "gamma",
   covariance = "squared-exponential", X = X,
   B = c(0.5, 0.2)) # B represents our intercept and slope
