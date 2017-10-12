@@ -1,4 +1,8 @@
-#' Student-t prior
+#' Student-t and half-t priors
+#'
+#' Student-t and half-t priors. Note that this can be used to represent an
+#' effectively normal distribution prior by setting the first argument (the
+#' degrees of freedom parameter) to a large value (roughly 50 or above).
 #'
 #' @param df Degrees of freedom parameter
 #' @param location Location parameter
@@ -13,8 +17,6 @@ student_t <- function(df = 3, location = 0, scale = 1) {
   list(dist = "t", df = df, location = location, scale = scale)
 }
 
-#' Half-t prior
-#'
 #' @export
 #' @rdname priors
 #' @examples

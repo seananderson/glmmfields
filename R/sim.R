@@ -9,8 +9,10 @@
 #' @param seed The random seed value
 #' @param n_data_points The number of data points per draw
 #' @param sd_obs The observation process scale parameter
-#' @param covariance The covariance function of the Gaussian process ("squared-exponential", "exponential", "matern")
-#' @param matern_kappa The optional matern parameter. Can be 1.5 or 2.5. Values of 0.5 equivalent to exponential model.
+#' @param covariance The covariance function of the Gaussian process
+#'   ("squared-exponential", "exponential", "matern")
+#' @param matern_kappa The optional matern parameter. Can be 1.5 or 2.5. Values
+#'   of 0.5 equivalent to exponential model.
 #' @param obs_error The observation error distribution
 #' @param B A vector of parameters. The first element is the intercept
 #' @param phi The auto regressive parameter on the mean of the random field knots

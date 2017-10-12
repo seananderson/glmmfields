@@ -7,7 +7,7 @@
 lognormal(link = "log")
 }
 \arguments{
-\item{link}{The link, it must be log}
+\item{link}{The link (must be log)}
 }
 \description{
 Lognormal family

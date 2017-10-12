@@ -1,6 +1,6 @@
 #' Lognormal family
 #'
-#' @param link The link, it must be log
+#' @param link The link (must be log)
 #' @export
 lognormal <- function(link = "log") {
   assert_that(identical("log", as.character(substitute(link))))
@@ -12,7 +12,7 @@ lognormal <- function(link = "log") {
 #' This is the NB2 parameterization where the variance scales quadratically
 #' with the mean.
 #'
-#' @param link The link, it must be log
+#' @param link The link (must be log)
 #' @export
 nbinom2 <- function(link = "log") {
   assert_that(identical("log", as.character(substitute(link))))

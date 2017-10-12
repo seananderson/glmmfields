@@ -3,7 +3,7 @@
 \name{student_t}
 \alias{student_t}
 \alias{half_t}
-\title{Student-t prior}
+\title{Student-t and half-t priors}
 \usage{
 student_t(df = 3, location = 0, scale = 1)
 
@@ -17,9 +17,9 @@ half_t(df = 3, location = 0, scale = 1)
 \item{scale}{Scale parameter}
 }
 \description{
-Student-t prior
-
-Half-t prior
+Student-t and half-t priors. Note that this can be used to represent an
+effectively normal distribution prior by setting the first argument (the
+degrees of freedom parameter) to a large value (roughly 50 or above).
 }
 \examples{
 student_t(3, 0, 1)

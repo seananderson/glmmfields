@@ -7,7 +7,7 @@
 nbinom2(link = "log")
 }
 \arguments{
-\item{link}{The link, it must be log}
+\item{link}{The link (must be log)}
 }
 \description{
 This is the NB2 parameterization where the variance scales quadratically

@@ -101,7 +101,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' Spatiotemporal example:
+#' # Spatiotemporal example:
 #' set.seed(1)
 #' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
 #' gp_sigma = 0.2, sd_obs = 0.1)
