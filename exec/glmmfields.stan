@@ -6,7 +6,7 @@ data {
   int<lower=1> stationID[N];
   int<lower=1> yearID[N];
   real y[N]; // y for normal and gamma obs. model
-  int y_int[N]; // y for NB2 obs. model
+  int y_int[N]; // y for NB2 or poisson or binomial obs. model
   real prior_gp_theta[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
@@ -18,7 +18,7 @@ data {
   matrix[nLocs, nKnots] distKnots21;
   int<lower=0> nCov;
   matrix[N, nCov] X;
-  int<lower=0, upper=1> cov_func; // 0 exp, 1 = sq_exp, 2 = matern
+  int<lower=0, upper=1> cov_func; // 0 = exp, 1 = sq_exp, 2 = matern
   int<lower=0, upper=1> est_df;
   int<lower=0, upper=1> est_phi;
   int<lower=0, upper=1> norm_params;
@@ -34,7 +34,7 @@ data {
   real matern_kappa;
   int<lower=0, upper=nT> nW; // if fixed nu is large, use MVN by setting nW = 0
   real<lower=0> gp_sigma_scaling_factor; // a scaling factor to help sampling if gp_sigma is too small
-   real<lower=1> df_lower_bound;
+  real<lower=1> df_lower_bound;
 }
 parameters {
   real<lower=0> gp_theta;
