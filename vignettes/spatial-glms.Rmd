@@ -29,7 +29,7 @@ Set up parallel processing:
 if (interactive()) options(mc.cores = parallel::detectCores())
 ```
 
-Let's simulate some data to fit our model to. We will use the built-in function `sim_glmmfields()`, but normally you would start with your own data. We will simulate 300 data points, some temperature data, an underlying random field spatial pattern, and add some observation error. 
+Let's simulate some data to fit our model to. We will use the built-in function `sim_glmmfields()`, but normally you would start with your own data. We will simulate 100 data points, some temperature data, an underlying random field spatial pattern, and add some observation error. 
 
 In this example we will fit a Gamma GLM with a log link.
 
@@ -70,6 +70,8 @@ m_spatial <- glmmfields(y ~ temperature, data = d, family = Gamma(link = "log"),
   lat = "lat", lon = "lon", nknots = 12, iter = 600, chains = 2)
 ```
 
+Let's look at the model output:
+
 ```{r}
 m_spatial
 ```
@@ -83,7 +85,13 @@ plot(m_spatial, type = "spatial-residual", link = TRUE) +
   geom_point(size = 3)
 ```
 
-That looks better. 
+That looks better.
+
+We can inspect the residuals versus fitted values:
+
+```{r}
+plot(m_spatial, type = "residual-vs-fitted")
+```
 
 And the predictions from our model itself:
 
