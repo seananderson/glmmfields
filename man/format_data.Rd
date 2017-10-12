@@ -6,7 +6,7 @@
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
   nknots = 25L, covariance = "squared-exponential",
-  fixed_intercept = FALSE)
+  fixed_intercept = FALSE, cluster = c("pam", "kmeans"))
 }
 \arguments{
 \item{data}{A data frame to be formatted}
@@ -28,6 +28,9 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 \item{covariance}{The type of covariance function}
 
 \item{fixed_intercept}{Should the intercept be fixed?}
+
+\item{cluster}{The type of clustering algorithm used to determine the not locations.
+\code{"pam"} = \code{\link[cluster]{pam}}}
 }
 \description{
 Format data for fitting an glmmfields model

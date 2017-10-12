@@ -42,7 +42,7 @@ be declared with \code{\link{half_t}}.}
 
 \item{prior_sigma}{The prior on the observation process scale parameter. Must
 be declared with \code{\link{half_t}}. This acts as a substitute for the
-scale parameter in whatever observation distribution is being used. I.e.
+scale parameter in whatever observation distribution is being used. E.g.
 the CV for the Gamma or the dispersion parameter for the negative
 binomial.}
 
@@ -70,7 +70,7 @@ MVN distribution will be fit.}
 between random fields at time(t) and time(t-1). If the phi parameter
 is estimated then this argument is ignored.}
 
-\item{estimate_df}{Logical: should the degrees of freedom perameter be
+\item{estimate_df}{Logical: should the degrees of freedom parameter be
 estimated?}
 
 \item{estimate_ar}{Logical: should the AR (autoregressive) parameter be
@@ -137,4 +137,37 @@ without a time component.
 Note that there is no guarantee the priors will remain the same in future
 versions. Therefore it is important that you specify any priors that are
 used in your model, even if they replicate the defaults in the package.
+}
+\examples{
+\dontrun{
+Spatiotemporal example:
+set.seed(1)
+s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
+gp_sigma = 0.2, sd_obs = 0.1)
+print(s$plot)
+options(mc.cores = parallel::detectCores()) # for parallel processing
+m <- glmmfields(y ~ 0, time = "time",
+ lat = "lat", lon = "lon", data = s$dat,
+ nknots = 12, iter = 1000, chains = 4)
+
+# Spatial example (with covariates) from the vignette and customizing
+# some priors:
+set.seed(1)
+N <- 100 # number of data points
+temperature <- rnorm(N, 0, 1) # simulated temperature data
+X <- cbind(1, temperature) # design matrix
+s <- sim_glmmfields(n_draws = 1, gp_theta = 1.2, n_data_points = N,
+  gp_sigma = 0.3, sd_obs = 0.1, n_knots = 12, obs_error = "gamma",
+  covariance = "squared-exponential", X = X,
+  B = c(0.5, 0.2)) # B represents our intercept and slope
+d <- s$dat
+d$temperature <- temperature
+ggplot(s$dat, aes(lon, lat, colour = y)) +
+  viridis::scale_colour_viridis() +
+  geom_point(size = 3)
+m_spatial <- glmmfields(y ~ temperature, data = d, family = Gamma(link = "log"),
+  lat = "lat", lon = "lon", nknots = 12, iter = 2000, chains = 4,
+  prior_beta = student_t(100, 0, 1), prior_intercept = student_t(100, 0, 5))
+  control = list(adapt_delta = 0.95))
+}
 }
