@@ -94,6 +94,41 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
 })
 
+# ------------------------------------------------------
+# a Gaussian observation model matern covariance function
+
+test_that("mvn-norm model fits with an matern covariance function", {
+  skip_on_cran()
+  skip_on_travis()
+  skip_on_appveyor()
+
+  gp_sigma <- 0.2
+  sigma <- 0.1
+  df <- 10
+  gp_theta <- 1.2
+  n_draws <- 4
+  nknots <- 9
+  matern_kappa <- 1.5
+
+  set.seed(SEED)
+  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points,
+    covariance = "matern", matern_kappa = matern_kappa)
+  # print(s$plot)
+
+# broken:
+#  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+#    lat = "lat", lon = "lon", nknots = nknots,
+#    iter = ITER, chains = CHAINS, seed = SEED,
+#    estimate_df = FALSE, fixed_df_value = df,
+#    covariance = "matern", matern_kappa = matern_kappa)
+
+  # b <- tidy(m, estimate.method = "median")
+  # expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
+  # expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  # expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
+})
+
 test_that("predictions work with one time slice", {
   skip_on_cran()
   skip_on_travis()
