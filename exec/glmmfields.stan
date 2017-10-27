@@ -18,7 +18,7 @@ data {
   matrix[nLocs, nKnots] distKnots21;
   int<lower=0> nCov;
   matrix[N, nCov] X;
-  int<lower=0, upper=1> cov_func; // 0 = exp, 1 = sq_exp, 2 = matern
+  int<lower=0, upper=2> cov_func; // 0 = exp, 1 = sq_exp, 2 = matern
   int<lower=0, upper=1> est_df;
   int<lower=0, upper=1> est_phi;
   int<lower=0, upper=1> norm_params;
@@ -81,19 +81,21 @@ transformed parameters {
   if (cov_func == 2) {
     if (matern_kappa == 1.5) {
       // cov matrix between knots
-      transformed_dist = sqrt(3) * distKnots / gp_theta;
-      SigmaKnots = gp_sigma_sq * (1 + transformed_dist) * exp (-transformed_dist);
+      transformed_dist = sqrt(3.0) * distKnots / gp_theta;
+      SigmaKnots = gp_sigma_sq * (1.0 + transformed_dist) * exp (-transformed_dist);
       // cov matrix between knots and projected locs
-      transformed_dist21 = sqrt(3) * distKnots21 / gp_theta;
-      SigmaOffDiag = gp_sigma_sq * (1 + transformed_dist21) * exp (-transformed_dist21);
+      transformed_dist21 = sqrt(3.0) * distKnots21 / gp_theta;
+      SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21) * exp (-transformed_dist21);
     }
     if (matern_kappa == 2.5) {
       // cov matrix between knots
-      transformed_dist = sqrt(5) * distKnots / gp_theta;
-      SigmaKnots = gp_sigma_sq * (1 + transformed_dist + (transformed_dist .* transformed_dist)/3) * exp (-transformed_dist);
+      transformed_dist = sqrt(5.0) * distKnots / gp_theta;
+      SigmaKnots = gp_sigma_sq * (1.0 + transformed_dist +
+        (transformed_dist .* transformed_dist)/3.0) * exp (-transformed_dist);
       // cov matrix between knots and projected locs
-      transformed_dist21 = sqrt(5) * distKnots21 / gp_theta;
-      SigmaOffDiag = gp_sigma_sq * (1 + transformed_dist21 + (transformed_dist21 .* transformed_dist21)/3) * exp (-transformed_dist21);
+      transformed_dist21 = sqrt(5.0) * distKnots21 / gp_theta;
+      SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21 +
+        (transformed_dist21 .* transformed_dist21)/3.0) * exp (-transformed_dist21);
     }
   }
 
