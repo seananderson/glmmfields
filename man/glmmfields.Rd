@@ -15,7 +15,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
   0.9), save_log_lik = FALSE, gp_sigma_scaling_factor = 1,
-  df_lower_bound = 2, ...)
+  df_lower_bound = 2, cluster = c("pam", "kmeans"), ...)
 }
 \arguments{
 \item{formula}{The model formula}
@@ -124,6 +124,9 @@ factor to a value less than 1.}
 \item{df_lower_bound}{The lower bound on the degrees of freedom parameter.
 Values that are too low, e.g. below 2 or 3, it might affect chain
 convergence.}
+
+\item{cluster}{The type of clustering algorithm used to determine the knot
+locations. \code{"pam"} = \code{\link[cluster]{pam}}}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
 }

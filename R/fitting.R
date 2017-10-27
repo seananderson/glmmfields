@@ -85,6 +85,8 @@
 #' @param df_lower_bound The lower bound on the degrees of freedom parameter.
 #'   Values that are too low, e.g. below 2 or 3, it might affect chain
 #'   convergence.
+#' @param cluster The type of clustering algorithm used to determine the knot
+#'   locations. \code{"pam"} = \code{\link[cluster]{pam}}
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @details
@@ -156,6 +158,7 @@ glmmfields <- function(formula, data, lon, lat,
   save_log_lik = FALSE,
   gp_sigma_scaling_factor = 1,
   df_lower_bound = 2,
+  cluster = c("pam", "kmeans"),
   ...) {
 
   # argument checks:
@@ -208,7 +211,7 @@ glmmfields <- function(formula, data, lon, lat,
   data_list <- format_data(data = data, y = y, X = X, time = time,
     lon = lon, lat = lat, station = "station_", nknots = nknots,
     covariance = covariance,
-    fixed_intercept = fixed_intercept)
+    fixed_intercept = fixed_intercept, cluster = cluster)
   stan_data = data_list$spatglm_data
   data_knots = data_list$knots
 

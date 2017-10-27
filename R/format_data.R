@@ -11,7 +11,7 @@
 #' @param covariance The type of covariance function
 #' @param fixed_intercept Should the intercept be fixed?
 #' @param cluster The type of clustering algorithm used to determine the not locations.
-#'   \code{"pam"} = \code{\link[cluster]{pam}}
+#'   \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.
 #' @export
 format_data <- function(data, y, X, time, lon = "lon", lat = "lat", station = NULL, nknots = 25L,
   covariance = "squared-exponential", fixed_intercept = FALSE, cluster = c("pam", "kmeans")) {
