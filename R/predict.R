@@ -11,6 +11,7 @@
 #'   "response" scale (Same as \code{\link[stats]{predict.glm}})
 #' @param return_mcmc Logical. Should the full MCMC draws be returned for the
 #'   predictions?
+#' @param iter Number of MCMC iterations to draw. Defaults to all.
 #' @param ... Ignored currently
 #'
 #' @importFrom stats median quantile predict rgamma rnbinom
@@ -20,7 +21,7 @@
 predict.glmmfields <- function(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
   interval = c("confidence", "prediction"), type = c("link", "response"),
-  return_mcmc = FALSE, ...) {
+  return_mcmc = FALSE, iter = "all", ...) {
 
   assert_that(is.character(estimate_method[[1]]))
   assert_that(is.character(interval[[1]]))
@@ -68,8 +69,12 @@ predict.glmmfields <- function(object, newdata = NULL,
   # extract mcmc pars
   pars <- rstan::extract(object$model, permuted = TRUE)
   ##
-  mcmc.i <- seq_len(length(pars$lp__))
-  mcmc_draws <- max(mcmc.i)
+  if (iter == "all") {
+    mcmc.i <- seq_len(length(pars$lp__))
+  } else {
+    mcmc.i <- base::sample(seq_len(length(pars$lp__)), size = iter)
+  }
+  mcmc_draws <- length(mcmc.i)
   pred_values <- matrix(NA, n_locs, mcmc_draws)
   for(i in seq_len(mcmc_draws)) {
     # create cov matrix @ knots
