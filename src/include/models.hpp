@@ -879,16 +879,16 @@ public:
                 if (as_bool(logical_eq(matern_kappa,1.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(3.0),distKnots),gp_theta));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist)),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist)),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(3.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(5.0),distKnots),gp_theta));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3.0))),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3.0))),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(5.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),exp(minus(transformed_dist21))));
                 }
             }
             for (int k = 1; k <= nKnots; ++k) {
@@ -1435,16 +1435,16 @@ public:
                 if (as_bool(logical_eq(matern_kappa,1.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(3.0),distKnots),gp_theta));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist)),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist)),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(3.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(sqrt(5.0),distKnots),gp_theta));
-                    stan::math::assign(SigmaKnots, multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3.0))),exp(minus(transformed_dist))));
+                    stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3.0))),exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(sqrt(5.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),exp(minus(transformed_dist21))));
                 }
             }
             for (int k = 1; k <= nKnots; ++k) {

@@ -82,20 +82,20 @@ transformed parameters {
     if (matern_kappa == 1.5) {
       // cov matrix between knots
       transformed_dist = sqrt(3.0) * distKnots / gp_theta;
-      SigmaKnots = gp_sigma_sq * (1.0 + transformed_dist) * exp (-transformed_dist);
+      SigmaKnots = gp_sigma_sq * (1.0 + transformed_dist) .* exp (-transformed_dist);
       // cov matrix between knots and projected locs
       transformed_dist21 = sqrt(3.0) * distKnots21 / gp_theta;
-      SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21) * exp (-transformed_dist21);
+      SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21) .* exp (-transformed_dist21);
     }
     if (matern_kappa == 2.5) {
       // cov matrix between knots
       transformed_dist = sqrt(5.0) * distKnots / gp_theta;
       SigmaKnots = gp_sigma_sq * (1.0 + transformed_dist +
-        (transformed_dist .* transformed_dist)/3.0) * exp (-transformed_dist);
+        (transformed_dist .* transformed_dist)/3.0) .* exp (-transformed_dist);
       // cov matrix between knots and projected locs
       transformed_dist21 = sqrt(5.0) * distKnots21 / gp_theta;
       SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21 +
-        (transformed_dist21 .* transformed_dist21)/3.0) * exp (-transformed_dist21);
+        (transformed_dist21 .* transformed_dist21)/3.0) .* exp (-transformed_dist21);
     }
   }
 
