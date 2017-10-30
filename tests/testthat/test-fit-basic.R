@@ -116,17 +116,17 @@ test_that("mvn-norm model fits with an matern covariance function", {
     covariance = "matern", matern_kappa = matern_kappa)
   # print(s$plot)
 
-# broken:
-#  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
-#    lat = "lat", lon = "lon", nknots = nknots,
-#    iter = ITER, chains = CHAINS, seed = SEED,
-#    estimate_df = FALSE, fixed_df_value = df,
-#    covariance = "matern", matern_kappa = matern_kappa)
 
-  # b <- tidy(m, estimate.method = "median")
-  # expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
-  # expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  # expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
+  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+    lat = "lat", lon = "lon", nknots = nknots,
+    iter = ITER, chains = CHAINS, seed = SEED,
+    estimate_df = FALSE, fixed_df_value = df,
+    covariance = "matern", matern_kappa = matern_kappa)
+
+  b <- tidy(m, estimate.method = "median")
+  expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
 })
 
 test_that("predictions work with one time slice", {
