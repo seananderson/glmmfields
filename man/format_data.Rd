@@ -30,7 +30,7 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 \item{fixed_intercept}{Should the intercept be fixed?}
 
 \item{cluster}{The type of clustering algorithm used to determine the not locations.
-\code{"pam"} = \code{\link[cluster]{pam}}}
+\code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.}
 }
 \description{
 Format data for fitting an glmmfields model

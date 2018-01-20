@@ -7,7 +7,7 @@
 \method{predict}{glmmfields}(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
   interval = c("confidence", "prediction"), type = c("link", "response"),
-  return_mcmc = FALSE, ...)
+  return_mcmc = FALSE, iter = "all", ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link{glmmfields}}.}
@@ -27,6 +27,8 @@ median")}
 
 \item{return_mcmc}{Logical. Should the full MCMC draws be returned for the
 predictions?}
+
+\item{iter}{Number of MCMC iterations to draw. Defaults to all.}
 
 \item{...}{Ignored currently}
 }
