@@ -13,7 +13,7 @@ Description: Implements Bayesian spatiotemporal models that allow for extreme
     instead of a multivariate normal.
 License: GPL (>=3)
 Depends:
-    R (>= 3.4.0),
+    R (>= 3.3.0),
     Rcpp (>= 0.12.0)
 Imports:
     rstan (>= 2.16.0),
