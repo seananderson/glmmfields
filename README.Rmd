@@ -40,7 +40,7 @@ Simulate data:
 ```{r simulate, cache=TRUE}
 library(glmmfields)
 set.seed(42)
-s <- sim_glmmfields(df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5, 
+s <- sim_glmmfields(df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5,
   gp_sigma = 0.2, sd_obs = 0.1)
 head(s$dat)
 ```
@@ -90,7 +90,7 @@ mcmc_areas(as.matrix(m$model), pars = pars)
 
 # References
 
-Anderson, S. A., Ward, E. J. In prep. Black swans in space: modelling spatiotemporal processes with extremes.
+Anderson, S. A., Ward, E. J. In review. Black swans in space: modelling spatiotemporal processes with extremes.
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A. Silander Jr. 2009. Hierarchical models facilitate spatial analysis of large data sets: a case study on invasive plant species in the northeastern United States. Ecology Letters 12:144–154.
 
