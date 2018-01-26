@@ -5,11 +5,12 @@
 #' through time. It is also possible to fit a spatial random fields model
 #' without a time component.
 #'
-#' @param formula The model formula
-#' @param data A data frame
-#' @param time A character object giving the name of the time column
-#' @param lon A character object giving the name of the longitude column
-#' @param lat A character object giving the name of the latitude column
+#' @param formula The model formula.
+#' @param data A data frame.
+#' @param time A character object giving the name of the time column. Leave
+#'   as \code{NULL} to fit a spatial GLMM without a time element.
+#' @param lon A character object giving the name of the longitude column.
+#' @param lat A character object giving the name of the latitude column.
 #' @param nknots The number of knots to use in the predictive process model.
 #'   Smaller values will be faster but may not adequately represent the shape
 #'   of the spatial pattern.
@@ -65,7 +66,7 @@
 #'   incorrect inference than MCMC.
 #' @param year_re Logical: estimate a random walk for the time variable? If
 #'   \code{TRUE}, then no fixed effects (B coefficients) will be estimated.
-#'   \code{TRUE}, then \code{prior_intercept} will be used as the prior for
+#'   In this case, \code{prior_intercept} will be used as the prior for
 #'   the initial value in time.
 #' @param nb_lower_truncation For NB2 only: lower truncation value. E.g. 0 for
 #'   no truncation, 1 for 1 and all values above. Note that estimation is
@@ -73,26 +74,35 @@
 #'   sampling is not vectorized. Also note that the log likelihood values
 #'   returned for estimating quantities like LOOIC will not be correct if
 #'   lower truncation is implemented.
-#' @param control List to pass to \code{\link[rstan]{sampling}}
+#' @param control List to pass to \code{\link[rstan]{sampling}}. For example,
+#'   increase \code{adapt_delta} if there are warnings about divergent
+#'   transitions: \code{control = list(adapt_delta = 0.99)}. By default,
+#'   \pkg{glmmfields} sets \code{adapt_delta = 0.9}.
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
 #' @param gp_sigma_scaling_factor An optional factor to scale the spatial
-#'   variance parameter gp_sigma by to help sampling. Sometimes, especially in
-#'   the case of an auto regressive model, gp_sigma could be quite small and
-#'   Stan can struggle with tiny parameters. If so, try setting the scaling
-#'   factor to a value less than 1.
+#'   variance parameter \code{gp_sigma} by to help sampling. Sometimes,
+#'   especially in the case of an autoregressive model, \code{gp_sigma} could be
+#'   quite small and Stan can struggle with tiny parameters. If so, try setting
+#'   the scaling factor to a value less than 1 (but note that the estimates for
+#'   \code{gp_sigma} will then be scaled).
 #' @param df_lower_bound The lower bound on the degrees of freedom parameter.
 #'   Values that are too low, e.g. below 2 or 3, it might affect chain
-#'   convergence.
+#'   convergence. Defaults to 2.
 #' @param cluster The type of clustering algorithm used to determine the knot
-#'   locations. \code{"pam"} = \code{\link[cluster]{pam}}
+#'   locations. \code{"pam"} = \code{\link[cluster]{pam}}. The \code{"kmeans"}
+#'   algorithm will be faster on larger datasets.
 #' @param ... Any other arguments to pass to \code{\link[rstan]{sampling}}.
 #'
 #' @details
 #' Note that there is no guarantee the priors will remain the same in future
 #' versions. Therefore it is important that you specify any priors that are
-#' used in your model, even if they replicate the defaults in the package.
+#' used in your model, even if they replicate the defaults in the package. It
+#' is particularly important that you consider that prior on \code{gp_theta}
+#' since it depends on the distance between your location points. You may need to
+#' scale your coordinate units so they are on a ballpark range of 1-10 by, say,
+#' dividing the coordinates (say in UTMs) by several order of magnitude.
 #'
 #' @export
 #' @importFrom rstan sampling vb
