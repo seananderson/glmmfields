@@ -106,12 +106,12 @@
 #' # Spatiotemporal example:
 #' set.seed(1)
 #' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
-#' gp_sigma = 0.2, sd_obs = 0.1)
+#' gp_sigma = 0.2, sd_obs = 0.2)
 #' print(s$plot)
 #' options(mc.cores = parallel::detectCores()) # for parallel processing
 #' m <- glmmfields(y ~ 0, time = "time",
 #'  lat = "lat", lon = "lon", data = s$dat,
-#'  nknots = 12, iter = 1000, chains = 4)
+#'  nknots = 12, iter = 500, chains = 4)
 #'
 #' # Spatial example (with covariates) from the vignette and customizing
 #' # some priors:
@@ -125,6 +125,7 @@
 #'   B = c(0.5, 0.2)) # B represents our intercept and slope
 #' d <- s$dat
 #' d$temperature <- temperature
+#' library(ggplot2)
 #' ggplot(s$dat, aes(lon, lat, colour = y)) +
 #'   viridis::scale_colour_viridis() +
 #'   geom_point(size = 3)
