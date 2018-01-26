@@ -151,7 +151,7 @@ print(s$plot)
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0, time = "time",
  lat = "lat", lon = "lon", data = s$dat,
- nknots = 12, iter = 500, chains = 4)
+ nknots = 12, iter = 500, chains = 3)
 
 # Spatial example (with covariates) from the vignette and customizing
 # some priors:
@@ -171,7 +171,7 @@ ggplot(s$dat, aes(lon, lat, colour = y)) +
   geom_point(size = 3)
 m_spatial <- glmmfields(y ~ temperature, data = d, family = Gamma(link = "log"),
   lat = "lat", lon = "lon", nknots = 12, iter = 2000, chains = 4,
-  prior_beta = student_t(100, 0, 1), prior_intercept = student_t(100, 0, 5))
+  prior_beta = student_t(100, 0, 1), prior_intercept = student_t(100, 0, 5),
   control = list(adapt_delta = 0.95))
 }
 }
