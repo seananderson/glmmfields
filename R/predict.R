@@ -52,14 +52,12 @@ predict.glmmfields <- function(object, newdata = NULL,
 
   time <- object$time
   knots <- object$knots
-  n_knots <- nrow(knots)
 
-  # pred_values <- t(rstan::extract(object$model, pars = "y_hat")[[1]])
-
-  distKnots <- as.matrix(dist(knots))
+  dist_knots <- as.matrix(dist(knots))
 
   # Calculate distance from knots to grid
-  dist_all <- as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)], knots)))
+  dist_all <- as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)],
+    knots)))
   n_locs <- nrow(newdata)
 
   # this is the transpose of the lower left corner
@@ -76,40 +74,44 @@ predict.glmmfields <- function(object, newdata = NULL,
   }
   mcmc_draws <- length(mcmc.i)
   pred_values <- matrix(NA, n_locs, mcmc_draws)
-  for(i in seq_len(mcmc_draws)) {
+  for (i in seq_len(mcmc_draws)) {
     # create cov matrix @ knots
-    if(object$covariance == "exponential") {
+    if (object$covariance == "exponential") {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-distKnots/pars$gp_theta[mcmc.i[i]])
+        exp(-dist_knots / pars$gp_theta[mcmc.i[i]])
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-dist_knots21/pars$gp_theta[mcmc.i[i]])
+        exp(-dist_knots21 / pars$gp_theta[mcmc.i[i]])
     }
-    if(object$covariance == "squared-exponential") {
+    if (object$covariance == "squared-exponential") {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-(distKnots^2)/(2 * pars$gp_theta[mcmc.i[i]]^2))
+        exp(-(dist_knots ^ 2) / (2 * pars$gp_theta[mcmc.i[i]] ^ 2))
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-(dist_knots21^2)/(2 * pars$gp_theta[mcmc.i[i]]^2))
+        exp(-(dist_knots21 ^ 2) / (2 * pars$gp_theta[mcmc.i[i]] ^ 2))
     }
-    if(object$covariance == "matern") {
-      if(object$matern_kappa == 1.5) {
-        transformed_dist <- sqrt(3) * distKnots / pars$gp_theta[mcmc.i[i]]
+    if (object$covariance == "matern") {
+      if (object$matern_kappa == 1.5) {
+        transformed_dist <- sqrt(3) * dist_knots / pars$gp_theta[mcmc.i[i]]
         covmat <-
-          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] *
+          (1 + transformed_dist) * exp (-transformed_dist)
 
         transformed_dist <- sqrt(3) * dist_knots21 / pars$gp_theta[mcmc.i[i]]
         covmat21 <-
-          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] *
+          (1 + transformed_dist) * exp (-transformed_dist)
       }
-      if(object$matern_kappa == 2.5) {
-        transformed_dist <- sqrt(5) * distKnots / pars$gp_theta[mcmc.i[i]]
+      if (object$matern_kappa == 2.5) {
+        transformed_dist <- sqrt(5) * dist_knots / pars$gp_theta[mcmc.i[i]]
         covmat <-
-          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] *
+          (1 + transformed_dist + (transformed_dist ^ 2) / 3) * exp (-transformed_dist)
 
         transformed_dist <- sqrt(5) * dist_knots21 / pars$gp_theta[mcmc.i[i]]
         covmat21 <-
-          pars$gp_sigma[mcmc.i[i]] * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist)
+          pars$gp_sigma[mcmc.i[i]] *
+          (1 + transformed_dist + (transformed_dist ^ 2) / 3) * exp (-transformed_dist)
       }
-  }
+    }
     # these are projected spatial effects, dim = new data points x time
     spat_eff_knots_i <- pars$spatialEffectsKnots[mcmc.i[i],,]
     if (is.matrix(spat_eff_knots_i)) {
@@ -127,15 +129,16 @@ predict.glmmfields <- function(object, newdata = NULL,
     }
     cols <- as.numeric(as.factor(newdata[, time][[1]]))
     # check this for > 1 year. B will also have to be modified
-    if(object$year_re == FALSE) {
+    if (!object$year_re) {
       if (!object$fixed_intercept) {
-        pred_values[,i] <- X %*% matrix(pars$B[mcmc.i[i],], ncol = 1) +
-          spat_effects[cbind(rows,cols)]
+        pred_values[, i] <- X %*% matrix(pars$B[mcmc.i[i], ], ncol = 1) +
+          spat_effects[cbind(rows, cols)]
       } else {
-        pred_values[,i] <- spat_effects[cbind(rows,cols)]
+        pred_values[, i] <- spat_effects[cbind(rows, cols)]
       }
     } else {
-      pred_values[,i] <- spat_effects[cbind(rows,cols)] + pars$yearEffects[mcmc.i[i],][cols]
+      pred_values[, i] <- spat_effects[cbind(rows, cols)] +
+        pars$yearEffects[mcmc.i[i], ][cols]
     }
   }
 
@@ -144,39 +147,48 @@ predict.glmmfields <- function(object, newdata = NULL,
   # if type == link, don't include observation/data model.
 
   # If predictions other than on link scale, use observation model and link to
-  # generate (1) confidence intervals on mean or (2) prediction intervals including obs error
+  # generate (1) confidence intervals on mean or (2) prediction intervals
+  # including obs error
 
-  if(type[[1]] == "response") {
-    if(obs_model %in% c(0, 2, 5, 6)) pred_values <- exp(pred_values) # gamma or NB2 or poisson
+  if (type[[1]] == "response") {
+    # gamma or NB2 or poisson:
+    if (obs_model %in% c(0, 2, 5, 6)) pred_values <- exp(pred_values)
 
-    if(obs_model == 1) {
+    if (obs_model == 1) {
       # normal, sigma is returned
-      pp <- t(apply(pred_values, 1, function(x) stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[,1])))
+      pp <- t(apply(pred_values, 1, function(x)
+        stats::rnorm(mcmc_draws, mean = x, sd = pars$sigma[, 1])))
     }
 
-    if(obs_model == 4) pred_values <- stats::plogis(pred_values) # binomial (plogis = inverse logit)
+    # binomial (plogis = inverse logit):
+    if (obs_model == 4) pred_values <- stats::plogis(pred_values)
 
-    if(obs_model == 0) {
+    if (obs_model == 0) {
       # gamma, CV is returned; gammaA = 1/(CV*CV)
-      pp <- t(apply(pred_values, 1, function(x) stats::rgamma(mcmc_draws, shape = 1/(pars$CV[,1]^2),
-        rate = 1/(pars$CV[,1]^2)/x)))
+      pp <- t(apply(pred_values, 1, function(x)
+        stats::rgamma(mcmc_draws, shape = 1 / (pars$CV[, 1] ^ 2),
+          rate = 1 / (pars$CV[, 1] ^ 2) / x)))
     }
-    if(obs_model == 2) {
+    if (obs_model == 2) {
       # negative binomial, phi returned
-      pp <- t(apply(pred_values, 1, function(x) stats::rnbinom(mcmc_draws, mu = x, size = pars$nb2_phi[,1])))
+      pp <- t(apply(pred_values, 1, function(x)
+        stats::rnbinom(mcmc_draws, mu = x, size = pars$nb2_phi[, 1])))
     }
-    if(obs_model == 4) {
+    if (obs_model == 4) {
       # binomial
-      pp <- t(apply(pred_values, 1, function(x) stats::rbinom(mcmc_draws, size = 1, prob = x)))
+      pp <- t(apply(pred_values, 1, function(x)
+        stats::rbinom(mcmc_draws, size = 1, prob = x)))
     }
-    if(obs_model == 5) {
+    if (obs_model == 5) {
       # poisson
-      pp <- t(apply(pred_values, 1, function(x) stats::rpois(mcmc_draws, lambda = x)))
+      pp <- t(apply(pred_values, 1, function(x)
+        stats::rpois(mcmc_draws, lambda = x)))
     }
-    if(obs_model == 6) {
+    if (obs_model == 6) {
       # lognormal, sigma is returned
-      pp <- t(apply(pred_values, 1, function(x) stats::rlnorm(mcmc_draws, meanlog = log(x),
-        sdlog = pars$sigma[,1])))
+      pp <- t(apply(pred_values, 1, function(x)
+        stats::rlnorm(mcmc_draws, meanlog = log(x),
+          sdlog = pars$sigma[, 1])))
     }
   }
 
@@ -184,8 +196,10 @@ predict.glmmfields <- function(object, newdata = NULL,
   out <- data.frame(estimate = apply(pred_values, 1, est_method))
 
   if (interval[[1]] == "confidence") {
-    out$conf_low <- apply(pred_values, 1, quantile, probs = (1 - conf_level) / 2)
-    out$conf_high <- apply(pred_values, 1, quantile, probs = 1 - (1 - conf_level) / 2)
+    out$conf_low <- apply(pred_values, 1, quantile,
+      probs = (1 - conf_level) / 2)
+    out$conf_high <- apply(pred_values, 1, quantile,
+      probs = 1 - (1 - conf_level) / 2)
   }
   if (interval[[1]] == "prediction" & type[[1]] == "response") {
     out$conf_low <- apply(pp, 1, quantile, probs = (1 - conf_level) / 2)

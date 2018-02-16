@@ -5,3 +5,4 @@ cleanup*
 ^README\.Rmd
 ^\.travis\.yml$
 ^appveyor\.yml$
+^Session.vim$

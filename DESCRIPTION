@@ -1,8 +1,8 @@
 Package: glmmfields
 Type: Package
 Title: GLMMs with Robust Random Fields for Spatiotemporal Modelling
-Version: 0.01.9002
-Date: 2017-07-28
+Version: 0.01.9000
+Date: 2018-02-16
 Authors@R: c(
     person(c("Sean", "C."), "Anderson", email = "sandrsn@uw.edu", 
       role = c("aut", "cre")),
@@ -12,6 +12,7 @@ Description: Implements Bayesian spatiotemporal models that allow for extreme
     with random fields implemented through a multivariate-t distribution
     instead of a multivariate normal.
 License: GPL (>=3)
+Encoding: UTF-8
 Depends:
     R (>= 3.3.0),
     Rcpp (>= 0.12.0)
@@ -19,7 +20,7 @@ Imports:
     rstan (>= 2.16.0),
     ggplot2 (>= 2.2.0),
     cluster,
-    dplyr,
+    dplyr (>= 0.7.0),
     reshape2,
     mvtnorm,
     broom,
@@ -38,5 +39,5 @@ Suggests:
     viridis
 URL: https://github.com/seananderson/glmmfields
 BugReports: https://github.com/seananderson/glmmfields/issues
-RoxygenNote: 6.0.1
+RoxygenNote: 6.0.1.9000
 VignetteBuilder: knitr
