@@ -46,8 +46,8 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
   }
   if (covariance[[1]] == "matern") {
     if(matern_kappa %in% c(1.5,2.5)==FALSE) {
-      matern_kappa = 0.5
-      covariance[[1]] = "exponential"
+      matern_kappa <- 0.5
+      covariance[[1]] <- "exponential"
     }
     else {
       if(matern_kappa == 1.5) {
@@ -57,37 +57,38 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
       }
       if(matern_kappa == 2.5) {
         dist_knots_sq <- distKnots # NOT squared distances despite name
-        transformed_dist = sqrt(5) * dist_knots_sq / gp_theta;
-        cor_knots <- (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
+        transformed_dist <- sqrt(5) * dist_knots_sq / gp_theta;
+        cor_knots <- (1 + transformed_dist + (transformed_dist ^ 2)/3) *
+          exp (-transformed_dist);
       }
     }
   }
   if (covariance[[1]] == "squared-exponential") {
-    dist_knots_sq <- distKnots^2 # squared distances
-    cor_knots <- exp(-dist_knots_sq / (2 * gp_theta^2))
+    dist_knots_sq <- distKnots ^ 2 # squared distances
+    cor_knots <- exp(-dist_knots_sq / (2 * gp_theta ^ 2))
   }
   if (covariance[[1]] == "exponential") {
     dist_knots_sq <- distKnots # NOT squared distances despite name
     cor_knots <- exp(-dist_knots_sq / (gp_theta))
   }
 
-  sigma_knots <- gp_sigma^2 * cor_knots
+  sigma_knots <- gp_sigma ^ 2 * cor_knots
   invsigma_knots <- base::solve(sigma_knots)
 
   # this is the transpose of the lower left corner
   if (covariance[[1]] == "squared-exponential") {
     # calculate distance from knots to grid
-    dist_all <- as.matrix(dist(rbind(g, knots)))^2
+    dist_all <- as.matrix(dist(rbind(g, knots))) ^ 2
     dist_knots21_sq <- t(
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-    sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (2 * gp_theta^2))
+    sigma21 <- gp_sigma ^ 2 * exp(-dist_knots21_sq / (2 * gp_theta ^ 2))
   }
   if (covariance[[1]] == "exponential") {
     # calculate distance from knots to grid
     dist_all <- as.matrix(dist(rbind(g, knots)))
     dist_knots21_sq <- t( # NOT squared distances despite name
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
-    sigma21 <- gp_sigma^2 * exp(-dist_knots21_sq / (gp_theta))
+    sigma21 <- gp_sigma ^ 2 * exp(-dist_knots21_sq / (gp_theta))
   }
   if (covariance[[1]] == "matern") {
     # calculate distance from knots to grid
@@ -96,11 +97,12 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
       dist_all[-c(seq_len(n_pts)), -c((n_pts + 1):ncol(dist_all))])
     if(matern_kappa == 1.5) {
       transformed_dist = sqrt(3) * dist_knots21_sq / gp_theta;
-      sigma21 <- gp_sigma^2 * (1 + transformed_dist) * exp (-transformed_dist)
+      sigma21 <- gp_sigma ^ 2 * (1 + transformed_dist) * exp (-transformed_dist)
     }
     if(matern_kappa == 2.5) {
       transformed_dist = sqrt(5) * dist_knots21_sq / gp_theta;
-      sigma21 <- gp_sigma^2 * (1 + transformed_dist + (transformed_dist^2)/3) * exp (-transformed_dist);
+      sigma21 <- gp_sigma ^ 2 * (1 + transformed_dist + (transformed_dist ^ 2)/3) *
+        exp (-transformed_dist);
     }
   }
 
@@ -150,14 +152,14 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "gamma") {
-    gamma_a = 1/(sd_obs^2) # sd_obs means CV here
+    gamma_a = 1/(sd_obs ^ 2) # sd_obs means CV here
     gamma_b = gamma_a/exp(proj + eta_mat)
     y <- matrix(data = stats::rgamma(N, shape = gamma_a, rate = gamma_b),
       ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "binomial") { # plogis = inverse_logit
-    y <- matrix(data = stats::rbinom(N, size = 1, prob = stats::plogis(proj + eta_mat)),
-      ncol = ncol(proj), nrow = nrow(proj))
+    y <- matrix(data = stats::rbinom(N, size = 1,
+      prob = stats::plogis(proj + eta_mat)), ncol = ncol(proj), nrow = nrow(proj))
   }
   if (obs_error[[1]] == "poisson") {
     y <- matrix(data = stats::rpois(N, lambda = exp(proj + eta_mat)),
