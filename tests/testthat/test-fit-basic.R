@@ -28,14 +28,18 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   skip_on_cran()
   set.seed(SEED)
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points
+  )
   # s$plot
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 0,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
+    estimate_df = FALSE, fixed_df_value = df
+  )
 
   expect_output(print(m), "Inference for Stan model")
 
@@ -77,16 +81,20 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   nknots <- 9
 
   set.seed(SEED)
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points,
-    covariance = "exponential")
+    covariance = "exponential"
+  )
   # print(s$plot)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    covariance = "exponential")
+    covariance = "exponential"
+  )
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
@@ -111,17 +119,21 @@ test_that("mvn-norm model fits with an matern covariance function", {
   matern_kappa <- 1.5
 
   set.seed(SEED)
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points,
-    covariance = "matern", matern_kappa = matern_kappa)
+    covariance = "matern", matern_kappa = matern_kappa
+  )
   # print(s$plot)
 
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    covariance = "matern", matern_kappa = matern_kappa)
+    covariance = "matern", matern_kappa = matern_kappa
+  )
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
@@ -135,16 +147,19 @@ test_that("predictions work with one time slice", {
   skip_on_appveyor()
   set.seed(SEED)
 
-  s <- sim_glmmfields(df = df, n_draws = 1, gp_theta = gp_theta,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
+  s <- sim_glmmfields(
+    df = df, n_draws = 1, gp_theta = gp_theta,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points
+  )
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 0,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
+    estimate_df = FALSE, fixed_df_value = df
+  )
 
   p <- predict(m)
-
 })
 
 # -------------------------------------------------
@@ -163,19 +178,25 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
   nknots <- 9
 
   set.seed(SEED)
-  s <- sim_glmmfields(n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    df = 800, n_data_points = n_data_points)
+    df = 800, n_data_points = n_data_points
+  )
 
-  m_mvt <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m_mvt <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = 800)
+    estimate_df = FALSE, fixed_df_value = 800
+  )
 
-  m_mvn <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m_mvn <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = 1e9) # internally switched to true MVN
+    estimate_df = FALSE, fixed_df_value = 1e9
+  ) # internally switched to true MVN
 
   b_mvt <- tidy(m_mvt, estimate.method = "median")
   b_mvn <- tidy(m_mvn, estimate.method = "median")

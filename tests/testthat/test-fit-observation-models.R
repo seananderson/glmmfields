@@ -24,21 +24,25 @@ test_that("mvt-nb2 model fits", {
   n_draws <- 8
   gp_theta <- 1.6
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    obs_error = "nb2", B = b0)
+    obs_error = "nb2", B = b0
+  )
   # print(s$plot)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = nbinom2(link = "log"),
     estimate_df = FALSE, fixed_df_value = df,
-    control = list(adapt_delta = 0.9), seed = SEED)
+    control = list(adapt_delta = 0.9), seed = SEED
+  )
 
   p <- predict(m)
 
   b <- tidy(m, estimate.method = "median")
-  #expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
+  # expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
   expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
   expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
   expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_theta * TOL)
@@ -60,15 +64,19 @@ test_that("mvt-gamma model fits", {
   n_draws <- 15
   gp_theta <- 1.6
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    obs_error = "gamma", B = b0)
+    obs_error = "gamma", B = b0
+  )
   # print(s$plot)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = Gamma(link = "log"),
-    estimate_df = FALSE, fixed_df_value = df, seed = SEED)
+    estimate_df = FALSE, fixed_df_value = df, seed = SEED
+  )
 
   p <- predict(m)
 
@@ -96,9 +104,11 @@ test_that("mvt-binomial model fits", {
   n_draws <- 15
   gp_theta <- 2.1
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    obs_error = "binomial", B = b0)
+    obs_error = "binomial", B = b0
+  )
   # print(s$plot)
   # out <- reshape2::melt(s$proj)
   # names(out) <- c("time", "pt", "y")
@@ -108,10 +118,12 @@ test_that("mvt-binomial model fits", {
   # ggplot2::ggplot(out, ggplot2::aes(lon, lat, colour = plogis(y))) + ggplot2::geom_point() +
   #   ggplot2::facet_wrap(~time)
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 0,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = binomial(link = "logit"),
-    estimate_df = FALSE, fixed_df_value = df, seed = SEED)
+    estimate_df = FALSE, fixed_df_value = df, seed = SEED
+  )
   # m
   #
   # p <- predict(m)
@@ -139,16 +151,20 @@ test_that("mvt-poisson model fits", {
   n_draws <- 15
   gp_theta <- 2.1
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots,
-    obs_error = "poisson", B = b0)
+    obs_error = "poisson", B = b0
+  )
   # print(s$plot)
   # hist(s$dat$y)
 
-  m <- glmmfields(y ~ 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = poisson(link = "log"),
-    estimate_df = FALSE, fixed_df_value = df, seed = SEED)
+    estimate_df = FALSE, fixed_df_value = df, seed = SEED
+  )
   m
 
   b <- tidy(m, estimate.method = "median")

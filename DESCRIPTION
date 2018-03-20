@@ -39,5 +39,5 @@ Suggests:
     viridis
 URL: https://github.com/seananderson/glmmfields
 BugReports: https://github.com/seananderson/glmmfields/issues
-RoxygenNote: 6.0.1.9000
+RoxygenNote: 6.0.1
 VignetteBuilder: knitr

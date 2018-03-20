@@ -28,8 +28,10 @@
 #' }
 
 plot.glmmfields <- function(x,
-  type = c("prediction", "spatial-residual", "residual-vs-fitted"),
-  link = TRUE, ...)  {
+                            type = c("prediction", "spatial-residual",
+                              "residual-vs-fitted"),
+                            link = TRUE, ...) {
+  type <- match.arg(type)
 
   p <- predict(x, type = ifelse(link, "link", "response"), ...)
   d <- data.frame(x$data, p)
@@ -39,20 +41,20 @@ plot.glmmfields <- function(x,
 
   g <- NULL
 
-  if (type[[1]] == "prediction") {
+  if (type == "prediction") {
     g <- ggplot(d, aes_string(x$lon, x$lat, colour = "estimate")) +
       geom_point(size = 2) +
       facet_wrap(x$time)
   }
 
-  if (type[[1]] == "spatial-residual") {
+  if (type == "spatial-residual") {
     g <- ggplot(d, aes_string(x$lon, x$lat, colour = "residual")) +
       geom_point(size = 2) +
       scale_color_gradient2() +
       facet_wrap(x$time)
   }
 
-  if (type[[1]] == "residual-vs-fitted") {
+  if (type == "residual-vs-fitted") {
     g <- ggplot(d, aes_string("estimate", "residual")) +
       geom_point() +
       facet_wrap(x$time) +

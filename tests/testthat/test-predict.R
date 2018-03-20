@@ -20,13 +20,17 @@ test_that("predict.glmmfields works", {
   skip_on_appveyor()
   set.seed(SEED)
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
-    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points)
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
+    gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points
+  )
 
-  m <- glmmfields(y ~ 0, data = s$dat, time = "time",
+  m <- glmmfields(y ~ 0,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df)
+    estimate_df = FALSE, fixed_df_value = df
+  )
 
   p <- predict(m)
   p_newdata <- predict(m, newdata = s$dat)
