@@ -127,9 +127,9 @@ predict.glmmfields <- function(object, newdata = NULL,
 
     rows <- seq_len(n_locs)
 
-    if (is.null(time)) {
-      newdata$time <- 1
-      time <- "time"
+    if (identical(time, "null_time_")) {
+      newdata$null_time_ <- 1
+      time <- "null_time_"
     }
     cols <- as.numeric(as.factor(newdata[, time][[1]]))
     # check this for > 1 year. B will also have to be modified

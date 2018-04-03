@@ -216,8 +216,8 @@ glmmfields <- function(formula, data, lon, lat,
   fixed_intercept <- ncol(X) == 0
 
   if (is.null(time)) {
-    data$time <- 1
-    time <- "time"
+    data$null_time_ <- 1
+    time <- "null_time_"
   }
 
   if ("station" %in% names(list(...))) {
