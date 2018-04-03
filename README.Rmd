@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
   fig.path = "README-figs/",
   cache.path = "README-cache/"
 )
+options(width = 120) # for printing Stan output
 ```
 
 # glmmfields <img src="inst/logo.png" align="right" />
@@ -35,7 +36,7 @@ devtools::install_github("seananderson/glmmfields")
 
 glmmfields can also fit spatial GLMs with Stan. See the vignette:
 
-```{r}
+```{r, eval=FALSE}
 vignette("spatial-glms", package = "glmmfields")
 ```
 

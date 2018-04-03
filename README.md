@@ -25,7 +25,6 @@ glmmfields can also fit spatial GLMs with Stan. See the vignette:
 
 ``` r
 vignette("spatial-glms", package = "glmmfields")
-#> starting httpd help server ... done
 ```
 
 An example spatiotemporal model
@@ -74,20 +73,14 @@ print(m)
 #> 4 chains, each with iter=800; warmup=400; thin=1; 
 #> post-warmup draws per chain=400, total post-warmup draws=1600.
 #> 
-#>             mean se_mean   sd    2.5%     25%     50%     75%   97.5%
-#> df[1]       3.77    0.04 1.44    2.07    2.75    3.40    4.44    7.32
-#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39
-#> gp_theta    2.59    0.00 0.07    2.47    2.54    2.58    2.63    2.72
-#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10
-#> lp__     2291.26    0.39 9.72 2270.72 2284.97 2291.75 2298.18 2309.16
-#>          n_eff Rhat
-#> df[1]     1204    1
-#> gp_sigma   455    1
-#> gp_theta  1600    1
-#> sigma[1]  1600    1
-#> lp__       619    1
+#>             mean se_mean   sd    2.5%     25%     50%     75%   97.5% n_eff Rhat
+#> df[1]       3.77    0.04 1.44    2.07    2.75    3.40    4.44    7.32  1204    1
+#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   455    1
+#> gp_theta    2.59    0.00 0.07    2.47    2.54    2.58    2.63    2.72  1600    1
+#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1600    1
+#> lp__     2291.26    0.39 9.72 2270.72 2284.97 2291.75 2298.18 2309.16   619    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Tue Apr  3 11:34:57 2018.
+#> Samples were drawn using NUTS(diag_e) at Tue Apr  3 11:41:11 2018.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -129,12 +122,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0288   -0.225   0.168  
-#> 2  -0.291    -0.510  -0.0925 
-#> 3  -0.397    -0.600  -0.194  
-#> 4  -0.197    -0.404   0.00520
-#> 5  -0.0377   -0.234   0.179  
-#> 6  -0.217    -0.426  -0.00594
+#> 1  -0.0288   -0.229   0.178  
+#> 2  -0.291    -0.495  -0.0948 
+#> 3  -0.397    -0.594  -0.186  
+#> 4  -0.197    -0.398   0.00675
+#> 5  -0.0377   -0.231   0.175  
+#> 6  -0.217    -0.418  -0.0102
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
