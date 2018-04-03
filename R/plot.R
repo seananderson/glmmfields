@@ -30,7 +30,6 @@
 plot.glmmfields <- function(x,
                             type = c("prediction", "spatial-residual", "residual-vs-fitted"),
                             link = TRUE, ...) {
-
   type <- match.arg(type)
 
   p <- predict(x, type = ifelse(link, "link", "response"), ...)

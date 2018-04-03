@@ -33,7 +33,7 @@ test_that("mvt-norm estimates random walk year effects", {
   s <- sim_glmmfields(
     df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
-    X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100)))
+    X = model.matrix(~a - 1, data.frame(a = gl(n_draws, 100)))
   )
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
@@ -124,7 +124,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   s <- sim_glmmfields(
     df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, phi = phi,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
+    B = B, X = model.matrix(~a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points
   )
   # print(s$plot)
@@ -176,7 +176,7 @@ test_that("mvt-norm estimates global int + AR RF", {
   s <- sim_glmmfields(
     df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, phi = phi,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
+    B = B, X = model.matrix(~a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points
   )
   # print(s$plot)
@@ -227,7 +227,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   s <- sim_glmmfields(
     df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, phi = phi,
-    B = B, X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, n_data_points))),
+    B = B, X = model.matrix(~a - 1, data.frame(a = gl(n_draws, n_data_points))),
     n_data_points = n_data_points
   )
   # print(s$plot)

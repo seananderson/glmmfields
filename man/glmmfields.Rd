@@ -14,8 +14,8 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
-  0.9), save_log_lik = FALSE, gp_sigma_scaling_factor = 1,
-  df_lower_bound = 2, cluster = c("pam", "kmeans"), ...)
+  0.9), save_log_lik = FALSE, df_lower_bound = 2, cluster = c("pam",
+  "kmeans"), ...)
 }
 \arguments{
 \item{formula}{The model formula.}
@@ -118,13 +118,6 @@ transitions: \code{control = list(adapt_delta = 0.99)}. By default,
 \item{save_log_lik}{Logical: should the log likelihood for each data point be
 saved so that information criteria such as LOOIC or WAIC can be calculated?
 Defaults to \code{FALSE} so that the size of model objects is smaller.}
-
-\item{gp_sigma_scaling_factor}{An optional factor to scale the spatial
-variance parameter \code{gp_sigma} by to help sampling. Sometimes,
-especially in the case of an autoregressive model, \code{gp_sigma} could be
-quite small and Stan can struggle with tiny parameters. If so, try setting
-the scaling factor to a value less than 1 (but note that the estimates for
-\code{gp_sigma} will then be scaled).}
 
 \item{df_lower_bound}{The lower bound on the degrees of freedom parameter.
 Values that are too low, e.g. below 2 or 3, it might affect chain

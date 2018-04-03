@@ -18,7 +18,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
     "gp_theta",
     "B",
     switch(obs_error[[1]], lognormal = "sigma", gaussian = "sigma",
-    gamma = "CV", nb2 = "nb2_phi"
+      gamma = "CV", nb2 = "nb2_phi"
     ),
     "spatialEffectsKnots"
   )

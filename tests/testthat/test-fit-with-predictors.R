@@ -26,7 +26,7 @@ test_that("mvt-norm estimates betas", {
   s <- sim_glmmfields(
     df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
-    X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100)))
+    X = model.matrix(~a - 1, data.frame(a = gl(n_draws, 100)))
   )
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()

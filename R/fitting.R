@@ -234,8 +234,8 @@ glmmfields <- function(formula, data, lon, lat,
   data_knots <- data_list$knots
 
   obs_model <- switch(obs_error[[1]], gaussian = 1L, gamma = 0L, nbinom2 = 2L,
-  binomial = 4L, poisson = 5L, lognormal = 6L,
-  stop("observation model ", obs_error[[1]], " is not defined.")
+    binomial = 4L, poisson = 5L, lognormal = 6L,
+    stop("observation model ", obs_error[[1]], " is not defined.")
   )
 
   est_temporalRE <- ifelse(year_re, 1L, 0L)
