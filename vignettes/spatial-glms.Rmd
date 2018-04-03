@@ -104,3 +104,39 @@ plot(m_spatial, type = "prediction", link = FALSE) +
 ```
 
 Compare that to our data at the top. Note that the original data also includes observation error with a CV of 0.2.
+
+We can also extract the predictions themselves with credible intervals:
+
+```{r}
+# link scale:
+p <- predict(m_spatial)
+head(p)
+
+# response scale:
+p <- predict(m_spatial, type = "response")
+head(p)
+
+# prediction intervals on new observations (include observation error):
+p <- predict(m_spatial, type = "response", interval = "prediction")
+head(p)
+```
+
+Or use the `tidy` method to get our parameter estimates as a data frame:
+
+```{r}
+head(tidy(m_spatial, conf.int = TRUE, conf.method = "HPDinterval"))
+```
+
+Or make the predictions on a fine-scale spatial grid for a constant value of the predictor:
+
+```{r}
+pred_grid <- expand.grid(lat = seq(min(d$lat), max(d$lat), length.out = 30),
+  lon = seq(min(d$lon), max(d$lon), length.out = 30))
+pred_grid$temperature <- mean(d$temperature)
+pred_grid$prediction <- predict(m_spatial, newdata = pred_grid, 
+  type = "response")$estimate
+ggplot(pred_grid, aes(lon, lat, fill = prediction)) + 
+  geom_raster() +
+  viridis::scale_fill_viridis()
+```
+
