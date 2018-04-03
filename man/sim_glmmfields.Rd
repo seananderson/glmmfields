@@ -41,7 +41,8 @@ of 0.5 equivalent to exponential model.}
 
 \item{B}{A vector of parameters. The first element is the intercept}
 
-\item{phi}{The auto regressive parameter on the mean of the random field knots}
+\item{phi}{The auto regressive parameter on the mean of the random field
+knots}
 
 \item{X}{The model matrix}
 

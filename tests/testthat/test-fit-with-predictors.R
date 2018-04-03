@@ -23,17 +23,21 @@ test_that("mvt-norm estimates betas", {
   set.seed(SEED)
   B <- rnorm(n_draws, 0, 1)
 
-  s <- sim_glmmfields(df = df, n_draws = n_draws, gp_theta = gp_theta,
+  s <- sim_glmmfields(
+    df = df, n_draws = n_draws, gp_theta = gp_theta,
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, B = B,
-    X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100))))
+    X = model.matrix(~ a - 1, data.frame(a = gl(n_draws, 100)))
+  )
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
-  m <- glmmfields(y ~ as.factor(time) - 1, data = s$dat, time = "time",
+  m <- glmmfields(y ~ as.factor(time) - 1,
+    data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df,
-    prior_beta = student_t(50, 0, 2))
+    prior_beta = student_t(50, 0, 2)
+  )
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(b[b$term == "sigma[1]", "estimate"], sigma, tol = sigma * TOL)
