@@ -36,7 +36,8 @@ Suggests:
     bayesplot,
     knitr,
     rmarkdown,
-    viridis
+    viridis,
+    coda
 URL: https://github.com/seananderson/glmmfields
 BugReports: https://github.com/seananderson/glmmfields/issues
 RoxygenNote: 6.0.1.9000
