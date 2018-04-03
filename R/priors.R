@@ -12,8 +12,10 @@
 #' @examples
 #' student_t(3, 0, 1)
 student_t <- function(df = 3, location = 0, scale = 1) {
-  stopifnot(is.numeric(df), is.numeric(location), is.numeric(scale),
-    df >= 1, scale > 0)
+  stopifnot(
+    is.numeric(df), is.numeric(location), is.numeric(scale),
+    df >= 1, scale > 0
+  )
   list(dist = "t", df = df, location = location, scale = scale)
 }
 
@@ -22,7 +24,7 @@ student_t <- function(df = 3, location = 0, scale = 1) {
 #' @examples
 #' half_t(3, 0, 1)
 half_t <- function(df = 3, location = 0, scale = 1) {
-  if(location != 0) warning("half-t location != 0")
+  if (location != 0) warning("half-t location != 0")
   ht <- student_t(df, location, scale)
   ht[[1]] <- "half-t"
   ht

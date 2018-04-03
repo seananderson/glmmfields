@@ -2,9 +2,12 @@
 % Please edit documentation in R/print-summary.R
 \name{tidy}
 \alias{tidy}
+\alias{tidy.glmmfields}
 \title{Tidy model output}
 \usage{
 tidy(x, ...)
+
+\method{tidy}{glmmfields}(x, ...)
 }
 \arguments{
 \item{x}{Output from \code{\link{glmmfields}}}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_data.R
 \name{format_data}
 \alias{format_data}
-\title{Format data for fitting an glmmfields model}
+\title{Format data for fitting a glmmfields model}
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
   nknots = 25L, covariance = "squared-exponential",
@@ -33,5 +33,5 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.}
 }
 \description{
-Format data for fitting an glmmfields model
+Format data for fitting a glmmfields model
 }

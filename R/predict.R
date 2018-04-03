@@ -19,23 +19,24 @@
 #'
 #' @export
 predict.glmmfields <- function(object, newdata = NULL,
-  estimate_method = c("median", "mean"), conf_level = 0.95,
-  interval = c("confidence", "prediction"), type = c("link", "response"),
-  return_mcmc = FALSE, iter = "all", ...) {
+                               estimate_method = c("median", "mean"),
+                               conf_level = 0.95,
+                               interval = c("confidence", "prediction"),
+                               type = c("link", "response"),
+                               return_mcmc = FALSE,
+                               iter = "all", ...) {
+  estimate_method <- match.arg(estimate_method)
+  interval <- match.arg(interval)
+  type <- match.arg(type)
 
-  assert_that(is.character(estimate_method[[1]]))
-  assert_that(is.character(interval[[1]]))
-  assert_that(is.character(type[[1]]))
   assert_that(is.numeric(conf_level))
   assert_that(identical(length(conf_level), 1L))
-  assert_that(conf_level > 0 & conf_level < 1)
+  assert_that(conf_level > 0 && conf_level < 1)
   assert_that(identical(class(object), "glmmfields"))
-  assert_that(type[[1]] %in% c("link", "response"))
-  assert_that(estimate_method[[1]] %in% c("median", "mean"))
-  assert_that(interval[[1]] %in% c("confidence", "prediction"))
 
-  if (interval[[1]] == "prediction" & type[[1]] != "response")
+  if (interval == "prediction" && type != "response") {
     stop("type must be 'response' if interval is 'prediction")
+  }
 
   obs_model <- object$obs_model
 
@@ -56,13 +57,16 @@ predict.glmmfields <- function(object, newdata = NULL,
   dist_knots <- as.matrix(dist(knots))
 
   # Calculate distance from knots to grid
-  dist_all <- as.matrix(stats::dist(rbind(newdata[, c(object$lon, object$lat)],
-    knots)))
+  dist_all <- as.matrix(stats::dist(rbind(
+    newdata[, c(object$lon, object$lat)],
+    knots
+  )))
   n_locs <- nrow(newdata)
 
   # this is the transpose of the lower left corner
   dist_knots21 <- t(
-    dist_all[-c(seq_len(n_locs)), -c((n_locs + 1):ncol(dist_all))])
+    dist_all[-seq_len(n_locs), -seq(n_locs + 1, ncol(dist_all))]
+  )
 
   # extract mcmc pars
   pars <- rstan::extract(object$model, permuted = TRUE)
@@ -75,7 +79,7 @@ predict.glmmfields <- function(object, newdata = NULL,
   mcmc_draws <- length(mcmc.i)
   pred_values <- matrix(NA, n_locs, mcmc_draws)
   for (i in seq_len(mcmc_draws)) {
-    # create cov matrix @ knots
+    # create cov matrix at knots
     if (object$covariance == "exponential") {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
         exp(-dist_knots / pars$gp_theta[mcmc.i[i]])
@@ -84,36 +88,36 @@ predict.glmmfields <- function(object, newdata = NULL,
     }
     if (object$covariance == "squared-exponential") {
       covmat <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-(dist_knots ^ 2) / (2 * pars$gp_theta[mcmc.i[i]] ^ 2))
+        exp(-(dist_knots^2) / (2 * pars$gp_theta[mcmc.i[i]]^2))
       covmat21 <- pars$gp_sigma[mcmc.i[i]] *
-        exp(-(dist_knots21 ^ 2) / (2 * pars$gp_theta[mcmc.i[i]] ^ 2))
+        exp(-(dist_knots21^2) / (2 * pars$gp_theta[mcmc.i[i]]^2))
     }
     if (object$covariance == "matern") {
       if (object$matern_kappa == 1.5) {
         transformed_dist <- sqrt(3) * dist_knots / pars$gp_theta[mcmc.i[i]]
         covmat <-
           pars$gp_sigma[mcmc.i[i]] *
-          (1 + transformed_dist) * exp (-transformed_dist)
+            (1 + transformed_dist) * exp(-transformed_dist)
 
         transformed_dist <- sqrt(3) * dist_knots21 / pars$gp_theta[mcmc.i[i]]
         covmat21 <-
           pars$gp_sigma[mcmc.i[i]] *
-          (1 + transformed_dist) * exp (-transformed_dist)
+            (1 + transformed_dist) * exp(-transformed_dist)
       }
       if (object$matern_kappa == 2.5) {
         transformed_dist <- sqrt(5) * dist_knots / pars$gp_theta[mcmc.i[i]]
         covmat <-
           pars$gp_sigma[mcmc.i[i]] *
-          (1 + transformed_dist + (transformed_dist ^ 2) / 3) * exp (-transformed_dist)
+            (1 + transformed_dist + (transformed_dist^2) / 3) * exp(-transformed_dist)
 
         transformed_dist <- sqrt(5) * dist_knots21 / pars$gp_theta[mcmc.i[i]]
         covmat21 <-
           pars$gp_sigma[mcmc.i[i]] *
-          (1 + transformed_dist + (transformed_dist ^ 2) / 3) * exp (-transformed_dist)
+            (1 + transformed_dist + (transformed_dist^2) / 3) * exp(-transformed_dist)
       }
     }
     # these are projected spatial effects, dim = new data points x time
-    spat_eff_knots_i <- pars$spatialEffectsKnots[mcmc.i[i],,]
+    spat_eff_knots_i <- pars$spatialEffectsKnots[mcmc.i[i], , ]
     if (is.matrix(spat_eff_knots_i)) {
       spat_eff_knots_i <- t(spat_eff_knots_i)
     } else { # these are for one time slice and are a vector
@@ -150,7 +154,7 @@ predict.glmmfields <- function(object, newdata = NULL,
   # generate (1) confidence intervals on mean or (2) prediction intervals
   # including obs error
 
-  if (type[[1]] == "response") {
+  if (type == "response") {
     # gamma or NB2 or poisson:
     if (obs_model %in% c(0, 2, 5, 6)) pred_values <- exp(pred_values)
 
@@ -166,8 +170,10 @@ predict.glmmfields <- function(object, newdata = NULL,
     if (obs_model == 0) {
       # gamma, CV is returned; gammaA = 1/(CV*CV)
       pp <- t(apply(pred_values, 1, function(x)
-        stats::rgamma(mcmc_draws, shape = 1 / (pars$CV[, 1] ^ 2),
-          rate = 1 / (pars$CV[, 1] ^ 2) / x)))
+        stats::rgamma(mcmc_draws,
+          shape = 1 / (pars$CV[, 1]^2),
+          rate = 1 / (pars$CV[, 1]^2) / x
+        )))
     }
     if (obs_model == 2) {
       # negative binomial, phi returned
@@ -187,21 +193,25 @@ predict.glmmfields <- function(object, newdata = NULL,
     if (obs_model == 6) {
       # lognormal, sigma is returned
       pp <- t(apply(pred_values, 1, function(x)
-        stats::rlnorm(mcmc_draws, meanlog = log(x),
-          sdlog = pars$sigma[, 1])))
+        stats::rlnorm(mcmc_draws,
+          meanlog = log(x),
+          sdlog = pars$sigma[, 1]
+        )))
     }
   }
 
   est_method <- switch(estimate_method[[1]], median = median, mean = mean)
   out <- data.frame(estimate = apply(pred_values, 1, est_method))
 
-  if (interval[[1]] == "confidence") {
+  if (interval == "confidence") {
     out$conf_low <- apply(pred_values, 1, quantile,
-      probs = (1 - conf_level) / 2)
+      probs = (1 - conf_level) / 2
+    )
     out$conf_high <- apply(pred_values, 1, quantile,
-      probs = 1 - (1 - conf_level) / 2)
+      probs = 1 - (1 - conf_level) / 2
+    )
   }
-  if (interval[[1]] == "prediction" & type[[1]] == "response") {
+  if (interval == "prediction" && type == "response") {
     out$conf_low <- apply(pp, 1, quantile, probs = (1 - conf_level) / 2)
     out$conf_high <- apply(pp, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
