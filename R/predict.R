@@ -49,7 +49,11 @@ predict.glmmfields <- function(object, newdata = NULL,
 
   newdata <- dplyr::as.tbl(newdata)
   # create model.matrix() as in fitting function, only with newdata
-  X <- model.matrix(object$formula, model.frame(object$formula, newdata))
+  X <- model.matrix(object$formula,
+    model.frame(object$formula, newdata, na.action = na.omit))
+
+  if (nrow(X) < nrow(newdata))
+    stop("Some predictors in newdata had NA values.")
 
   time <- object$time
   knots <- object$knots
