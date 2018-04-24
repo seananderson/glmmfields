@@ -1,14 +1,14 @@
 #' Predict from an glmmfields model
 #'
-#' @param object An object returned by \code{\link{glmmfields}}.
+#' @param object An object returned by [glmmfields()].
 #' @param newdata Optionally, a data frame to predict on
-#' @param interval Type of interval calculation. Same as
-#'   \code{\link[stats]{predict.lm}}
+#' @param interval Type of interval calculation. Same as for
+#'   [stats::predict.lm()].
 #' @param estimate_method Method for computing point estimate ("mean" or
-#'   median")
+#'   "median")
 #' @param conf_level Probability level for CI
 #' @param type Whether the predictions are returned on "link" scale or
-#'   "response" scale (Same as \code{\link[stats]{predict.glm}})
+#'   "response" scale (Same as for [stats::predict.glm()]).
 #' @param return_mcmc Logical. Should the full MCMC draws be returned for the
 #'   predictions?
 #' @param iter Number of MCMC iterations to draw. Defaults to all.

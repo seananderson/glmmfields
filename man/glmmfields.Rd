@@ -34,31 +34,32 @@ Smaller values will be faster but may not adequately represent the shape
 of the spatial pattern.}
 
 \item{prior_gp_theta}{The prior on the Gaussian Process scale parameter. Must
-be declared with \code{\link{half_t}}. Here, and throughout, priors that
+be declared with \code{\link[=half_t]{half_t()}}. Here, and throughout, priors that
 are normal or half-normal can be implemented by setting the first
-parameter in the half-t or student-t distribution to a large value.}
+parameter in the half-t or student-t distribution to a large value.
+E.g. something greater than 100.}
 
 \item{prior_gp_sigma}{The prior on the Gaussian Process eta parameter. Must
-be declared with \code{\link{half_t}}.}
+be declared with \code{\link[=half_t]{half_t()}}.}
 
 \item{prior_sigma}{The prior on the observation process scale parameter. Must
-be declared with \code{\link{half_t}}. This acts as a substitute for the
+be declared with \code{\link[=half_t]{half_t()}}. This acts as a substitute for the
 scale parameter in whatever observation distribution is being used. E.g.
 the CV for the Gamma or the dispersion parameter for the negative
 binomial.}
 
 \item{prior_rw_sigma}{The prior on the standard deviation parameter of the
 random walk process (if specified). Must be declared with
-\code{\link{half_t}}.}
+\code{\link[=half_t]{half_t()}}.}
 
 \item{prior_intercept}{The prior on the intercept parameter. Must be declared
-with \code{\link{student_t}}.}
+with \code{\link[=student_t]{student_t()}}.}
 
 \item{prior_beta}{The prior on the slope parameters (if any). Must be
-declared with \code{\link{student_t}}.}
+declared with \code{\link[=student_t]{student_t()}}.}
 
 \item{prior_phi}{The prior on the AR parameter. Must be
-declared with \code{\link{student_t}}.}
+declared with \code{\link[=student_t]{student_t()}}.}
 
 \item{fixed_df_value}{The fixed value for the student-t degrees of freedom
 parameter if the degrees of freedom parameter is fixed in the MVT. If the
@@ -80,11 +81,11 @@ of the spatial field through time.}
 
 \item{family}{Family object describing the observation model. Note that only
 one link is implemented for each distribution. Gamma, negative binomial
-(specified as \code{nbinom2(link = "log")}, and Poisson must have a log
-link. Binomial must have a logit link. Also implemented is
-\code{lognormal(link = "log")}. Besides the negative binomial and
-lognormal, other families are specified as shown in
-\code{\link[stats]{family}}.}
+(specified via \code{\link[=nbinom2]{nbinom2()}} as \code{nbinom2(link = "log")}, and Poisson must
+have a log link. Binomial must have a logit link. Also implemented is the
+lognormal (specified via \code{\link[=lognormal]{lognormal()}} as \code{lognormal(link = "log")}.
+Besides the negative binomial and lognormal, other families are specified
+as shown in \code{\link[stats]{family}}.}
 
 \item{covariance}{The covariance function of the Gaussian Process.
 One of "squared-exponential", "exponential", or "matern".}
@@ -94,7 +95,7 @@ Optional values are 1.5 or 2.5. Values of 0.5 are equivalent to exponential.}
 
 \item{algorithm}{Character object describing whether the model should be fit
 with full NUTS MCMC or via the variational inference mean-field approach.
-See \code{\link[rstan]{vb}}. Note that the variational inference approach
+See \code{\link[rstan:vb]{rstan::vb()}}. Note that the variational inference approach
 should not be trusted for final inference and is much more likely to give
 incorrect inference than MCMC.}
 
@@ -110,7 +111,7 @@ sampling is not vectorized. Also note that the log likelihood values
 returned for estimating quantities like LOOIC will not be correct if
 lower truncation is implemented.}
 
-\item{control}{List to pass to \code{\link[rstan]{sampling}}. For example,
+\item{control}{List to pass to \code{\link[rstan:sampling]{rstan::sampling()}}. For example,
 increase \code{adapt_delta} if there are warnings about divergent
 transitions: \code{control = list(adapt_delta = 0.99)}. By default,
 \pkg{glmmfields} sets \code{adapt_delta = 0.9}.}
@@ -124,10 +125,10 @@ Values that are too low, e.g. below 2 or 3, it might affect chain
 convergence. Defaults to 2.}
 
 \item{cluster}{The type of clustering algorithm used to determine the knot
-locations. \code{"pam"} = \code{\link[cluster]{pam}}. The \code{"kmeans"}
+locations. \code{"pam"} = \code{\link[cluster:pam]{cluster::pam()}}. The \code{"kmeans"}
 algorithm will be faster on larger datasets.}
 
-\item{...}{Any other arguments to pass to \code{\link[rstan]{sampling}}.}
+\item{...}{Any other arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}}.}
 }
 \description{
 Fit a spatiotemporal random fields model that optionally uses the MVT
@@ -136,13 +137,15 @@ through time. It is also possible to fit a spatial random fields model
 without a time component.
 }
 \details{
-Note that there is no guarantee the priors will remain the same in future
-versions. Therefore it is important that you specify any priors that are
-used in your model, even if they replicate the defaults in the package. It
-is particularly important that you consider that prior on \code{gp_theta}
-since it depends on the distance between your location points. You may need to
-scale your coordinate units so they are on a ballpark range of 1-10 by, say,
-dividing the coordinates (say in UTMs) by several order of magnitude.
+Note that there is no guarantee that the default priors are reasonable for
+your data. Also, there is no guarantee the default priors will remain the
+same in future versions. Therefore it is important that you specify any
+priors that are used in your model, even if they replicate the defaults in
+the package. It is particularly important that you consider that prior on
+\code{gp_theta} since it depends on the distance between your location points. You
+may need to scale your coordinate units so they are on a ballpark range of
+1-10 by, say, dividing the coordinates (say in UTMs) by several order of
+magnitude.
 }
 \examples{
 \dontrun{

@@ -276,6 +276,6 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   q <- subset(b, grepl("B", term))
   qq <- group_by(s$dat, time) %>% summarise(m = mean(y))
   plot(q$estimate, col = "blue")
-  points(1:length(B), B, pch = 19)
+  points(seq_len(length(B)), B, pch = 19)
   points(qq$m, col = "red")
 })

@@ -10,20 +10,20 @@
   return_mcmc = FALSE, iter = "all", ...)
 }
 \arguments{
-\item{object}{An object returned by \code{\link{glmmfields}}.}
+\item{object}{An object returned by \code{\link[=glmmfields]{glmmfields()}}.}
 
 \item{newdata}{Optionally, a data frame to predict on}
 
 \item{estimate_method}{Method for computing point estimate ("mean" or
-median")}
+"median")}
 
 \item{conf_level}{Probability level for CI}
 
-\item{interval}{Type of interval calculation. Same as
-\code{\link[stats]{predict.lm}}}
+\item{interval}{Type of interval calculation. Same as for
+\code{\link[stats:predict.lm]{stats::predict.lm()}}.}
 
 \item{type}{Whether the predictions are returned on "link" scale or
-"response" scale (Same as \code{\link[stats]{predict.glm}})}
+"response" scale (Same as for \code{\link[stats:predict.glm]{stats::predict.glm()}}).}
 
 \item{return_mcmc}{Logical. Should the full MCMC draws be returned for the
 predictions?}

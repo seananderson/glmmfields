@@ -25,8 +25,8 @@ library(dplyr)
 
 Set up parallel processing:
 
-```{r, echo=TRUE}
-if (interactive()) options(mc.cores = parallel::detectCores())
+```{r, echo=TRUE, eval=FALSE}
+options(mc.cores = parallel::detectCores())
 ```
 
 First, let's simulate some data. We will use the built-in function `sim_glmmfields()`, but normally you would start with your own data. We will simulate 200 data points, some (fake) temperature data, an underlying random field spatial pattern, and add some observation error. In this example we will fit a Gamma GLM with a log link.
