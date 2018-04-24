@@ -106,7 +106,7 @@
 #' @import Rcpp
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif
 #' @importFrom assertthat assert_that is.count is.number
-#' @importFrom stats gaussian
+#' @importFrom stats gaussian na.omit
 #'
 #' @examples
 #' \dontrun{
