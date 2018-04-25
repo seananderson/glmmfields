@@ -6,3 +6,4 @@ cleanup*
 ^\.travis\.yml$
 ^appveyor\.yml$
 ^Session.vim$
+^cran-comments\.md$

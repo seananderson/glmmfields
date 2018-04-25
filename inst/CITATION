@@ -1,0 +1,16 @@
+citHeader("To cite glmmfields in publications use:")
+
+citEntry(
+  entry = "article",
+  title = "Black swans in space: modelling spatiotemporal processes with extremes",
+  author = personList(
+    as.person("Sean C. Anderson"),
+    as.person("Eric J. Ward")
+  ),
+  year = "2018",
+  journal = "Ecology",
+  volume = "In press",
+  textVersion =
+    paste("Anderson, S. A., Ward, E. J. 2018. Black swans in space:",
+      "modelling spatiotemporal processes with extremes. In press at Ecology.")
+)

@@ -1,15 +1,15 @@
 Package: glmmfields
 Type: Package
 Title: GLMMs with Robust Random Fields for Spatiotemporal Modelling
-Version: 0.01
+Version: 0.1
 Authors@R: c(
     person(c("Sean", "C."), "Anderson", email = "sean@seananderson.ca", 
       role = c("aut", "cre")),
     person(c("Eric", "J."), "Ward", role = "aut"))
 Description: Implements Bayesian spatiotemporal models that allow for extreme
-    spatial deviations through time. It uses a predictive process approach
-    with random fields implemented through a multivariate-t distribution
-    instead of a multivariate normal. Sampling is conducted with 'Stan'.
+    spatial deviations through time. 'glmmfields' uses a predictive process 
+    approach with random fields implemented through a multivariate-t distribution
+    instead of the usual multivariate normal. Sampling is conducted with 'Stan'.
 License: GPL (>=3)
 Encoding: UTF-8
 Depends:
