@@ -1,6 +1,7 @@
 ---
 title: "Spatial GLMs with glmmfields"
 author: "Sean C. Anderson and Eric J. Ward"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Spatial GLMs with glmmfields}

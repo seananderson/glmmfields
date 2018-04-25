@@ -7,3 +7,5 @@ cleanup*
 ^appveyor\.yml$
 ^Session.vim$
 ^cran-comments\.md$
+^inst/logo.png$
+^inst/logo.svg$
