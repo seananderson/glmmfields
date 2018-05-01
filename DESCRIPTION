@@ -1,6 +1,6 @@
 Package: glmmfields
 Type: Package
-Title: Generalized Linear Mixed Models with Robust Random Fields for Spatiotemporal Modelling
+Title: Generalized Linear Mixed Models with Robust Random Fields for Spatiotemporal Modeling
 Version: 0.1.0
 Authors@R: c(
     person(c("Sean", "C."), "Anderson", email = "sean@seananderson.ca", 
