@@ -24,7 +24,7 @@ library(ggplot2)
 library(dplyr)
 ```
 
-Set up parallel processing:
+Set up parallel processing (not used in this example):
 
 ```{r, echo=TRUE, eval=FALSE}
 options(mc.cores = parallel::detectCores())
@@ -35,13 +35,13 @@ First, let's simulate some data. We will use the built-in function `sim_glmmfiel
 The underlying intercept is 0.5 and the slope between temperature and our observed variable (say biomass or density of individuals in a quadrat) is 0.2.
 
 ```{r simulate-data}
-set.seed(123)
+set.seed(1)
 N <- 200 # number of data points
 temperature <- rnorm(N, 0, 1) # simulated temperature data
 X <- cbind(1, temperature) # our design matrix
 s <- sim_glmmfields(
   n_draws = 1, gp_theta = 1.5, n_data_points = N,
-  gp_sigma = 0.3, sd_obs = 0.2, n_knots = 12, obs_error = "gamma",
+  gp_sigma = 0.2, sd_obs = 0.2, n_knots = 12, obs_error = "gamma",
   covariance = "squared-exponential", X = X,
   B = c(0.5, 0.2) # B represents our intercept and slope
 )
@@ -64,12 +64,18 @@ ggplot(d, aes(lon, lat, colour = m_glm_residuals)) +
   geom_point(size = 3)
 ```
 
-Let's instead fit a spatial GLM with random fields. (Note that we are only using 2 chains and 600 iterations here so the vignette builds quickly. For final inference, you should likely use 4 or more chains and more iterations.)
+Let's instead fit a spatial GLM with random fields. Note that we are only using 1 chain and 500 iterations here so the vignette builds quickly on CRAN. For final inference, you should likely use 4 or more chains and 2000 or more iterations.
 
 ```{r, results='hide'}
 m_spatial <- glmmfields(y ~ temperature,
   data = d, family = Gamma(link = "log"),
-  lat = "lat", lon = "lon", nknots = 12, iter = 600, chains = 2
+  lat = "lat", lon = "lon", nknots = 12, iter = 500, chains = 1,
+  prior_intercept = student_t(3, 0, 10), 
+  prior_beta = student_t(3, 0, 3),
+  prior_sigma = half_t(3, 0, 3),
+  prior_gp_theta = half_t(3, 0, 10),
+  prior_gp_sigma = half_t(3, 0, 3),
+  seed = 123 # passed to rstan::sampling()
 )
 ```
 

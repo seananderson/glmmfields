@@ -1,5 +1,5 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-glmmfields <img src="inst/logo.png" align="right" />
+<!-- glmmfields <img src="inst/logo.png" align="right" /> -->
 ====================================================
 
 [![Travis-CI Build
