@@ -5,7 +5,7 @@
 * Ubuntu 16.04 (on r-hub), release
 * Fedora Linux (on r-hub), devel
 * Debian Linux (on r-hub), devel
-* win-builder (devel and release)
+* win-builder (devel)
 
 ## R CMD check results
 
