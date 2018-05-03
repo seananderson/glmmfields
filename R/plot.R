@@ -10,7 +10,7 @@
 #'   scale_color_gradient2 geom_smooth geom_hline facet_wrap
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Spatiotemporal example:
 #' set.seed(1)
 #' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
@@ -19,7 +19,6 @@
 #' m <- glmmfields(y ~ 0, time = "time",
 #'  lat = "lat", lon = "lon", data = s$dat,
 #'  nknots = 12, iter = 500, chains = 2)
-#' x <- plot(m, type = "prediction")
 #' x <- plot(m, type = "prediction")
 #' x
 #' x + ggplot2::scale_color_gradient2()

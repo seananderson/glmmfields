@@ -2,6 +2,8 @@
 #'
 #' @param link The link (must be log)
 #' @export
+#' @examples
+#' lognormal()
 lognormal <- function(link = "log") {
   assert_that(identical("log", as.character(substitute(link))))
   list(family = "lognormal", link = "log")
@@ -14,14 +16,16 @@ lognormal <- function(link = "log") {
 #'
 #' @param link The link (must be log)
 #' @export
+#' @examples
+#' nbinom2()
 nbinom2 <- function(link = "log") {
   assert_that(identical("log", as.character(substitute(link))))
   list(family = "nbinom2", link = "log")
 }
 
-#' Check a family object
-#'
-#' @param family The family
+# Check a family object
+#
+# @param family The family
 check_family <- function(family) {
   assert_that(identical(class(family), "family") |
     identical(lognormal(link = "log"), family) |

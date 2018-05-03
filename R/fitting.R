@@ -109,7 +109,7 @@
 #' @importFrom stats gaussian na.omit
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Spatiotemporal example:
 #' set.seed(1)
 #' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
@@ -118,7 +118,7 @@
 #' options(mc.cores = parallel::detectCores()) # for parallel processing
 #' m <- glmmfields(y ~ 0, time = "time",
 #'  lat = "lat", lon = "lon", data = s$dat,
-#'  nknots = 12, iter = 500, chains = 3)
+#'  nknots = 12, iter = 1000, chains = 4, seed = 1)
 #'
 #' # Spatial example (with covariates) from the vignette and customizing
 #' # some priors:
@@ -192,7 +192,7 @@ glmmfields <- function(formula, data, lon, lat,
     "binomial", "lognormal"
   ))
 
-  if (covariance == "matern" & matern_kappa %in% c(1.5, 2.5) == FALSE) {
+  if (covariance == "matern" && !matern_kappa %in% c(1.5, 2.5)) {
     warning(
       "Matern covariance specified, but Matern kappa not 1.5 or 2.5",
       ": defaulting to 0.5, or exponential"
@@ -241,7 +241,7 @@ glmmfields <- function(formula, data, lon, lat,
     stop("observation model ", obs_error[[1]], " is not defined.")
   )
 
-  est_temporalRE <- ifelse(year_re, 1L, 0L)
+  est_temporalRE <- if (year_re) 1L else 0L
 
   stan_data <- c(
     stan_data,
@@ -262,13 +262,13 @@ glmmfields <- function(formula, data, lon, lat,
       obs_model = obs_model,
       est_df = as.integer(estimate_df),
       est_phi = as.integer(estimate_ar),
-      gamma_params = ifelse(obs_error[[1]] == "gamma", 1L, 0L),
-      norm_params = ifelse(obs_error[[1]] %in% c("gaussian", "lognormal"), 1L, 0L),
-      nb2_params = ifelse(obs_error[[1]] == "nbinom2", 1L, 0L),
+      gamma_params = if (obs_error[[1]] == "gamma") 1L else 0L,
+      norm_params = if (obs_error[[1]] %in% c("gaussian", "lognormal")) 1L else 0L,
+      nb2_params = if (obs_error[[1]] == "nbinom2") 1L else 0L,
       fixed_df_value = fixed_df_value[[1]],
       fixed_phi_value = fixed_phi_value,
       est_temporalRE = est_temporalRE,
-      n_year_effects = ifelse(year_re, stan_data$nT, 0L),
+      n_year_effects = if (year_re) stan_data$nT else 0L,
       lower_truncation = nb_lower_truncation,
       fixed_intercept = as.integer(fixed_intercept),
       matern_kappa = matern_kappa,

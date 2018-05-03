@@ -12,3 +12,6 @@ lognormal(link = "log")
 \description{
 Lognormal family
 }
+\examples{
+lognormal()
+}

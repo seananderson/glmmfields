@@ -35,3 +35,50 @@ predictions?}
 \description{
 Predict from an glmmfields model
 }
+\examples{
+\donttest{
+library(ggplot2)
+
+# simulate:
+set.seed(42)
+s <- sim_glmmfields(
+  df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5,
+  gp_sigma = 0.2, sd_obs = 0.1
+)
+
+# fit:
+options(mc.cores = parallel::detectCores()) # for parallel processing
+m <- glmmfields(y ~ 0,
+  data = s$dat, time = "time",
+  lat = "lat", lon = "lon",
+  nknots = 12, estimate_df = TRUE, iter = 800
+)
+
+# Predictions:
+# link scale:
+p <- predict(m)
+head(p)
+
+# Prediction intervals on new observations (include observation error):
+p <- predict(m, type = "response", interval = "prediction")
+head(p)
+
+# Use the `tidy` method to extract parameter estimates as a data frame:
+head(tidy(m, conf.int = TRUE, conf.method = "HPDinterval"))
+
+# Make predictions on a fine-scale spatial grid:
+pred_grid <- expand.grid(
+  lat = seq(min(s$dat$lat), max(s$dat$lat), length.out = 25),
+  lon = seq(min(s$dat$lon), max(s$dat$lon), length.out = 25),
+  time = unique(s$dat$time)
+)
+pred_grid$prediction <- predict(m,
+  newdata = pred_grid, type = "response", iter = 100, estimate_method = "median"
+)$estimate
+
+ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
+  facet_wrap(~time) +
+  geom_raster() +
+  scale_fill_gradient2()
+}
+}

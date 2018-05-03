@@ -18,9 +18,12 @@
 #' @param phi The auto regressive parameter on the mean of the random field knots
 #' @param X The model matrix
 #' @param g Grid of points
-#'
 #' @export
 #' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
+#' @examples
+#' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
+#'   gp_sigma = 0.2, sd_obs = 0.2)
+#' names(s)
 sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
                            gp_sigma = 0.2, mvt = TRUE, df = 1e6,
                            seed = NULL, n_data_points = 100,

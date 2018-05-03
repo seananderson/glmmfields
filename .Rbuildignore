@@ -9,3 +9,4 @@ cleanup*
 ^cran-comments\.md$
 ^inst/logo.png$
 ^inst/logo.svg$
+^CRAN-RELEASE$

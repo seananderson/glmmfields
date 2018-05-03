@@ -148,7 +148,7 @@ may need to scale your coordinate units so they are on a ballpark range of
 magnitude.
 }
 \examples{
-\dontrun{
+\donttest{
 # Spatiotemporal example:
 set.seed(1)
 s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
@@ -157,7 +157,7 @@ print(s$plot)
 options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0, time = "time",
  lat = "lat", lon = "lon", data = s$dat,
- nknots = 12, iter = 500, chains = 3)
+ nknots = 12, iter = 1000, chains = 4, seed = 1)
 
 # Spatial example (with covariates) from the vignette and customizing
 # some priors:

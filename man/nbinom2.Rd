@@ -13,3 +13,6 @@ nbinom2(link = "log")
 This is the NB2 parameterization where the variance scales quadratically
 with the mean.
 }
+\examples{
+nbinom2()
+}
