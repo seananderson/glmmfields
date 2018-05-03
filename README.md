@@ -30,11 +30,15 @@ vignette("spatial-glms", package = "glmmfields")
 An example spatiotemporal model
 -------------------------------
 
+``` r
+library(glmmfields)
+#> Loading required package: Rcpp
+library(ggplot2)
+```
+
 Simulate data:
 
 ``` r
-library(glmmfields)
-library(ggplot2)
 set.seed(42)
 s <- sim_glmmfields(
   df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5,
@@ -80,7 +84,7 @@ print(m)
 #> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1600 1.00
 #> lp__     2290.00    0.41 9.70 2269.22 2283.94 2290.55 2296.85 2307.38   571 1.01
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu May  3 15:05:16 2018.
+#> Samples were drawn using NUTS(diag_e) at Thu May  3 15:32:47 2018.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -122,12 +126,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0295   -0.224   0.177  
-#> 2  -0.291    -0.503  -0.0950 
-#> 3  -0.398    -0.596  -0.190  
-#> 4  -0.195    -0.404   0.0122 
-#> 5  -0.0363   -0.234   0.170  
-#> 6  -0.216    -0.421  -0.00809
+#> 1  -0.0295   -0.221   0.178  
+#> 2  -0.291    -0.498  -0.0925 
+#> 3  -0.398    -0.599  -0.182  
+#> 4  -0.195    -0.406   0.00577
+#> 5  -0.0363   -0.249   0.162  
+#> 6  -0.216    -0.425  -0.00767
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
@@ -170,6 +174,7 @@ References
 
 Anderson, S. A., Ward, E. J. In press. Black swans in space: modelling
 spatiotemporal processes with extremes.
+[Code](https://github.com/seananderson/spatial-extremes)
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A.
 Silander Jr. 2009. Hierarchical models facilitate spatial analysis of

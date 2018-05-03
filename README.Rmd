@@ -42,11 +42,14 @@ vignette("spatial-glms", package = "glmmfields")
 
 ## An example spatiotemporal model
 
+```{r libraries, cache=FALSE}
+library(glmmfields)
+library(ggplot2)
+```
+
 Simulate data:
 
 ```{r simulate, cache=TRUE}
-library(glmmfields)
-library(ggplot2)
 set.seed(42)
 s <- sim_glmmfields(
   df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5,
@@ -66,7 +69,7 @@ options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0,
   data = s$dat, time = "time",
   lat = "lat", lon = "lon",
-  nknots = 12, estimate_df = TRUE, iter = 800
+  nknots = 12, estimate_df = TRUE, iter = 800, seed = 1
 )
 ```
 
@@ -121,7 +124,7 @@ ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
 
 # References
 
-Anderson, S. A., Ward, E. J. In press. Black swans in space: modelling spatiotemporal processes with extremes.
+Anderson, S. A., Ward, E. J. In press. Black swans in space: modelling spatiotemporal processes with extremes. [Code](https://github.com/seananderson/spatial-extremes)
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A. Silander Jr. 2009. Hierarchical models facilitate spatial analysis of large data sets: a case study on invasive plant species in the northeastern United States. Ecology Letters 12:144–154.
 
