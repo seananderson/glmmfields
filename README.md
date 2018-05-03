@@ -1,6 +1,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<!-- glmmfields <img src="inst/logo.png" align="right" /> -->
-====================================================
+glmmfields
+==========
 
 [![Travis-CI Build
 Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
@@ -74,13 +74,13 @@ print(m)
 #> post-warmup draws per chain=400, total post-warmup draws=1600.
 #> 
 #>             mean se_mean   sd    2.5%     25%     50%     75%   97.5% n_eff Rhat
-#> df[1]       3.77    0.04 1.44    2.07    2.75    3.40    4.44    7.32  1204    1
-#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   455    1
-#> gp_theta    2.59    0.00 0.07    2.47    2.54    2.58    2.63    2.72  1600    1
-#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1600    1
-#> lp__     2291.26    0.39 9.72 2270.72 2284.97 2291.75 2298.18 2309.16   619    1
+#> df[1]       3.71    0.04 1.42    2.05    2.67    3.38    4.38    7.40  1060 1.00
+#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   397 1.01
+#> gp_theta    2.59    0.00 0.07    2.46    2.54    2.58    2.63    2.72  1289 1.00
+#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1600 1.00
+#> lp__     2290.00    0.41 9.70 2269.22 2283.94 2290.55 2296.85 2307.38   571 1.01
 #> 
-#> Samples were drawn using NUTS(diag_e) at Tue Apr  3 11:41:11 2018.
+#> Samples were drawn using NUTS(diag_e) at Thu May  3 15:05:16 2018.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -109,38 +109,39 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0288  -0.0939    0.0337
-#> 2  -0.291   -0.358    -0.222 
-#> 3  -0.397   -0.447    -0.345 
-#> 4  -0.197   -0.271    -0.124 
-#> 5  -0.0377  -0.104     0.0376
-#> 6  -0.217   -0.292    -0.141
+#> 1  -0.0295  -0.0863    0.0318
+#> 2  -0.291   -0.356    -0.226 
+#> 3  -0.398   -0.446    -0.345 
+#> 4  -0.195   -0.268    -0.120 
+#> 5  -0.0363  -0.114     0.0407
+#> 6  -0.216   -0.293    -0.140
 
-# prediction intervals on new observations (include observation error):
-p <- predict(m, type = "response", interval = "prediction")
+# posterior predictive intervals on new observations (include observation error):
+p <- predictive_interval(m)
 head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0288   -0.229   0.178  
-#> 2  -0.291    -0.495  -0.0948 
-#> 3  -0.397    -0.594  -0.186  
-#> 4  -0.197    -0.398   0.00675
-#> 5  -0.0377   -0.231   0.175  
-#> 6  -0.217    -0.418  -0.0102
+#> 1  -0.0295   -0.224   0.177  
+#> 2  -0.291    -0.503  -0.0950 
+#> 3  -0.398    -0.596  -0.190  
+#> 4  -0.195    -0.404   0.0122 
+#> 5  -0.0363   -0.234   0.170  
+#> 6  -0.216    -0.421  -0.00809
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
 
 ``` r
-head(tidy(m, conf.int = TRUE, conf.method = "HPDinterval"))
-#>                       term    estimate   std.error    conf.low   conf.high
-#> 1                    df[1]  3.76534892 1.438599645  2.00094181  6.51725298
-#> 2                 gp_sigma  0.30116932 0.042719316  0.21571686  0.38113939
-#> 3                 gp_theta  2.58705184 0.065806143  2.46326056  2.71425282
-#> 4                 sigma[1]  0.09808222 0.002140597  0.09411777  0.10221265
-#> 5 spatialEffectsKnots[1,1] -0.11135049 0.036577194 -0.18114819 -0.03755901
-#> 6 spatialEffectsKnots[2,1] -0.23190464 0.035715599 -0.30256461 -0.16395474
+x <- tidy(m, conf.int = TRUE)
+head(x)
+#>                       term   estimate   std.error    conf.low   conf.high
+#> 1                    df[1]  3.7093487 1.418096126  2.05397716  7.39855605
+#> 2                 gp_sigma  0.3000014 0.044343226  0.22202151  0.39188751
+#> 3                 gp_theta  2.5857411 0.067728885  2.45893749  2.71856485
+#> 4                 sigma[1]  0.0981333 0.002130289  0.09417861  0.10239067
+#> 5 spatialEffectsKnots[1,1] -0.1095841 0.035728942 -0.17816094 -0.03775841
+#> 6 spatialEffectsKnots[2,1] -0.2302546 0.037457393 -0.30500031 -0.15813113
 ```
 
 Make predictions on a fine-scale spatial grid:

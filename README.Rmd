@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 options(width = 120) # for printing Stan output
 ```
 
-# glmmfields <img src="inst/logo.png" align="right" />
+# glmmfields
 
 [![Travis-CI Build Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields)
@@ -88,15 +88,16 @@ Predictions:
 p <- predict(m)
 head(p)
 
-# prediction intervals on new observations (include observation error):
-p <- predict(m, type = "response", interval = "prediction")
+# posterior predictive intervals on new observations (include observation error):
+p <- predictive_interval(m)
 head(p)
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
 
 ```{r tidy, dependson="fit"}
-head(tidy(m, conf.int = TRUE, conf.method = "HPDinterval"))
+x <- tidy(m, conf.int = TRUE)
+head(x)
 ```
 
 Make predictions on a fine-scale spatial grid:
