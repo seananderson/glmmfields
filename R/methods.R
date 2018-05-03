@@ -15,6 +15,7 @@ tidy <- function(x, ...) {
   UseMethod("tidy")
 }
 
+#' @importFrom broom tidy
 #' @export
 #' @rdname tidy
 tidy.glmmfields <- function(x, ...) {
@@ -53,3 +54,9 @@ loo.glmmfields <- function(object, cores = getOption("mc.cores", 1L)) {
     cores = cores,
     save_psis = FALSE)
 }
+
+#' @name loo
+#' @rdname loo
+#' @export
+#' @importFrom loo loo
+NULL

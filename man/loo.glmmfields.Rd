@@ -4,7 +4,7 @@
 \alias{loo.glmmfields}
 \title{Return LOO information criteria}
 \usage{
-loo.glmmfields(object, cores = getOption("mc.cores", 1L))
+\method{loo}{glmmfields}(object, cores = getOption("mc.cores", 1L))
 }
 \arguments{
 \item{object}{Output from \code{\link[=glmmfields]{glmmfields()}}.

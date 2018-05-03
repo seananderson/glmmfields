@@ -1,4 +1,8 @@
-#' Predict from an glmmfields model
+#' Predict from a glmmfields model
+#'
+#' These functions extract posterior draws or credible intervals. The helper
+#' functions are named to match those in the \pkg{rstanarm} package and call the
+#' function `predict()` with appropriate argument values.
 #'
 #' @param object An object returned by [glmmfields()].
 #' @param newdata Optionally, a data frame to predict on
@@ -6,7 +10,7 @@
 #'   [stats::predict.lm()].
 #' @param estimate_method Method for computing point estimate ("mean" or
 #'   "median")
-#' @param conf_level Probability level for CI
+#' @param conf_level Probability level for the credible intervals.
 #' @param type Whether the predictions are returned on "link" scale or
 #'   "response" scale (Same as for [stats::predict.glm()]).
 #' @param return_mcmc Logical. Should the full MCMC draws be returned for the
@@ -14,18 +18,17 @@
 #' @param iter Number of MCMC iterations to draw. Defaults to all.
 #' @param ... Ignored currently
 #'
-#' @importFrom stats median quantile predict rgamma rnbinom
+#' @importFrom stats median quantile rgamma rnbinom
 #' @importFrom assertthat assert_that
 #'
-#' @export
 #' @examples
 #' \donttest{
 #' library(ggplot2)
 #'
 #' # simulate:
-#' set.seed(42)
+#' set.seed(1)
 #' s <- sim_glmmfields(
-#'   df = 2.8, n_draws = 12, n_knots = 12, gp_theta = 2.5,
+#'   n_draws = 12, n_knots = 12, gp_theta = 2.5,
 #'   gp_sigma = 0.2, sd_obs = 0.1
 #' )
 #'
@@ -34,17 +37,25 @@
 #' m <- glmmfields(y ~ 0,
 #'   data = s$dat, time = "time",
 #'   lat = "lat", lon = "lon",
-#'   nknots = 12, estimate_df = TRUE, iter = 800
+#'   nknots = 12, iter = 800, chains = 2
 #' )
 #'
 #' # Predictions:
-#' # link scale:
-#' p <- predict(m)
+#' # Link scale credible intervals:
+#' p <- predict(m, type = "link", interval = "confidence")
 #' head(p)
 #'
 #' # Prediction intervals on new observations (include observation error):
-#' p <- predict(m, type = "response", interval = "prediction")
+#' p <- predictive_interval(m)
 #' head(p)
+#'
+#' # Posterior prediction draws:
+#' p <- posterior_predict(m, iter = 100)
+#' dim(p) # rows are iterations and columns are data elements
+#'
+#' # Draws from the linear predictor (not in link space):
+#' p <- posterior_linpred(m, iter = 100)
+#' dim(p) # rows are iterations and columns are data elements
 #'
 #' # Use the `tidy` method to extract parameter estimates as a data frame:
 #' head(tidy(m, conf.int = TRUE, conf.method = "HPDinterval"))
@@ -56,7 +67,8 @@
 #'   time = unique(s$dat$time)
 #' )
 #' pred_grid$prediction <- predict(m,
-#'   newdata = pred_grid, type = "response", iter = 100, estimate_method = "median"
+#'   newdata = pred_grid, type = "response", iter = 100,
+#'   estimate_method = "median"
 #' )$estimate
 #'
 #' ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
@@ -64,7 +76,53 @@
 #'   geom_raster() +
 #'   scale_fill_gradient2()
 #' }
+#' @name predict
+NULL
 
+#' @name predictive_interval
+#' @rdname predict
+#' @export
+#' @importFrom rstanarm predictive_interval
+NULL
+
+#' @name posterior_linpred
+#' @rdname predict
+#' @export
+#' @importFrom rstanarm posterior_linpred
+NULL
+
+#' @name posterior_predict
+#' @rdname predict
+#' @export
+#' @importFrom rstanarm posterior_predict
+NULL
+
+#' @rdname predict
+#' @export
+predictive_interval.glmmfields <- function(object,
+  interval = "prediction", type = "response", return_mcmc = FALSE, ...) {
+  predict.glmmfields(object, interval = "prediction", type = "response", ...)
+}
+
+#' @rdname predict
+#' @export
+posterior_linpred.glmmfields <- function(object,
+  interval = "confidence", type = "response", return_mcmc = TRUE, ...) {
+  predict.glmmfields(object, interval = interval, type = type,
+    return_mcmc = return_mcmc, ...)
+}
+
+#' @rdname predict
+#' @export
+posterior_predict.glmmfields <- function(object,
+  interval = "prediction", type = "response", return_mcmc = TRUE, ...) {
+  predict.glmmfields(object, interval = interval, type = type,
+    return_mcmc = return_mcmc, ...)
+}
+
+#' @importFrom stats predict
+#' @rdname predict
+#' @export
 predict.glmmfields <- function(object, newdata = NULL,
                                estimate_method = c("median", "mean"),
                                conf_level = 0.95,
@@ -268,6 +326,6 @@ predict.glmmfields <- function(object, newdata = NULL,
   }
 
   out <- dplyr::as.tbl(out)
-  if (return_mcmc) out <- pred_values
+  if (return_mcmc) out <- t(pred_values) # to match rstanarm generic methods
   out
 }
