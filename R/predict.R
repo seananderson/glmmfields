@@ -22,7 +22,7 @@
 #' @importFrom assertthat assert_that
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' library(ggplot2)
 #'
 #' # simulate:

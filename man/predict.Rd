@@ -54,7 +54,7 @@ functions are named to match those in the \pkg{rstanarm} package and call the
 function \code{predict()} with appropriate argument values.
 }
 \examples{
-\donttest{
+\dontrun{
 library(ggplot2)
 
 # simulate:
