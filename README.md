@@ -1,6 +1,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-glmmfields
-==========
+
+# glmmfields
 
 [![Travis-CI Build
 Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
@@ -27,8 +27,7 @@ glmmfields can also fit spatial GLMs with Stan. See the vignette:
 vignette("spatial-glms", package = "glmmfields")
 ```
 
-An example spatiotemporal model
--------------------------------
+## An example spatiotemporal model
 
 ``` r
 library(glmmfields)
@@ -67,7 +66,7 @@ options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0,
   data = s$dat, time = "time",
   lat = "lat", lon = "lon",
-  nknots = 12, estimate_df = TRUE, iter = 800
+  nknots = 12, estimate_df = TRUE, iter = 800, seed = 1
 )
 ```
 
@@ -78,13 +77,13 @@ print(m)
 #> post-warmup draws per chain=400, total post-warmup draws=1600.
 #> 
 #>             mean se_mean   sd    2.5%     25%     50%     75%   97.5% n_eff Rhat
-#> df[1]       3.71    0.04 1.42    2.05    2.67    3.38    4.38    7.40  1060 1.00
-#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   397 1.01
-#> gp_theta    2.59    0.00 0.07    2.46    2.54    2.58    2.63    2.72  1289 1.00
+#> df[1]       3.80    0.04 1.48    2.10    2.74    3.46    4.43    7.58  1440 1.00
+#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   569 1.00
+#> gp_theta    2.59    0.00 0.07    2.47    2.54    2.59    2.63    2.72  1600 1.00
 #> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1600 1.00
-#> lp__     2290.00    0.41 9.70 2269.22 2283.94 2290.55 2296.85 2307.38   571 1.01
+#> lp__     2291.58    0.41 9.35 2272.47 2285.72 2291.79 2298.18 2308.96   516 1.01
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu May  3 15:32:47 2018.
+#> Samples were drawn using NUTS(diag_e) at Thu May  3 15:36:11 2018.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -96,13 +95,13 @@ Plot:
 plot(m, type = "prediction") + scale_color_gradient2()
 ```
 
-![](README-figs/plot-predictions-1.png)
+![](README-figs/plot-predictions-1.png)<!-- -->
 
 ``` r
 plot(m, type = "spatial-residual")
 ```
 
-![](README-figs/plot-predictions-2.png)
+![](README-figs/plot-predictions-2.png)<!-- -->
 
 Predictions:
 
@@ -113,12 +112,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0295  -0.0863    0.0318
-#> 2  -0.291   -0.356    -0.226 
-#> 3  -0.398   -0.446    -0.345 
-#> 4  -0.195   -0.268    -0.120 
-#> 5  -0.0363  -0.114     0.0407
-#> 6  -0.216   -0.293    -0.140
+#> 1  -0.0287  -0.0871    0.0300
+#> 2  -0.290   -0.360    -0.218 
+#> 3  -0.396   -0.447    -0.344 
+#> 4  -0.197   -0.266    -0.129 
+#> 5  -0.0356  -0.108     0.0338
+#> 6  -0.215   -0.285    -0.142
 
 # posterior predictive intervals on new observations (include observation error):
 p <- predictive_interval(m)
@@ -126,12 +125,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0295   -0.221   0.178  
-#> 2  -0.291    -0.498  -0.0925 
-#> 3  -0.398    -0.599  -0.182  
-#> 4  -0.195    -0.406   0.00577
-#> 5  -0.0363   -0.249   0.162  
-#> 6  -0.216    -0.425  -0.00767
+#> 1  -0.0287   -0.229   0.180  
+#> 2  -0.290    -0.490  -0.0931 
+#> 3  -0.396    -0.603  -0.196  
+#> 4  -0.197    -0.391   0.00359
+#> 5  -0.0356   -0.238   0.166  
+#> 6  -0.215    -0.429  -0.00893
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
@@ -139,13 +138,13 @@ Use the `tidy` method to extract parameter estimates as a data frame:
 ``` r
 x <- tidy(m, conf.int = TRUE)
 head(x)
-#>                       term   estimate   std.error    conf.low   conf.high
-#> 1                    df[1]  3.7093487 1.418096126  2.05397716  7.39855605
-#> 2                 gp_sigma  0.3000014 0.044343226  0.22202151  0.39188751
-#> 3                 gp_theta  2.5857411 0.067728885  2.45893749  2.71856485
-#> 4                 sigma[1]  0.0981333 0.002130289  0.09417861  0.10239067
-#> 5 spatialEffectsKnots[1,1] -0.1095841 0.035728942 -0.17816094 -0.03775841
-#> 6 spatialEffectsKnots[2,1] -0.2302546 0.037457393 -0.30500031 -0.15813113
+#>                       term    estimate   std.error    conf.low   conf.high
+#> 1                    df[1]  3.80038696 1.484906573  2.09881985  7.57545322
+#> 2                 gp_sigma  0.30206707 0.042116979  0.22379764  0.38976618
+#> 3                 gp_theta  2.58866483 0.065031189  2.46802568  2.72087920
+#> 4                 sigma[1]  0.09797513 0.002108619  0.09381234  0.10216097
+#> 5 spatialEffectsKnots[1,1] -0.10977109 0.035134765 -0.17942243 -0.04241248
+#> 6 spatialEffectsKnots[2,1] -0.23122316 0.034852007 -0.29929125 -0.16103601
 ```
 
 Make predictions on a fine-scale spatial grid:
@@ -167,10 +166,9 @@ ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
   scale_fill_gradient2()
 ```
 
-![](README-figs/grid-predictions-1.png)
+![](README-figs/grid-predictions-1.png)<!-- -->
 
-References
-==========
+# References
 
 Anderson, S. A., Ward, E. J. In press. Black swans in space: modelling
 spatiotemporal processes with extremes.
