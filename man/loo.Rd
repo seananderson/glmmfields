@@ -2,6 +2,7 @@
 % Please edit documentation in R/methods.R
 \name{loo.glmmfields}
 \alias{loo.glmmfields}
+\alias{loo}
 \title{Return LOO information criteria}
 \usage{
 \method{loo}{glmmfields}(object, cores = getOption("mc.cores", 1L))

@@ -46,6 +46,7 @@ tidy.glmmfields <- function(x, ...) {
 #'  save_log_lik = TRUE)
 #' loo(m)
 #' }
+#' @rdname loo
 loo.glmmfields <- function(object, cores = getOption("mc.cores", 1L)) {
   log_lik <- loo::extract_log_lik(object$model, merge_chains = FALSE)
   rel_eff <- loo::relative_eff(exp(log_lik), cores = cores)

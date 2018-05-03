@@ -26,6 +26,7 @@ Imports:
     mvtnorm,
     broom,
     methods,
+    loo,
     assertthat,
     nlme,
     forcats,
