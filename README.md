@@ -170,7 +170,7 @@ ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
 
 # References
 
-Anderson, S. A., Ward, E. J. In press. Black swans in space: modelling
+Anderson, S. C., Ward, E. J. In press. Black swans in space: modelling
 spatiotemporal processes with extremes.
 [Code](https://github.com/seananderson/spatial-extremes)
 
