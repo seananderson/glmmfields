@@ -22,7 +22,7 @@
 #' @importFrom assertthat assert_that
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(ggplot2)
 #'
 #' # simulate:
@@ -33,7 +33,7 @@
 #' )
 #'
 #' # fit:
-#' options(mc.cores = parallel::detectCores()) # for parallel processing
+#' # options(mc.cores = parallel::detectCores()) # for parallel processing
 #' m <- glmmfields(y ~ 0,
 #'   data = s$dat, time = "time",
 #'   lat = "lat", lon = "lon",

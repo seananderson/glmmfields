@@ -54,7 +54,7 @@ functions are named to match those in the \pkg{rstanarm} package and call the
 function \code{predict()} with appropriate argument values.
 }
 \examples{
-\dontrun{
+\donttest{
 library(ggplot2)
 
 # simulate:
@@ -65,7 +65,7 @@ s <- sim_glmmfields(
 )
 
 # fit:
-options(mc.cores = parallel::detectCores()) # for parallel processing
+# options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0,
   data = s$dat, time = "time",
   lat = "lat", lon = "lon",

@@ -21,12 +21,12 @@ or on the natural scale?}
 Plot predictions from an glmmfields model
 }
 \examples{
-\dontrun{
+\donttest{
 # Spatiotemporal example:
 set.seed(1)
 s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
 gp_sigma = 0.2, sd_obs = 0.1)
-options(mc.cores = parallel::detectCores()) # for parallel processing
+# options(mc.cores = parallel::detectCores()) # for parallel processing
 m <- glmmfields(y ~ 0, time = "time",
  lat = "lat", lon = "lon", data = s$dat,
  nknots = 12, iter = 500, chains = 2)

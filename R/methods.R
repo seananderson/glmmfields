@@ -33,11 +33,11 @@ tidy.glmmfields <- function(x, ...) {
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' set.seed(1)
 #' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
 #' gp_sigma = 0.2, sd_obs = 0.2)
-#' options(mc.cores = parallel::detectCores()) # for parallel processing
+#' # options(mc.cores = parallel::detectCores()) # for parallel processing
 #'
 #' # save_log_lik defaults to FALSE to save space but is needed for loo():
 #' m <- glmmfields(y ~ 0, time = "time",
