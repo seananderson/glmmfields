@@ -171,6 +171,7 @@ glmmfields <- function(formula, data, lon, lat,
   # argument checks:
   covariance <- match.arg(covariance)
   algorithm <- match.arg(algorithm)
+  cluster <- match.arg(cluster)
 
   gp_sigma_scaling_factor <- 1 # removed option above
 

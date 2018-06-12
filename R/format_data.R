@@ -15,12 +15,13 @@
 format_data <- function(data, y, X, time,
                         lon = "lon", lat = "lat",
                         station = NULL, nknots = 25L,
-                        covariance = "squared-exponential",
+                        covariance = c("squared-exponential",
+                          "exponential", "matern"),
                         fixed_intercept = FALSE,
                         cluster = c("pam", "kmeans")) {
   data <- as.data.frame(data)
-
   cluster <- match.arg(cluster)
+  covariance <- match.arg(covariance)
 
   if (is.null(time)) {
     data$time <- 1
@@ -38,7 +39,7 @@ format_data <- function(data, y, X, time,
   if (length(unique(stationID)) < length(stationID)) {
     first_instance <- which(!duplicated(stationID))
 
-    if (cluster[[1]] == "pam") {
+    if (cluster == "pam") {
       knots <- cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     } else {
       knots <- stats::kmeans(data[first_instance, c(lon, lat)], nknots)$centers
@@ -63,7 +64,7 @@ format_data <- function(data, y, X, time,
     nLocs <- nrow(data)
   }
 
-  if (covariance[[1]] == "squared-exponential") {
+  if (covariance == "squared-exponential") {
     distKnots <- distKnots^2 # squared distances
     distAll <- distAll^2 # squared distances
   }

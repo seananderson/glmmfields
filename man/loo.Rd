@@ -5,10 +5,10 @@
 \alias{loo}
 \title{Return LOO information criteria}
 \usage{
-\method{loo}{glmmfields}(object, cores = getOption("mc.cores", 1L))
+\method{loo}{glmmfields}(x, cores = getOption("mc.cores", 1L))
 }
 \arguments{
-\item{object}{Output from \code{\link[=glmmfields]{glmmfields()}}.
+\item{x}{Output from \code{\link[=glmmfields]{glmmfields()}}.
 Must be fit with \code{save_log_lik = TRUE}, which is \emph{not} the default.}
 
 \item{cores}{Number of cores to use for parallelization.}
