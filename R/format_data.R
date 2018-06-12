@@ -10,11 +10,11 @@
 #' @param nknots The number of knots
 #' @param covariance The type of covariance function
 #' @param fixed_intercept Should the intercept be fixed?
-#' @param cluster The type of clustering algorithm used to determine the not locations.
-#'   \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.
-#'   \code{"fixed"} is for smaller datasets where the predictive process model is
-#'   not fit, but the raw locations are used to create distance matrices and random
-#'   effects estimated at theose locations.
+#' @param cluster The type of clustering algorithm used to determine the not
+#'   locations. \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is
+#'   faster for large datasets. \code{"fixed"} is for smaller datasets where the
+#'   predictive process model is not fit, but the raw locations are used to
+#'   create distance matrices and random effects estimated at those locations.
 format_data <- function(data, y, X, time,
                         lon = "lon", lat = "lat",
                         station = NULL, nknots = 25L,
@@ -41,10 +41,10 @@ format_data <- function(data, y, X, time,
   if (length(unique(stationID)) < length(stationID)) {
     first_instance <- which(!duplicated(stationID))
 
-    if (cluster[[1]] == "pam") {
+    if (cluster == "pam") {
       knots <- cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     } else {
-      if(cluster[[1]] == "kmeans") {
+      if (cluster == "kmeans") {
         knots <- stats::kmeans(data[first_instance, c(lon, lat)], nknots)$centers
       } else {
         knots = matrix(0, nknots, 2)
@@ -53,7 +53,6 @@ format_data <- function(data, y, X, time,
         if(length(unique(data[,lat])) == nknots) knots[,2] = unique(data[,lat])
         }
     }
-
 
     distKnots <- as.matrix(dist(knots))
     ix <- sort(data[first_instance, "stationID"], index.return = T)$ix

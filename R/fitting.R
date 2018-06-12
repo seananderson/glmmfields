@@ -85,9 +85,11 @@
 #' @param df_lower_bound The lower bound on the degrees of freedom parameter.
 #'   Values that are too low, e.g. below 2 or 3, it might affect chain
 #'   convergence. Defaults to 2.
-#' @param cluster The type of clustering algorithm used to determine the knot
-#'   locations. `"pam"` = [cluster::pam()]. The `"kmeans"`
-#'   algorithm will be faster on larger datasets.
+#' @param cluster The type of clustering algorithm used to determine the not
+#'   locations. \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is
+#'   faster for large datasets. \code{"fixed"} is for smaller datasets where the
+#'   predictive process model is not fit, but the raw locations are used to
+#'   create distance matrices and random effects estimated at those locations.
 #' @param ... Any other arguments to pass to [rstan::sampling()].
 #'
 #' @details
@@ -165,12 +167,13 @@ glmmfields <- function(formula, data, lon, lat,
                        control = list(adapt_delta = 0.9),
                        save_log_lik = FALSE,
                        df_lower_bound = 2,
-                       cluster = c("pam", "kmeans"),
+                       cluster = c("pam", "kmeans", "kmeans"),
                        ...) {
 
   # argument checks:
   covariance <- match.arg(covariance)
   algorithm <- match.arg(algorithm)
+  cluster <- match.arg(cluster)
 
   gp_sigma_scaling_factor <- 1 # removed option above
 

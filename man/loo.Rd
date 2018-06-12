@@ -5,13 +5,13 @@
 \alias{loo}
 \title{Return LOO information criteria}
 \usage{
-\method{loo}{glmmfields}(object, cores = getOption("mc.cores", 1L))
+\method{loo}{glmmfields}(x, cores = getOption("mc.cores", 1L))
 }
 \arguments{
+\item{cores}{Number of cores to use for parallelization.}
+
 \item{object}{Output from \code{\link[=glmmfields]{glmmfields()}}.
 Must be fit with \code{save_log_lik = TRUE}, which is \emph{not} the default.}
-
-\item{cores}{Number of cores to use for parallelization.}
 }
 \description{
 Extract the LOOIC (leave-one-out information criterion) using

@@ -15,7 +15,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
   0.9), save_log_lik = FALSE, df_lower_bound = 2, cluster = c("pam",
-  "kmeans"), ...)
+  "kmeans", "kmeans"), ...)
 }
 \arguments{
 \item{formula}{The model formula.}
@@ -124,9 +124,11 @@ Defaults to \code{FALSE} so that the size of model objects is smaller.}
 Values that are too low, e.g. below 2 or 3, it might affect chain
 convergence. Defaults to 2.}
 
-\item{cluster}{The type of clustering algorithm used to determine the knot
-locations. \code{"pam"} = \code{\link[cluster:pam]{cluster::pam()}}. The \code{"kmeans"}
-algorithm will be faster on larger datasets.}
+\item{cluster}{The type of clustering algorithm used to determine the not
+locations. \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is
+faster for large datasets. \code{"fixed"} is for smaller datasets where the
+predictive process model is not fit, but the raw locations are used to
+create distance matrices and random effects estimated at those locations.}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}}.}
 }
