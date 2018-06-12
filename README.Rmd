@@ -124,7 +124,7 @@ ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
 
 # References
 
-Anderson, S. A., Ward, E. J. In press. Black swans in space: modelling spatiotemporal processes with extremes. [Code](https://github.com/seananderson/spatial-extremes)
+Anderson, S. C., Ward, E. J. In press. Black swans in space: modelling spatiotemporal processes with extremes. [Code](https://github.com/seananderson/spatial-extremes)
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A. Silander Jr. 2009. Hierarchical models facilitate spatial analysis of large data sets: a case study on invasive plant species in the northeastern United States. Ecology Letters 12:144–154.
 

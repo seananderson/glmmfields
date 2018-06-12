@@ -6,7 +6,7 @@
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
   nknots = 25L, covariance = "squared-exponential",
-  fixed_intercept = FALSE, cluster = c("pam", "kmeans", "fixed"))
+  fixed_intercept = FALSE, cluster = c("pam", "kmeans"))
 }
 \arguments{
 \item{data}{A data frame to be formatted}
@@ -29,11 +29,8 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 
 \item{fixed_intercept}{Should the intercept be fixed?}
 
-\item{cluster}{The type of clustering algorithm used to determine the not
-locations. \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is
-faster for large datasets. \code{"fixed"} is for smaller datasets where the
-predictive process model is not fit, but the raw locations are used to
-create distance matrices and random effects estimated at those locations.}
+\item{cluster}{The type of clustering algorithm used to determine the not locations.
+\code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.}
 }
 \description{
 Format data for fitting a glmmfields model
