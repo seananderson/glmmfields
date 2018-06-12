@@ -116,9 +116,10 @@
 #' gp_sigma = 0.2, sd_obs = 0.2)
 #' print(s$plot)
 #' # options(mc.cores = parallel::detectCores()) # for parallel processing
+#' # should use 4 or more chains for real model fits
 #' m <- glmmfields(y ~ 0, time = "time",
 #'  lat = "lat", lon = "lon", data = s$dat,
-#'  nknots = 12, iter = 1000, chains = 4, seed = 1)
+#'  nknots = 12, iter = 1000, chains = 2, seed = 1)
 #'
 #' # Spatial example (with covariates) from the vignette and customizing
 #' # some priors:
@@ -137,7 +138,7 @@
 #'   viridis::scale_colour_viridis() +
 #'   geom_point(size = 3)
 #' m_spatial <- glmmfields(y ~ temperature, data = d, family = Gamma(link = "log"),
-#'   lat = "lat", lon = "lon", nknots = 12, iter = 2000, chains = 4,
+#'   lat = "lat", lon = "lon", nknots = 12, iter = 2000, chains = 2,
 #'   prior_beta = student_t(100, 0, 1), prior_intercept = student_t(100, 0, 5),
 #'   control = list(adapt_delta = 0.95))
 #' }

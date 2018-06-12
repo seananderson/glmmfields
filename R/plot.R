@@ -18,7 +18,7 @@
 #' # options(mc.cores = parallel::detectCores()) # for parallel processing
 #' m <- glmmfields(y ~ 0, time = "time",
 #'  lat = "lat", lon = "lon", data = s$dat,
-#'  nknots = 12, iter = 500, chains = 2)
+#'  nknots = 12, iter = 600, chains = 1)
 #' x <- plot(m, type = "prediction")
 #' x
 #' x + ggplot2::scale_color_gradient2()
