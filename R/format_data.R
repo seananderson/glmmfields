@@ -49,6 +49,7 @@ format_data <- function(data, y, X, time,
       } else {
         # each point is unique, predictive process not used
         knots = data[first_instance, c(lon, lat)]
+      }
     }
 
     distKnots <- as.matrix(dist(knots))
