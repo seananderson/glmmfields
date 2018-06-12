@@ -15,7 +15,7 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
   0.9), save_log_lik = FALSE, df_lower_bound = 2, cluster = c("pam",
-  "kmeans", "kmeans"), ...)
+  "kmeans", "fixed"), ...)
 }
 \arguments{
 \item{formula}{The model formula.}

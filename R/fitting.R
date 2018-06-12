@@ -167,7 +167,7 @@ glmmfields <- function(formula, data, lon, lat,
                        control = list(adapt_delta = 0.9),
                        save_log_lik = FALSE,
                        df_lower_bound = 2,
-                       cluster = c("pam", "kmeans", "kmeans"),
+                       cluster = c("pam", "kmeans", "fixed"),
                        ...) {
 
   # argument checks:
