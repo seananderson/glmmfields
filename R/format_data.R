@@ -41,15 +41,17 @@ format_data <- function(data, y, X, time,
   if (length(unique(stationID)) < length(stationID)) {
     first_instance <- which(!duplicated(stationID))
 
-    if (cluster[[1]] == "pam" & length(first_instance) > nknots) {
+    if (cluster == "pam") {
       knots <- cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
     } else {
-      if (cluster[[1]] == "kmeans" & length(first_instance) > nknots) {
+      if (cluster == "kmeans") {
         knots <- stats::kmeans(data[first_instance, c(lon, lat)], nknots)$centers
       } else {
-        # each point is unique, predictive process not used
-        knots = data[first_instance, c(lon, lat)]
-      }
+        knots = matrix(0, nknots, 2)
+        # this is to also catch situation where someone is doing this in 1-D
+        if(length(unique(data[,lon])) == nknots) knots[,1] = unique(data[,lon])
+        if(length(unique(data[,lat])) == nknots) knots[,2] = unique(data[,lat])
+        }
     }
 
     distKnots <- as.matrix(dist(knots))
@@ -59,14 +61,16 @@ format_data <- function(data, y, X, time,
     distAll <- as.matrix(stats::dist(rbind(data[first_instance, c(lon, lat)][ix, ], knots)))
     nLocs <- length(first_instance)
   } else {
-    if (cluster[[1]] == "pam") {
+    if (cluster == "pam") {
       knots <- cluster::pam(data[, c(lon, lat)], nknots)$medoids
     } else {
       if(cluster[[1]] == "kmeans") {
       knots <- stats::kmeans(data[, c(lon, lat)], nknots)$centers
       } else {
-        # each point is unique, predictive process not used
-        knots = data[, c(lon, lat)]
+        knots = matrix(0, nknots, 2)
+        # this is to also catch situation where someone is doing this in 1-D
+        if(length(unique(data[,lon])) == nknots) knots[,1] = unique(data[,lon])
+        if(length(unique(data[,lat])) == nknots) knots[,2] = unique(data[,lat])
       }
     }
     distKnots <- as.matrix(dist(knots))
