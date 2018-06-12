@@ -29,7 +29,7 @@ tidy.glmmfields <- function(x, ...) {
 #'
 #' @param x Output from [glmmfields()].
 #'   Must be fit with `save_log_lik = TRUE`, which is *not* the default.
-#' @param cores Number of cores to use for parallelization.
+#' @param ... Arguments for [loo::relative_eff()] and [loo::loo.array()].
 #'
 #' @export
 #' @examples
@@ -47,13 +47,13 @@ tidy.glmmfields <- function(x, ...) {
 #' loo(m)
 #' }
 #' @rdname loo
-loo.glmmfields <- function(x, cores = getOption("mc.cores", 1L)) {
+loo.glmmfields <- function(x, ...) {
   log_lik <- loo::extract_log_lik(x$model, merge_chains = FALSE)
-  rel_eff <- loo::relative_eff(exp(log_lik), cores = cores)
+  rel_eff <- loo::relative_eff(exp(log_lik), ...)
   loo::loo.array(log_lik,
     r_eff = rel_eff,
     cores = cores,
-    save_psis = FALSE)
+    save_psis = FALSE, ...)
 }
 
 #' @name loo

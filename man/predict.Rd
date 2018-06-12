@@ -11,14 +11,11 @@
 \alias{predict.glmmfields}
 \title{Predict from a glmmfields model}
 \usage{
-\method{predictive_interval}{glmmfields}(object, interval = "prediction",
-  type = "response", return_mcmc = FALSE, ...)
+\method{predictive_interval}{glmmfields}(object, ...)
 
-\method{posterior_linpred}{glmmfields}(object, interval = "confidence",
-  type = "response", return_mcmc = TRUE, ...)
+\method{posterior_linpred}{glmmfields}(object, ...)
 
-\method{posterior_predict}{glmmfields}(object, interval = "prediction",
-  type = "response", return_mcmc = TRUE, ...)
+\method{posterior_predict}{glmmfields}(object, ...)
 
 \method{predict}{glmmfields}(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
@@ -28,15 +25,6 @@
 \arguments{
 \item{object}{An object returned by \code{\link[=glmmfields]{glmmfields()}}.}
 
-\item{interval}{Type of interval calculation. Same as for
-\code{\link[stats:predict.lm]{stats::predict.lm()}}.}
-
-\item{type}{Whether the predictions are returned on "link" scale or
-"response" scale (Same as for \code{\link[stats:predict.glm]{stats::predict.glm()}}).}
-
-\item{return_mcmc}{Logical. Should the full MCMC draws be returned for the
-predictions?}
-
 \item{...}{Ignored currently}
 
 \item{newdata}{Optionally, a data frame to predict on}
@@ -45,6 +33,15 @@ predictions?}
 "median")}
 
 \item{conf_level}{Probability level for the credible intervals.}
+
+\item{interval}{Type of interval calculation. Same as for
+\code{\link[stats:predict.lm]{stats::predict.lm()}}.}
+
+\item{type}{Whether the predictions are returned on "link" scale or
+"response" scale (Same as for \code{\link[stats:predict.glm]{stats::predict.glm()}}).}
+
+\item{return_mcmc}{Logical. Should the full MCMC draws be returned for the
+predictions?}
 
 \item{iter}{Number of MCMC iterations to draw. Defaults to all.}
 }
@@ -69,7 +66,7 @@ s <- sim_glmmfields(
 m <- glmmfields(y ~ 0,
   data = s$dat, time = "time",
   lat = "lat", lon = "lon",
-  nknots = 12, iter = 800, chains = 2
+  nknots = 12, iter = 800, chains = 1
 )
 
 # Predictions:

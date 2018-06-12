@@ -37,7 +37,7 @@
 #' m <- glmmfields(y ~ 0,
 #'   data = s$dat, time = "time",
 #'   lat = "lat", lon = "lon",
-#'   nknots = 12, iter = 800, chains = 2
+#'   nknots = 12, iter = 800, chains = 1
 #' )
 #'
 #' # Predictions:
@@ -99,25 +99,23 @@ NULL
 
 #' @rdname predict
 #' @export
-predictive_interval.glmmfields <- function(object,
-  interval = "prediction", type = "response", return_mcmc = FALSE, ...) {
-  predict.glmmfields(object, interval = "prediction", type = "response", ...)
+predictive_interval.glmmfields <- function(object, ...) {
+  predict.glmmfields(object, interval = "prediction", type = "response",
+    return_mcmc = FALSE, ...)
 }
 
 #' @rdname predict
 #' @export
-posterior_linpred.glmmfields <- function(object,
-  interval = "confidence", type = "response", return_mcmc = TRUE, ...) {
-  predict.glmmfields(object, interval = interval, type = type,
-    return_mcmc = return_mcmc, ...)
+posterior_linpred.glmmfields <- function(object, ...) {
+  predict.glmmfields(object, interval = "confidence", type = "response",
+    return_mcmc = TRUE, ...)
 }
 
 #' @rdname predict
 #' @export
-posterior_predict.glmmfields <- function(object,
-  interval = "prediction", type = "response", return_mcmc = TRUE, ...) {
-  predict.glmmfields(object, interval = interval, type = type,
-    return_mcmc = return_mcmc, ...)
+posterior_predict.glmmfields <- function(object, ...) {
+  predict.glmmfields(object, interval = "prediction", type = "response",
+    return_mcmc = TRUE, ...)
 }
 
 #' @importFrom stats predict
