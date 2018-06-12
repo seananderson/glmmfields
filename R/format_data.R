@@ -47,11 +47,9 @@ format_data <- function(data, y, X, time,
       if (cluster == "kmeans") {
         knots <- stats::kmeans(data[first_instance, c(lon, lat)], nknots)$centers
       } else {
-        knots = matrix(0, nknots, 2)
-        # this is to also catch situation where someone is doing this in 1-D
-        if(length(unique(data[,lon])) == nknots) knots[,1] = unique(data[,lon])
-        if(length(unique(data[,lat])) == nknots) knots[,2] = unique(data[,lat])
-        }
+        # each point is unique, predictive process not used
+        knots = data[first_instance, c(lon, lat)]
+      }
     }
 
     distKnots <- as.matrix(dist(knots))
@@ -67,10 +65,8 @@ format_data <- function(data, y, X, time,
       if(cluster[[1]] == "kmeans") {
       knots <- stats::kmeans(data[, c(lon, lat)], nknots)$centers
       } else {
-        knots = matrix(0, nknots, 2)
-        # this is to also catch situation where someone is doing this in 1-D
-        if(length(unique(data[,lon])) == nknots) knots[,1] = unique(data[,lon])
-        if(length(unique(data[,lat])) == nknots) knots[,2] = unique(data[,lat])
+        # each point is unique, predictive process not used
+        knots = data[, c(lon, lat)]
       }
     }
     distKnots <- as.matrix(dist(knots))
