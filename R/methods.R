@@ -52,7 +52,6 @@ loo.glmmfields <- function(x, ...) {
   rel_eff <- loo::relative_eff(exp(log_lik), ...)
   loo::loo.array(log_lik,
     r_eff = rel_eff,
-    cores = cores,
     save_psis = FALSE, ...)
 }
 
