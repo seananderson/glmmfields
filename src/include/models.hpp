@@ -901,7 +901,7 @@ public:
                     }
                 } else {
 
-                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
@@ -1452,7 +1452,7 @@ public:
                     }
                 } else {
 
-                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), ((multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
