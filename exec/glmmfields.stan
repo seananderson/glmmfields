@@ -124,7 +124,6 @@ transformed parameters {
   if (obs_model==0) {
     gammaA[1] = inv(pow(CV[1], 2.0));
   }
-
 }
 model {
   // priors:

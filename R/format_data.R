@@ -29,7 +29,8 @@ format_data <- function(data, y, X, time,
     data$time <- 1
     time <- "time"
   }
-  yearID <- as.numeric(as.factor(data[, time, drop = TRUE]))
+  #yearID <- as.numeric(as.factor(data[, time, drop = TRUE]))
+  yearID <- as.numeric(data[, time, drop = TRUE])
   if (is.null(station)) {
     stationID <- seq_len(nrow(data))
   } else {
