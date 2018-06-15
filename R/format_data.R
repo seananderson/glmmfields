@@ -31,6 +31,7 @@ format_data <- function(data, y, X, time,
   }
   #yearID <- as.numeric(as.factor(data[, time, drop = TRUE]))
   yearID <- as.numeric(data[, time, drop = TRUE])
+  yearID = yearID - min(yearID) + 1 # convert to 1, ..., nT
   if (is.null(station)) {
     stationID <- seq_len(nrow(data))
   } else {
