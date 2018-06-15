@@ -88,7 +88,7 @@ format_data <- function(data, y, X, time,
   spatglm_data <- list(
     nKnots = nknots,
     nLocs = nLocs,
-    nT = length(unique(yearID)),
+    nT = max(yearID),
     N = length(y),
     stationID = stationID,
     yearID = yearID,
