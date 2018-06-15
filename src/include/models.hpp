@@ -27,7 +27,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_glmmfields");
-    reader.add_event(261, 261, "end", "model_glmmfields");
+    reader.add_event(260, 260, "end", "model_glmmfields");
     return reader;
 }
 
