@@ -9,7 +9,7 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-Here we will use the glmmfields package to fit a spatial GLM with a predictor. While glmmfields was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), poisson (link = log), negative binomial (link = log), and binomial (link = logit) models. The package can also fit lognormal (link = log) models.
+Here we will use the glmmfields package to fit a spatial GLM with a predictor. While glmmfields was designed to fit spatiotemporal GLMs with the possibility of extreme events, it can also be used to fit regular spatial GLMs without a time element and without extreme events. Currently it can fit Gaussian (link = identity), Gamma (link = log), Poisson (link = log), negative binomial (link = log), and binomial (link = logit) models. The package can also fit lognormal (link = log) models.
   
 ```{r set-knitr-options, cache=FALSE, echo=FALSE}
 library("knitr")
