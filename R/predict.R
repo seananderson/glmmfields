@@ -82,19 +82,19 @@ NULL
 #' @name predictive_interval
 #' @rdname predict
 #' @export
-#' @importFrom rstanarm predictive_interval
+#' @importFrom rstantools predictive_interval
 NULL
 
 #' @name posterior_linpred
 #' @rdname predict
 #' @export
-#' @importFrom rstanarm posterior_linpred
+#' @importFrom rstantools posterior_linpred
 NULL
 
 #' @name posterior_predict
 #' @rdname predict
 #' @export
-#' @importFrom rstanarm posterior_predict
+#' @importFrom rstantools posterior_predict
 NULL
 
 #' @rdname predict
