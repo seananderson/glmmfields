@@ -1,11 +1,12 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# glmmfields
+# glmmfields <img src="inst/logo.png" align="right" />
 
 [![Travis-CI Build
 Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields)
+[![CRAN status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
 <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
 
 The glmmfields R package implements Bayesian spatiotemporal models that
