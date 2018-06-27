@@ -117,7 +117,10 @@ transformed parameters {
         y_hat[i] = spatialEffects[yearID[i], stationID[i]];
       }
     } else {
-      y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+      y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+      if(nCov > 0) {
+        y_hat[i] = y_hat[i] + X[i] * B;
+      }
     }
   }
 
