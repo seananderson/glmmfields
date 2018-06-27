@@ -27,7 +27,8 @@ format_data <- function(data, y, X, time,
     data$time <- 1
     time <- "time"
   }
-  yearID <- as.numeric(as.factor(data[, time, drop = TRUE]))
+  yearID <- as.numeric(data[, time, drop = TRUE])
+  yearID <- yearID - min(yearID) + 1 # convert to 1, ..., nT
   if (is.null(station)) {
     stationID <- seq_len(nrow(data))
   } else {
@@ -40,27 +41,37 @@ format_data <- function(data, y, X, time,
     first_instance <- which(!duplicated(stationID))
 
     if (cluster == "pam") {
-      knots <- cluster::pam(data[first_instance, c(lon, lat)], nknots)$medoids
+      knots <- cluster::pam(data[first_instance, c(lon, lat), drop = FALSE], nknots)$medoids
     } else {
-      knots <- stats::kmeans(data[first_instance, c(lon, lat)], nknots)$centers
+      if (cluster == "kmeans") {
+        knots <- stats::kmeans(data[first_instance, c(lon, lat), drop = FALSE], nknots)$centers
+      } else {
+        # each point is unique, predictive process not used
+        knots <- data[first_instance, c(lon, lat)]
+      }
     }
 
     distKnots <- as.matrix(dist(knots))
-    ix <- sort(data[first_instance, "stationID"], index.return = T)$ix
+    ix <- sort(data[first_instance, "stationID"], index.return = TRUE)$ix
 
     # Calculate distance from knots to grid
     distAll <- as.matrix(stats::dist(rbind(data[first_instance, c(lon, lat)][ix, ], knots)))
     nLocs <- length(first_instance)
   } else {
     if (cluster == "pam") {
-      knots <- cluster::pam(data[, c(lon, lat)], nknots)$medoids
+      knots <- cluster::pam(data[, c(lon, lat), drop = FALSE], nknots)$medoids
     } else {
-      knots <- stats::kmeans(data[, c(lon, lat)], nknots)$centers
+      if (cluster == "kmeans") {
+        knots <- stats::kmeans(data[, c(lon, lat), drop = FALSE], nknots)$centers
+      } else {
+        # each point is unique, predictive process not used
+        knots <- data[, c(lon, lat), drop = FALSE]
+      }
     }
     distKnots <- as.matrix(dist(knots))
 
     # Calculate distance from knots to grid
-    distAll <- as.matrix(stats::dist(rbind(data[, c(lon, lat)], knots)))
+    distAll <- as.matrix(stats::dist(rbind(data[, c(lon, lat), drop = FALSE], knots)))
     nLocs <- nrow(data)
   }
 
@@ -76,7 +87,7 @@ format_data <- function(data, y, X, time,
   spatglm_data <- list(
     nKnots = nknots,
     nLocs = nLocs,
-    nT = length(unique(yearID)),
+    nT = max(yearID),
     N = length(y),
     stationID = stationID,
     yearID = yearID,
@@ -84,7 +95,7 @@ format_data <- function(data, y, X, time,
     distKnots = distKnots,
     distKnots21 = distKnots21,
     X = X,
-    nCov = ifelse(fixed_intercept, 0, ncol(X))
+    nCov = if(fixed_intercept) 0 else ncol(X)
   )
   list(spatglm_data = spatglm_data, knots = knots)
 }

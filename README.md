@@ -15,6 +15,12 @@ process approach with random fields implemented through a multivariate-t
 distribution instead of a multivariate normal. The models are fit with
 [Stan](http://mc-stan.org/).
 
+We published a paper describing the model and package in *Ecology*:
+
+Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
+spatiotemporal processes with extremes. In press at *Ecology*.
+<https://doi.org/10.1002/ecy.2403>
+
 You can install the development version of the package with:
 
 ``` r
@@ -171,7 +177,9 @@ ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
 
 # References
 
-Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling spatiotemporal processes with extremes. Ecology. In press. <https://doi.org/10.1002/ecy.2403> [Code](https://github.com/seananderson/spatial-extremes)
+Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
+spatiotemporal processes with extremes. In press at *Ecology*.
+<https://doi.org/10.1002/ecy.2403>
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A.
 Silander Jr. 2009. Hierarchical models facilitate spatial analysis of

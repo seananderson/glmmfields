@@ -26,7 +26,6 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
   if (estimate_ar) p <- c("phi", p)
   if (est_temporalRE) {
     p <- c("year_sigma", "yearEffects", p)
-    p <- p[!p == "B"] # no main effects if random walk for now
   }
   if (fixed_intercept) p <- p[p != "B"]
   if (save_log_lik) p <- c(p, "log_lik")

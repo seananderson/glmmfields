@@ -118,13 +118,15 @@ transformed parameters {
       }
     } else {
       y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+      if(nCov > 0) {
+        y_hat[i] = y_hat[i] + X[i] * B;
+      }
     }
   }
 
   if (obs_model==0) {
     gammaA[1] = inv(pow(CV[1], 2.0));
   }
-
 }
 model {
   // priors:

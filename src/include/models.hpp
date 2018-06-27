@@ -27,7 +27,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_glmmfields");
-    reader.add_event(261, 261, "end", "model_glmmfields");
+    reader.add_event(263, 263, "end", "model_glmmfields");
     return reader;
 }
 
@@ -902,6 +902,10 @@ public:
                 } else {
 
                     stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                    if (as_bool(logical_gt(nCov,0))) {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(y_hat,i,"y_hat",1) + multiply(get_base1(X,i,"X",1),B)));
+                    }
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
@@ -1453,6 +1457,10 @@ public:
                 } else {
 
                     stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                    if (as_bool(logical_gt(nCov,0))) {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(y_hat,i,"y_hat",1) + multiply(get_base1(X,i,"X",1),B)));
+                    }
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
