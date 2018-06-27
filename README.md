@@ -6,7 +6,8 @@
 Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields)
-[![CRAN status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
 <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
 
 The glmmfields R package implements Bayesian spatiotemporal models that
@@ -18,14 +19,23 @@ distribution instead of a multivariate normal. The models are fit with
 We published a paper describing the model and package in *Ecology*:
 
 Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
-spatiotemporal processes with extremes. In press at *Ecology*.
+spatiotemporal processes with extremes. In press at Ecology.
 <https://doi.org/10.1002/ecy.2403>
 
-You can install the development version of the package with:
+You can install the [CRAN
+version](https://cran.r-project.org/package=glmmfields) of the package
+with:
+
+``` r
+install.packages("glmmfields")
+```
+
+If you have a C++ compiler installed, you can install the development
+version of the package with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("seananderson/glmmfields")
+devtools::install_github("seananderson/glmmfields", build_vignettes = TRUE)
 ```
 
 glmmfields can also fit spatial GLMs with Stan. See the vignette:

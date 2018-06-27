@@ -34,11 +34,17 @@ Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
 spatiotemporal processes with extremes. In press at Ecology.
 <https://doi.org/10.1002/ecy.2403>
 
-You can install the development version of the package with:
+You can install the [CRAN version](https://cran.r-project.org/package=glmmfields) of the package with:
+
+```{r, eval=FALSE}
+install.packages("glmmfields")
+```
+
+If you have a C++ compiler installed, you can install the development version of the package with:
 
 ```{r, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("seananderson/glmmfields")
+devtools::install_github("seananderson/glmmfields", build_vignettes = TRUE)
 ```
 
 glmmfields can also fit spatial GLMs with Stan. See the vignette:
