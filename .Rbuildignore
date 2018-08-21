@@ -10,3 +10,5 @@ cleanup*
 ^inst/logo.png$
 ^inst/logo.svg$
 ^CRAN-RELEASE$
+^_pkgdown\.yml$
+^docs$
