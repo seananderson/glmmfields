@@ -31,7 +31,8 @@ Imports:
     assertthat,
     nlme,
     forcats,
-    rstantools
+    rstantools,
+    spNNGP
 LinkingTo: StanHeaders (>= 2.16.0), rstan (>= 2.16.0), BH (>= 1.62.0), Rcpp (>=
     0.12.0), RcppEigen
 Suggests:

@@ -7,21 +7,26 @@
 #' @param lon A character object giving the name of the longitude column
 #' @param lat A character object giving the name of the latitude column
 #' @param station A numeric vector giving the integer ID of the station
-#' @param nknots The number of knots
+#' @param nknots The number of knots, specific to GP models
 #' @param covariance The type of covariance function
 #' @param fixed_intercept Should the intercept be fixed?
 #' @param cluster The type of clustering algorithm used to determine the not locations.
-#'   \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.
+#'   \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets. Specific
+#'   to GPP models
+#' @param nngp_neighbors The number of nearest neighbors to include in nearest neighbor Gaussian process (method="NNGP")
 format_data <- function(data, y, X, time,
                         lon = "lon", lat = "lat",
                         station = NULL, nknots = 25L,
                         covariance = c("squared-exponential",
                           "exponential", "matern"),
                         fixed_intercept = FALSE,
-                        cluster = c("pam", "kmeans")) {
+                        cluster = c("pam", "kmeans"),
+                        nngp_neighbors = NULL,
+                        method = c("GP","NNGP")) {
   data <- as.data.frame(data)
   cluster <- match.arg(cluster)
   covariance <- match.arg(covariance)
+  method <- match.arg(method)
 
   if (is.null(time)) {
     data$time <- 1
@@ -35,6 +40,8 @@ format_data <- function(data, y, X, time,
     stationID <- as.numeric(forcats::as_factor(data[, station, drop = TRUE]))
   }
   data$stationID <- stationID
+
+  if(method == "GP") {
 
   # if stationID is duplicated, perform clustering on the subset of data
   if (length(unique(stationID)) < length(stationID)) {
@@ -97,5 +104,10 @@ format_data <- function(data, y, X, time,
     X = X,
     nCov = if(fixed_intercept) 0 else ncol(X)
   )
-  list(spatglm_data = spatglm_data, knots = knots)
+  return(list(spatglm_data = spatglm_data, knots = knots))
+  } else {
+    # NNGP model setup
+
+  }
+
 }

@@ -6,7 +6,8 @@
 \usage{
 format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
   nknots = 25L, covariance = c("squared-exponential", "exponential",
-  "matern"), fixed_intercept = FALSE, cluster = c("pam", "kmeans"))
+  "matern"), fixed_intercept = FALSE, cluster = c("pam", "kmeans"),
+  nngp_neighbors = NULL, method = c("GP", "NNGP"))
 }
 \arguments{
 \item{data}{A data frame to be formatted}
@@ -23,14 +24,17 @@ format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
 
 \item{station}{A numeric vector giving the integer ID of the station}
 
-\item{nknots}{The number of knots}
+\item{nknots}{The number of knots, specific to GP models}
 
 \item{covariance}{The type of covariance function}
 
 \item{fixed_intercept}{Should the intercept be fixed?}
 
 \item{cluster}{The type of clustering algorithm used to determine the not locations.
-\code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets.}
+\code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets. Specific
+to GPP models}
+
+\item{nngp_neighbors}{The number of nearest neighbors to include in nearest neighbor Gaussian process (method="NNGP")}
 }
 \description{
 Format data for fitting a glmmfields model
