@@ -107,7 +107,40 @@ format_data <- function(data, y, X, time,
   return(list(spatglm_data = spatglm_data, knots = knots))
   } else {
     # NNGP model setup
+    M = nngp_neighbors # nearest neighbors
 
+    # Get coordinates
+    if (length(unique(stationID)) < length(stationID)) {
+      first_instance <- which(!duplicated(stationID))
+      coords <- data[first_instance, c(lon, lat), drop = FALSE]
+    } else {
+      coords <- data[, c(lon, lat), drop = FALSE]
+    }
+
+    # Matrices used to construct the A and D matrices described in Finley et al. (2017)
+    NN_ind # two-dimensional array of indices whose i−1th row shows at most M closest points to si among the locations indexed less than i.
+    NN_dist # matrix whose i−1th row contains the distance of ith location to its selected neighbors.
+    NN_dist # matrix whose i−1th row contains the strictly lower triangular part of the distance matrix of the selected neighbors of ith location.
+    NN_matrix <- NNMatrix(coords = coords, n.neighbors = M, n.omp.threads = 2)
+
+    nCov = if(fixed_intercept) 0 else ncol(X)
+
+    spatglm_data <- list(
+      nT = max(yearID),
+      N = length(y),
+      M = M,
+      yearID = yearID,
+      y = y[NN.matrix$ord],
+      X = X[NN.matrix$ord,],
+      nCov = nCov,
+      NN_ind = NN_matrix$NN_ind,
+      NN_dist = NN_matrix$NN_dist,
+      NN_distM = NN_matrix$NN_distM,
+      uB = rep(0, nCov + 1), VB = diag(nCov + 1)*1000,
+      ss = 3 * sqrt(2), st = 3 * sqrt(0.1),
+      ap = 3, bp = 0.5
+    )
+    return(list(spatglm_data = spatglm_data))
   }
 
 }
