@@ -88,6 +88,11 @@
 #' @param cluster The type of clustering algorithm used to determine the knot
 #'   locations. `"pam"` = [cluster::pam()]. The `"kmeans"`
 #'   algorithm will be faster on larger datasets.
+#' @param use_NNGP Logical: if \code{TRUE} then nearest neighbor Gaussian processes
+#'   will be used for estimation, othersise Gaussian predictive process is used. Defaults
+#'   to \code{FALSE}
+#' @param nngp_neighbors Numeric, number of neighbors used to estimate nearest neighbor
+#'   Gaussian process (NNGP). Defaults to 5, and not used if \code{use_NNGP} is FALSE
 #' @param ... Any other arguments to pass to [rstan::sampling()].
 #'
 #' @details
@@ -167,6 +172,8 @@ glmmfields <- function(formula, data, lon, lat,
                        save_log_lik = FALSE,
                        df_lower_bound = 2,
                        cluster = c("pam", "kmeans"),
+                       use_NNGP = FALSE,
+                       nngp_neighbors = 5
                        ...) {
 
   # argument checks:
