@@ -12,7 +12,8 @@ i_dist <- function(i, neighbor_index, s){
 #'
 #'  @param ind
 #'  @param ind_distM_d
-get_NN_distM <- function (ind, ind_distM_d) {
+#'  @param M the nearest neighbors
+get_NN_distM <- function (ind, ind_distM_d, M) {
   if (ind < M ){l = ind } else {l = M};
   M_i <- rep(0, M * (M - 1) / 2);
   if (l == 1) {}
@@ -27,7 +28,8 @@ get_NN_distM <- function (ind, ind_distM_d) {
 #'
 #'  @param ind
 #'  @param ind_dist_M_d
-get_NN_dist <- function (ind, ind_distM_d) {
+#'  @param M the nearest neighbors
+get_NN_dist <- function (ind, ind_distM_d, M) {
   if (ind < M ){l = ind } else {l = M};
   D_i <- rep(0, M);
   D_i[1:l] <- c(ind_distM_d[[ind]])[1:l]
@@ -38,7 +40,8 @@ get_NN_dist <- function (ind, ind_distM_d) {
 #'
 #'  @param ind
 #'  @param ind_dist_M_i
-get_NN_ind <- function (ind, ind_distM_i) {
+#'  @param M the nearest neighbors
+get_NN_ind <- function (ind, ind_distM_i, M) {
   if (ind < M ){l = ind } else {l = M};
   D_i <- rep(0, M);
   D_i[1:l] <- c(ind_distM_i[[ind]])[1:l]
@@ -67,10 +70,10 @@ NNMatrix <- function(coords, n.neighbors, n.omp.threads = 2,
     return.neighbors = T, sigma.sq.IG = c(2, 1),
     cov.model = "exponential", verbose = F)
 
-  NN_ind <- t(sapply(1: (N - 1), get_NN_ind, m.c$n.indx[-1]))
+  NN_ind <- t(sapply(1: (N - 1), get_NN_ind, m.c$n.indx[-1], M=n.neighbors))
   neighbor_dist <- sapply(2:N, i_dist, m.c$n.indx[-1], m.c$coords.ord)
-  NN_distM <- t(sapply(1: (N - 1), get_NN_distM, neighbor_dist))
-  NN_dist <- t(sapply(1: (N - 1), get_NN_dist, neighbor_dist))
+  NN_distM <- t(sapply(1: (N - 1), get_NN_distM, neighbor_dist, M=n.neighbors))
+  NN_dist <- t(sapply(1: (N - 1), get_NN_dist, neighbor_dist, M=n.neighbors))
 
   return(list(ord = m.c$ord, coords.ord = m.c$coords.ord,
     NN_ind = NN_ind, NN_distM = NN_distM, NN_dist = NN_dist))

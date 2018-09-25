@@ -7,15 +7,16 @@
 glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   prior_gp_theta = half_t(3, 0, 5), prior_gp_sigma = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
-  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
-  prior_phi = student_t(1000, 0, 0.5), fixed_df_value = 1000,
+  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0,
+  3), prior_phi = student_t(1000, 0, 0.5), fixed_df_value = 1000,
   fixed_phi_value = 0, estimate_df = FALSE, estimate_ar = FALSE,
   family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
-  year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
-  0.9), save_log_lik = FALSE, df_lower_bound = 2, cluster = c("pam",
-  "kmeans"), ...)
+  year_re = FALSE, nb_lower_truncation = 0,
+  control = list(adapt_delta = 0.9), save_log_lik = FALSE,
+  df_lower_bound = 2, cluster = c("pam", "kmeans"), use_NNGP = FALSE,
+  nngp_neighbors = 5, ...)
 }
 \arguments{
 \item{formula}{The model formula.}
@@ -127,6 +128,13 @@ convergence. Defaults to 2.}
 \item{cluster}{The type of clustering algorithm used to determine the knot
 locations. \code{"pam"} = \code{\link[cluster:pam]{cluster::pam()}}. The \code{"kmeans"}
 algorithm will be faster on larger datasets.}
+
+\item{use_NNGP}{Logical: if \code{TRUE} then nearest neighbor Gaussian processes
+will be used for estimation, othersise Gaussian predictive process is used. Defaults
+to \code{FALSE}}
+
+\item{nngp_neighbors}{Numeric, number of neighbors used to estimate nearest neighbor
+Gaussian process (NNGP). Defaults to 5, and not used if \code{use_NNGP} is FALSE}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}}.}
 }

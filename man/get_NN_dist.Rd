@@ -4,9 +4,10 @@
 \alias{get_NN_dist}
 \title{Function to get nearest neighbor distances}
 \usage{
-get_NN_dist(ind, ind_distM_d)
+get_NN_dist(ind, ind_distM_d, M)
 }
 \description{
 @param ind
 @param ind_dist_M_d
+@param M the nearest neighbors
 }

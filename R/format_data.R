@@ -106,6 +106,7 @@ format_data <- function(data, y, X, time,
   )
   return(list(spatglm_data = spatglm_data, knots = knots))
   } else {
+
     # NNGP model setup
     M = nngp_neighbors # nearest neighbors
 
@@ -121,14 +122,14 @@ format_data <- function(data, y, X, time,
     #NN_ind, two-dimensional array of indices whose i−1th row shows at most M closest points to si among the locations indexed less than i.
     #NN_dist, matrix whose i−1th row contains the distance of ith location to its selected neighbors.
     #NN_dist, matrix whose i−1th row contains the strictly lower triangular part of the distance matrix of the selected neighbors of ith location.
-    NN_matrix <- NNMatrix(coords = coords, n.neighbors = M, n.omp.threads = 2)
+    NN_matrix <- NNMatrix(coords = as.matrix(coords), n.neighbors = 3, n.omp.threads = 2)
 
     nCov = if(fixed_intercept) 0 else ncol(X)
 
     spatglm_data <- list(
       nT = max(yearID),
       N = length(y),
-      M = M,
+      M = 3,
       yearID = yearID,
       y = y[NN.matrix$ord],
       X = X[NN.matrix$ord,],
