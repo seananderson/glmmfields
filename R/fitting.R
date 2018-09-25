@@ -173,7 +173,7 @@ glmmfields <- function(formula, data, lon, lat,
                        df_lower_bound = 2,
                        cluster = c("pam", "kmeans"),
                        use_NNGP = FALSE,
-                       nngp_neighbors = 5
+                       nngp_neighbors = 5,
                        ...) {
 
   # argument checks:
