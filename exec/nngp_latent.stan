@@ -57,7 +57,7 @@ functions{
     data {
     int<lower=1> N;
     int<lower=1> M;
-    int<lower=1> P;
+    int<lower=0> P;
     vector[N] Y;
     matrix[N, P + 1] X;
     int NN_ind[N - 1, M];
