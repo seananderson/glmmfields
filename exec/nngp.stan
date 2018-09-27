@@ -168,5 +168,37 @@ model{
     y ~ lognormal(y_hat, sigma[1]);
   }
 
+}
+generated quantities {
+  // log_lik is for use with the loo package
+  vector[N] log_lik;
 
+  for (i in 1:N) {
+    if (obs_model == 0) {
+      log_lik[i] = gamma_lpdf(y[i] | gammaA[1], gammaA[1] ./ exp(y_hat[i]));
+    }
+    if (obs_model == 1) {
+      log_lik[i] = normal_lpdf(y[i] | y_hat[i], sigma[1]);
+    }
+    if (obs_model == 2) {
+      if (lower_truncation == 0) {
+        log_lik[i] = neg_binomial_2_log_lpmf(y_int[i] | y_hat[i], nb2_phi[1]);
+      } else {
+        // Note that I had to remove T[lower_truncation, ] from the following line
+        // and I think that will make this calculation incorrect
+        // in the case of truncated negative binomial
+        // the package will issue a warning
+        log_lik[i] = neg_binomial_2_lpmf(y_int[i] | exp(y_hat[i]), nb2_phi[1]);
+      }
+    }
+    if (obs_model == 4) {
+      log_lik[i] = bernoulli_logit_lpmf(y_int[i] | y_hat[i]);
+    }
+    if (obs_model == 5) {
+      log_lik[i] = poisson_log_lpmf(y_int[i] | y_hat[i]);
+    }
+    if (obs_model == 6) {
+      log_lik[i] = lognormal_lpdf(y[i] | y_hat, sigma[1]);
+    }
+  }
 }
