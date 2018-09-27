@@ -1875,7 +1875,7 @@ public:
 
 #include <stan/model/model_header.hpp>
 
-namespace model_nngp_latent_namespace {
+namespace model_nngp_namespace {
 
 using std::istream;
 using std::string;
@@ -1894,8 +1894,8 @@ static int current_statement_begin__;
 
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
-    reader.add_event(0, 0, "start", "model_nngp_latent");
-    reader.add_event(99, 99, "end", "model_nngp_latent");
+    reader.add_event(0, 0, "start", "model_nngp");
+    reader.add_event(101, 101, "end", "model_nngp");
     return reader;
 }
 
@@ -2045,7 +2045,7 @@ struct nngp_w_lpdf_functor__ {
     }
 };
 
-class model_nngp_latent : public prob_grad {
+class model_nngp : public prob_grad {
 private:
     int N;
     int M;
@@ -2055,21 +2055,22 @@ private:
     vector<vector<int> > NN_ind;
     matrix_d NN_dist;
     matrix_d NN_distM;
-    vector_d uB;
-    matrix_d VB;
     double ss;
     double st;
     double ap;
     double bp;
-    matrix_d L_VB;
+    int norm_params;
+    int gamma_params;
+    int nb2_params;
+    int obs_model;
 public:
-    model_nngp_latent(stan::io::var_context& context__,
+    model_nngp(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
         ctor_body(context__, 0, pstream__);
     }
 
-    model_nngp_latent(stan::io::var_context& context__,
+    model_nngp(stan::io::var_context& context__,
         unsigned int random_seed__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
@@ -2085,7 +2086,7 @@ public:
 
         current_statement_begin__ = -1;
 
-        static const char* function__ = "model_nngp_latent_namespace::model_nngp_latent";
+        static const char* function__ = "model_nngp_namespace::model_nngp";
         (void) function__;  // dummy to suppress unused var warning
         size_t pos__;
         (void) pos__;  // dummy to suppress unused var warning
@@ -2181,31 +2182,6 @@ public:
                     NN_distM(m_mat__,n_mat__) = vals_r__[pos__++];
                 }
             }
-            validate_non_negative_index("uB", "(P + 1)", (P + 1));
-            context__.validate_dims("data initialization", "uB", "vector_d", context__.to_vec((P + 1)));
-            validate_non_negative_index("uB", "(P + 1)", (P + 1));
-            uB = vector_d(static_cast<Eigen::VectorXd::Index>((P + 1)));
-            vals_r__ = context__.vals_r("uB");
-            pos__ = 0;
-            size_t uB_i_vec_lim__ = (P + 1);
-            for (size_t i_vec__ = 0; i_vec__ < uB_i_vec_lim__; ++i_vec__) {
-                uB[i_vec__] = vals_r__[pos__++];
-            }
-            validate_non_negative_index("VB", "(P + 1)", (P + 1));
-            validate_non_negative_index("VB", "(P + 1)", (P + 1));
-            context__.validate_dims("data initialization", "VB", "matrix_d", context__.to_vec((P + 1),(P + 1)));
-            validate_non_negative_index("VB", "(P + 1)", (P + 1));
-            validate_non_negative_index("VB", "(P + 1)", (P + 1));
-            VB = matrix_d(static_cast<Eigen::VectorXd::Index>((P + 1)),static_cast<Eigen::VectorXd::Index>((P + 1)));
-            vals_r__ = context__.vals_r("VB");
-            pos__ = 0;
-            size_t VB_m_mat_lim__ = (P + 1);
-            size_t VB_n_mat_lim__ = (P + 1);
-            for (size_t n_mat__ = 0; n_mat__ < VB_n_mat_lim__; ++n_mat__) {
-                for (size_t m_mat__ = 0; m_mat__ < VB_m_mat_lim__; ++m_mat__) {
-                    VB(m_mat__,n_mat__) = vals_r__[pos__++];
-                }
-            }
             context__.validate_dims("data initialization", "ss", "double", context__.to_vec());
             ss = double(0);
             vals_r__ = context__.vals_r("ss");
@@ -2226,21 +2202,43 @@ public:
             vals_r__ = context__.vals_r("bp");
             pos__ = 0;
             bp = vals_r__[pos__++];
+            context__.validate_dims("data initialization", "norm_params", "int", context__.to_vec());
+            norm_params = int(0);
+            vals_i__ = context__.vals_i("norm_params");
+            pos__ = 0;
+            norm_params = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "gamma_params", "int", context__.to_vec());
+            gamma_params = int(0);
+            vals_i__ = context__.vals_i("gamma_params");
+            pos__ = 0;
+            gamma_params = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "nb2_params", "int", context__.to_vec());
+            nb2_params = int(0);
+            vals_i__ = context__.vals_i("nb2_params");
+            pos__ = 0;
+            nb2_params = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "obs_model", "int", context__.to_vec());
+            obs_model = int(0);
+            vals_i__ = context__.vals_i("obs_model");
+            pos__ = 0;
+            obs_model = vals_i__[pos__++];
 
             // validate, data variables
             check_greater_or_equal(function__,"N",N,1);
             check_greater_or_equal(function__,"M",M,1);
-            check_greater_or_equal(function__,"P",P,1);
+            check_greater_or_equal(function__,"P",P,0);
+            check_greater_or_equal(function__,"norm_params",norm_params,0);
+            check_less_or_equal(function__,"norm_params",norm_params,1);
+            check_greater_or_equal(function__,"gamma_params",gamma_params,0);
+            check_less_or_equal(function__,"gamma_params",gamma_params,1);
+            check_greater_or_equal(function__,"nb2_params",nb2_params,0);
+            check_less_or_equal(function__,"nb2_params",nb2_params,1);
+            check_greater_or_equal(function__,"obs_model",obs_model,0);
+            check_less_or_equal(function__,"obs_model",obs_model,6);
             // initialize data variables
-            validate_non_negative_index("L_VB", "(P + 1)", (P + 1));
-            validate_non_negative_index("L_VB", "(P + 1)", (P + 1));
-            L_VB = matrix_d(static_cast<Eigen::VectorXd::Index>((P + 1)),static_cast<Eigen::VectorXd::Index>((P + 1)));
-            stan::math::fill(L_VB,DUMMY_VAR__);
 
-            stan::math::assign(L_VB, cholesky_decompose(VB));
 
             // validate transformed data
-            stan::math::check_cholesky_factor(function__,"L_VB",L_VB);
 
             // validate, set parameter ranges
             num_params_r__ = 0U;
@@ -2252,6 +2250,12 @@ public:
             ++num_params_r__;
             validate_non_negative_index("w", "N", N);
             num_params_r__ += N;
+            validate_non_negative_index("sigma", "norm_params", norm_params);
+            num_params_r__ += norm_params;
+            validate_non_negative_index("CV", "gamma_params", gamma_params);
+            num_params_r__ += gamma_params;
+            validate_non_negative_index("nb2_phi", "nb2_params", nb2_params);
+            num_params_r__ += nb2_params;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -2259,7 +2263,7 @@ public:
         }
     }
 
-    ~model_nngp_latent() { }
+    ~model_nngp() { }
 
 
     void transform_inits(const stan::io::var_context& context__,
@@ -2287,17 +2291,17 @@ public:
             throw std::runtime_error(std::string("Error transforming variable beta: ") + e.what());
         }
 
-        if (!(context__.contains_r("sigma")))
-            throw std::runtime_error("variable sigma missing");
-        vals_r__ = context__.vals_r("sigma");
+        if (!(context__.contains_r("sigmasq")))
+            throw std::runtime_error("variable sigmasq missing");
+        vals_r__ = context__.vals_r("sigmasq");
         pos__ = 0U;
-        context__.validate_dims("initialization", "sigma", "double", context__.to_vec());
-        double sigma(0);
-        sigma = vals_r__[pos__++];
+        context__.validate_dims("initialization", "sigmasq", "double", context__.to_vec());
+        double sigmasq(0);
+        sigmasq = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0,sigma);
+            writer__.scalar_lb_unconstrain(0,sigmasq);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable sigma: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable sigmasq: ") + e.what());
         }
 
         if (!(context__.contains_r("tau")))
@@ -2341,6 +2345,54 @@ public:
             throw std::runtime_error(std::string("Error transforming variable w: ") + e.what());
         }
 
+        if (!(context__.contains_r("sigma")))
+            throw std::runtime_error("variable sigma missing");
+        vals_r__ = context__.vals_r("sigma");
+        pos__ = 0U;
+        validate_non_negative_index("sigma", "norm_params", norm_params);
+        context__.validate_dims("initialization", "sigma", "double", context__.to_vec(norm_params));
+        std::vector<double> sigma(norm_params,double(0));
+        for (int i0__ = 0U; i0__ < norm_params; ++i0__)
+            sigma[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < norm_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,sigma[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable sigma: ") + e.what());
+        }
+
+        if (!(context__.contains_r("CV")))
+            throw std::runtime_error("variable CV missing");
+        vals_r__ = context__.vals_r("CV");
+        pos__ = 0U;
+        validate_non_negative_index("CV", "gamma_params", gamma_params);
+        context__.validate_dims("initialization", "CV", "double", context__.to_vec(gamma_params));
+        std::vector<double> CV(gamma_params,double(0));
+        for (int i0__ = 0U; i0__ < gamma_params; ++i0__)
+            CV[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < gamma_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,CV[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable CV: ") + e.what());
+        }
+
+        if (!(context__.contains_r("nb2_phi")))
+            throw std::runtime_error("variable nb2_phi missing");
+        vals_r__ = context__.vals_r("nb2_phi");
+        pos__ = 0U;
+        validate_non_negative_index("nb2_phi", "nb2_params", nb2_params);
+        context__.validate_dims("initialization", "nb2_phi", "double", context__.to_vec(nb2_params));
+        std::vector<double> nb2_phi(nb2_params,double(0));
+        for (int i0__ = 0U; i0__ < nb2_params; ++i0__)
+            nb2_phi[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < nb2_params; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,nb2_phi[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable nb2_phi: ") + e.what());
+        }
+
         params_r__ = writer__.data_r();
         params_i__ = writer__.data_i();
     }
@@ -2379,12 +2431,12 @@ public:
             else
                 beta = in__.vector_constrain((P + 1));
 
-            T__ sigma;
-            (void) sigma;  // dummy to suppress unused var warning
+            T__ sigmasq;
+            (void) sigmasq;  // dummy to suppress unused var warning
             if (jacobian__)
-                sigma = in__.scalar_lb_constrain(0,lp__);
+                sigmasq = in__.scalar_lb_constrain(0,lp__);
             else
-                sigma = in__.scalar_lb_constrain(0);
+                sigmasq = in__.scalar_lb_constrain(0);
 
             T__ tau;
             (void) tau;  // dummy to suppress unused var warning
@@ -2407,41 +2459,79 @@ public:
             else
                 w = in__.vector_constrain(N);
 
+            vector<T__> sigma;
+            size_t dim_sigma_0__ = norm_params;
+            sigma.reserve(dim_sigma_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_sigma_0__; ++k_0__) {
+                if (jacobian__)
+                    sigma.push_back(in__.scalar_lb_constrain(0,lp__));
+                else
+                    sigma.push_back(in__.scalar_lb_constrain(0));
+            }
+
+            vector<T__> CV;
+            size_t dim_CV_0__ = gamma_params;
+            CV.reserve(dim_CV_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_CV_0__; ++k_0__) {
+                if (jacobian__)
+                    CV.push_back(in__.scalar_lb_constrain(0,lp__));
+                else
+                    CV.push_back(in__.scalar_lb_constrain(0));
+            }
+
+            vector<T__> nb2_phi;
+            size_t dim_nb2_phi_0__ = nb2_params;
+            nb2_phi.reserve(dim_nb2_phi_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
+                if (jacobian__)
+                    nb2_phi.push_back(in__.scalar_lb_constrain(0,lp__));
+                else
+                    nb2_phi.push_back(in__.scalar_lb_constrain(0));
+            }
+
 
             // transformed parameters
-            T__ sigmasq;
-            (void) sigmasq;  // dummy to suppress unused var warning
-
-            stan::math::initialize(sigmasq, DUMMY_VAR__);
-            stan::math::fill(sigmasq,DUMMY_VAR__);
-            stan::math::assign(sigmasq,square(sigma));
             T__ tausq;
             (void) tausq;  // dummy to suppress unused var warning
 
             stan::math::initialize(tausq, DUMMY_VAR__);
             stan::math::fill(tausq,DUMMY_VAR__);
             stan::math::assign(tausq,square(tau));
+            validate_non_negative_index("gammaA", "gamma_params", gamma_params);
+            vector<T__> gammaA(gamma_params);
+            stan::math::initialize(gammaA, DUMMY_VAR__);
+            stan::math::fill(gammaA,DUMMY_VAR__);
 
 
+            if (as_bool(logical_eq(obs_model,0))) {
+
+                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
+            }
 
             // validate transformed parameters
-            if (stan::math::is_uninitialized(sigmasq)) {
-                std::stringstream msg__;
-                msg__ << "Undefined transformed parameter: sigmasq";
-                throw std::runtime_error(msg__.str());
-            }
             if (stan::math::is_uninitialized(tausq)) {
                 std::stringstream msg__;
                 msg__ << "Undefined transformed parameter: tausq";
                 throw std::runtime_error(msg__.str());
             }
+            for (int i0__ = 0; i0__ < gamma_params; ++i0__) {
+                if (stan::math::is_uninitialized(gammaA[i0__])) {
+                    std::stringstream msg__;
+                    msg__ << "Undefined transformed parameter: gammaA" << '[' << i0__ << ']';
+                    throw std::runtime_error(msg__.str());
+                }
+            }
 
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
+            for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
+                check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
+            }
 
             // model body
 
-            lp_accum__.add(multi_normal_cholesky_log<propto__>(beta, uB, L_VB));
+            lp_accum__.add(gamma_log<propto__>(sigmasq, ap, bp));
+            lp_accum__.add(normal_log<propto__>(beta, 0, 1));
             lp_accum__.add(gamma_log<propto__>(phi, ap, bp));
             lp_accum__.add(normal_log<propto__>(sigma, 0, ss));
             lp_accum__.add(normal_log<propto__>(tau, 0, st));
@@ -2474,12 +2564,15 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("beta");
-        names__.push_back("sigma");
+        names__.push_back("sigmasq");
         names__.push_back("tau");
         names__.push_back("phi");
         names__.push_back("w");
-        names__.push_back("sigmasq");
+        names__.push_back("sigma");
+        names__.push_back("CV");
+        names__.push_back("nb2_phi");
         names__.push_back("tausq");
+        names__.push_back("gammaA");
     }
 
 
@@ -2499,8 +2592,18 @@ public:
         dims__.push_back(N);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(norm_params);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(gamma_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nb2_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(gamma_params);
         dimss__.push_back(dims__);
     }
 
@@ -2514,22 +2617,46 @@ public:
                      std::ostream* pstream__ = 0) const {
         vars__.resize(0);
         stan::io::reader<double> in__(params_r__,params_i__);
-        static const char* function__ = "model_nngp_latent_namespace::write_array";
+        static const char* function__ = "model_nngp_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
         vector_d beta = in__.vector_constrain((P + 1));
-        double sigma = in__.scalar_lb_constrain(0);
+        double sigmasq = in__.scalar_lb_constrain(0);
         double tau = in__.scalar_lb_constrain(0);
         double phi = in__.scalar_lb_constrain(0);
         vector_d w = in__.vector_constrain(N);
+        vector<double> sigma;
+        size_t dim_sigma_0__ = norm_params;
+        for (size_t k_0__ = 0; k_0__ < dim_sigma_0__; ++k_0__) {
+            sigma.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> CV;
+        size_t dim_CV_0__ = gamma_params;
+        for (size_t k_0__ = 0; k_0__ < dim_CV_0__; ++k_0__) {
+            CV.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> nb2_phi;
+        size_t dim_nb2_phi_0__ = nb2_params;
+        for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
+            nb2_phi.push_back(in__.scalar_lb_constrain(0));
+        }
             for (int k_0__ = 0; k_0__ < (P + 1); ++k_0__) {
             vars__.push_back(beta[k_0__]);
             }
-        vars__.push_back(sigma);
+        vars__.push_back(sigmasq);
         vars__.push_back(tau);
         vars__.push_back(phi);
             for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(w[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < norm_params; ++k_0__) {
+            vars__.push_back(sigma[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
+            vars__.push_back(CV[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < nb2_params; ++k_0__) {
+            vars__.push_back(nb2_phi[k_0__]);
             }
 
         if (!include_tparams__) return;
@@ -2542,26 +2669,33 @@ public:
         (void) DUMMY_VAR__;  // suppress unused var warning
 
         try {
-            double sigmasq(0.0);
-            (void) sigmasq;  // dummy to suppress unused var warning
-
-            stan::math::initialize(sigmasq, std::numeric_limits<double>::quiet_NaN());
-            stan::math::fill(sigmasq,DUMMY_VAR__);
-            stan::math::assign(sigmasq,square(sigma));
             double tausq(0.0);
             (void) tausq;  // dummy to suppress unused var warning
 
             stan::math::initialize(tausq, std::numeric_limits<double>::quiet_NaN());
             stan::math::fill(tausq,DUMMY_VAR__);
             stan::math::assign(tausq,square(tau));
+            validate_non_negative_index("gammaA", "gamma_params", gamma_params);
+            vector<double> gammaA(gamma_params, 0.0);
+            stan::math::initialize(gammaA, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(gammaA,DUMMY_VAR__);
 
 
+            if (as_bool(logical_eq(obs_model,0))) {
+
+                stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
+            }
 
             // validate transformed parameters
+            for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
+                check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
+            }
 
             // write transformed parameters
-        vars__.push_back(sigmasq);
         vars__.push_back(tausq);
+            for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
+            vars__.push_back(gammaA[k_0__]);
+            }
 
             if (!include_gqs__) return;
             // declare and define generated quantities
@@ -2597,7 +2731,7 @@ public:
     }
 
     static std::string model_name() {
-        return "model_nngp_latent";
+        return "model_nngp";
     }
 
 
@@ -2611,7 +2745,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "sigma";
+        param_name_stream__ << "sigmasq";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "tau";
@@ -2624,14 +2758,31 @@ public:
             param_name_stream__ << "w" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= norm_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "sigma" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "CV" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= nb2_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "nb2_phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__ && !include_tparams__) return;
         param_name_stream__.str(std::string());
-        param_name_stream__ << "sigmasq";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
         param_name_stream__ << "tausq";
         param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "gammaA" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__) return;
     }
@@ -2647,7 +2798,7 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
-        param_name_stream__ << "sigma";
+        param_name_stream__ << "sigmasq";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "tau";
@@ -2660,14 +2811,31 @@ public:
             param_name_stream__ << "w" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        for (int k_0__ = 1; k_0__ <= norm_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "sigma" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "CV" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= nb2_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "nb2_phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__ && !include_tparams__) return;
         param_name_stream__.str(std::string());
-        param_name_stream__ << "sigmasq";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
         param_name_stream__ << "tausq";
         param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "gammaA" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__) return;
     }

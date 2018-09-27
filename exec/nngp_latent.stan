@@ -63,17 +63,10 @@ functions{
     int NN_ind[N - 1, M];
     matrix[N - 1, M] NN_dist;
     matrix[N - 1, (M * (M - 1) / 2)] NN_distM;
-    vector[P + 1] uB;
-    matrix[P + 1, P + 1] VB;
     real ss;
     real st;
     real ap;
     real bp;
-    }
-
-    transformed data {
-    cholesky_factor_cov[P + 1] L_VB;
-    L_VB = cholesky_decompose(VB);
     }
 
     parameters{
@@ -90,7 +83,7 @@ functions{
     }
 
     model{
-    beta ~ multi_normal_cholesky(uB, L_VB);
+    beta ~ normal(0,1);//multi_normal_cholesky(uB, L_VB);
     phi ~ gamma(ap, bp);
     sigma ~ normal(0, ss);
     tau ~ normal(0, st);

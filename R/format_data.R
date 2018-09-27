@@ -137,7 +137,6 @@ format_data <- function(data, y, X, time,
       NN_ind = NN_matrix$NN_ind,
       NN_dist = NN_matrix$NN_dist,
       NN_distM = NN_matrix$NN_distM,
-      uB = rep(0, nCov + 1), VB = diag(nCov + 1)*1000,
       ss = 3 * sqrt(2), st = 3 * sqrt(0.1),
       ap = 3, bp = 0.5
     )
