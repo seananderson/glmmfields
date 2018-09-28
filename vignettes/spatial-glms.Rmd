@@ -164,7 +164,7 @@ d <- s$dat
 
 ```
 
-Now we'll add two arguments to the glmmfields() call. First, we'll set method = "NNGP", and second we'll specify the number of neighbors used in calculations (nngp_neighbors, defaults to 5). Increasing the number of neighbors tends to make calculations more slow, and the estimated surface more smooth.
+Now we'll add two arguments to the glmmfields() call. First, we'll set method = "NNGP", and second we'll specify the number of neighbors used in calculations (nngp_neighbors, defaults to 5). Increasing the number of neighbors tends to make calculations more slow (5 takes a few minutes, 10 might take more like 20 minutes), and the estimated surface more smooth.
 
 ```{r}
 m_spatial_gp <- glmmfields(y ~ 1,
@@ -177,7 +177,7 @@ m_spatial_gp <- glmmfields(y ~ 1,
   prior_gp_sigma = half_t(3, 0, 3),
   seed = 123,
   method="NNGP",
-  nngp_neighbors = 10
+  nngp_neighbors = 5
 )
 
 ```
