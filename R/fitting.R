@@ -92,7 +92,9 @@
 #'   will be used for estimation, othersise Gaussian predictive process is used. Defaults
 #'   to \code{FALSE}
 #' @param nngp_neighbors Numeric, number of neighbors used to estimate nearest neighbor
-#'   Gaussian process (NNGP). Defaults to 5, and not used if \code{use_NNGP} is FALSE
+#'   Gaussian process (NNGP). Defaults to 5 if the method is "NNGP"
+#' @param method The methods used for estimation of the Gaussian Process. Defaults to full
+#' predictive process ("GP") but nearest neighbor Gaussian Process can be used ("NNGP")
 #' @param ... Any other arguments to pass to [rstan::sampling()].
 #'
 #' @details
@@ -172,7 +174,7 @@ glmmfields <- function(formula, data, lon, lat,
                        save_log_lik = FALSE,
                        df_lower_bound = 2,
                        cluster = c("pam", "kmeans"),
-                       use_NNGP = FALSE,
+                       method = c("GP","NNGP"),
                        nngp_neighbors = 5,
                        ...) {
 
@@ -180,6 +182,7 @@ glmmfields <- function(formula, data, lon, lat,
   covariance <- match.arg(covariance)
   algorithm <- match.arg(algorithm)
   cluster <- match.arg(cluster)
+  method <- match.arg(method)
 
   gp_sigma_scaling_factor <- 1 # removed option above
 
@@ -193,6 +196,8 @@ glmmfields <- function(formula, data, lon, lat,
   assert_that(is.logical(estimate_ar))
   assert_that(is.logical(year_re))
   assert_that(is.list(control))
+  is.count(nngp_neighbors)
+  assert_that(nngp_neighbors >= 0)
 
   family <- check_family(family)
   obs_error <- tolower(family$family)
@@ -240,8 +245,10 @@ glmmfields <- function(formula, data, lon, lat,
     data = data, y = y, X = X, time = time,
     lon = lon, lat = lat, station = "station_", nknots = nknots,
     covariance = covariance,
-    fixed_intercept = fixed_intercept, cluster = cluster
+    fixed_intercept = fixed_intercept, cluster = cluster, method=method,
+    nngp_neighbors = nngp_neighbors
   )
+
   stan_data <- data_list$spatglm_data
   data_knots <- data_list$knots
 
@@ -293,8 +300,15 @@ glmmfields <- function(formula, data, lon, lat,
     stan_data <- c(stan_data, list(y_int = rep(0L, stan_data$N)))
   }
 
+  # switch for 2 stan models
+  if(method=="GP") {
+    object = stanmodels$glmmfields
+  } else {
+    object = stanmodels$nngp
+  }
+
   sampling_args <- list(
-    object = stanmodels$glmmfields,
+    object = object,
     data = stan_data,
     pars = stan_pars(
       obs_error = obs_error, estimate_df = estimate_df,
@@ -314,7 +328,7 @@ glmmfields <- function(formula, data, lon, lat,
 
   out <- list(
     model = m,
-    knots = dplyr::as.tbl(as.data.frame(data_knots)),
+    knots = ifelse(method=="GP", dplyr::as.tbl(as.data.frame(data_knots)), NA),
     y = y, X = X,
     data = dplyr::as.tbl(data), formula = formula,
     covariance = covariance, matern_kappa = matern_kappa,

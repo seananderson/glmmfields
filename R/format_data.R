@@ -14,6 +14,7 @@
 #'   \code{"pam"} = \code{\link[cluster]{pam}}. \code{kmeans} is faster for large datasets. Specific
 #'   to GPP models
 #' @param nngp_neighbors The number of nearest neighbors to include in nearest neighbor Gaussian process (method="NNGP")
+#' @param method The methods used for estimation of the Gaussian Process. Defaults to full predictive process ("GP") but nearest neighbor Gaussian Process can be used ("NNGP")
 format_data <- function(data, y, X, time,
                         lon = "lon", lat = "lat",
                         station = NULL, nknots = 25L,
