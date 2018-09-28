@@ -161,6 +161,21 @@ model{
   gp_theta ~ student_t(prior_gp_theta[1], prior_gp_theta[2], prior_gp_theta[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
 
+  if (est_phi == 1) {
+    phi ~ student_t(prior_phi[1], prior_phi[2], prior_phi[3]);
+  }
+
+  if (nCov >= 1) {
+    // global intercept, absorbed into year re [1] if those estimated
+    B[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
+  }
+  if (nCov >= 2) {
+    for (i in 2:nCov) {
+      // coefficients associated with non-intercept covariates
+      B[i] ~ student_t(prior_beta[1], prior_beta[2], prior_beta[3]);
+    }
+  }
+
   // temporal random effects, if estimated global intercept = effect in first year
   if (est_temporalRE == 1) {
     year_sigma ~ student_t(prior_rw_sigma[1], prior_rw_sigma[2], prior_rw_sigma[3]);
@@ -184,22 +199,11 @@ model{
   if (nW > 0) { // if nW == 0, we are using MVN
     // spatial deviates in remaining time slices
     for (t in 1:nT) {
-        spatialDevs[t] ~ nngp_w(W[t]*gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
+        spatialDevs[t] ~ nngp_w(W[t]*gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
     }
   } else { // use MVN instead of MVT
     for (t in 1:nT) {
-        spatialDevs[t] ~ nngp_w(gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
-    }
-  }
-
-  if (nCov >= 1) {
-    // global intercept, absorbed into year re [1] if those estimated
-    B[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
-  }
-  if (nCov >= 2) {
-    for (i in 2:nCov) {
-      // coefficients associated with non-intercept covariates
-      B[i] ~ student_t(prior_beta[1], prior_beta[2], prior_beta[3]);
+        spatialDevs[t] ~ nngp_w(gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
     }
   }
 

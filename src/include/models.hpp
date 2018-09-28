@@ -1895,7 +1895,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_nngp");
-    reader.add_event(272, 272, "end", "model_nngp");
+    reader.add_event(276, 276, "end", "model_nngp");
     return reader;
 }
 
@@ -2929,6 +2929,21 @@ public:
 
             lp_accum__.add(student_t_log<propto__>(gp_theta, get_base1(prior_gp_theta,1,"prior_gp_theta",1), get_base1(prior_gp_theta,2,"prior_gp_theta",1), get_base1(prior_gp_theta,3,"prior_gp_theta",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            if (as_bool(logical_eq(est_phi,1))) {
+
+                lp_accum__.add(student_t_log<propto__>(phi, get_base1(prior_phi,1,"prior_phi",1), get_base1(prior_phi,2,"prior_phi",1), get_base1(prior_phi,3,"prior_phi",1)));
+            }
+            if (as_bool(logical_gte(nCov,1))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+            }
+            if (as_bool(logical_gte(nCov,2))) {
+
+                for (int i = 2; i <= nCov; ++i) {
+
+                    lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
+                }
+            }
             if (as_bool(logical_eq(est_temporalRE,1))) {
 
                 lp_accum__.add(student_t_log<propto__>(year_sigma, get_base1(prior_rw_sigma,1,"prior_rw_sigma",1), get_base1(prior_rw_sigma,2,"prior_rw_sigma",1), get_base1(prior_rw_sigma,3,"prior_rw_sigma",1)));
@@ -2953,24 +2968,13 @@ public:
 
                 for (int t = 1; t <= nT; ++t) {
 
-                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), (get_base1(W,t,"W",1) * pow(gp_sigma,2)), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
+                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), (get_base1(W,t,"W",1) * gp_sigma_sq), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
                 }
             } else {
 
                 for (int t = 1; t <= nT; ++t) {
 
-                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), pow(gp_sigma,2), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
-                }
-            }
-            if (as_bool(logical_gte(nCov,1))) {
-
-                lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
-            }
-            if (as_bool(logical_gte(nCov,2))) {
-
-                for (int i = 2; i <= nCov; ++i) {
-
-                    lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
+                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {

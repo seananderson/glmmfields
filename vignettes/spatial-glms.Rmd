@@ -171,7 +171,7 @@ Now we'll add two arguments to the glmmfields() call. First, we'll set method = 
 ```{r}
 m_spatial <- glmmfields(y ~ temperature,
   data = d, family = Gamma(link = "log"),
-  lat = "lat", lon = "lon", nknots = 12, iter = 500, chains = 1,
+  lat = "lat", lon = "lon", nknots = 12, iter = 1000, chains = 1,
   prior_intercept = student_t(3, 0, 10), 
   prior_beta = student_t(3, 0, 3),
   prior_sigma = half_t(3, 0, 3),
@@ -179,7 +179,7 @@ m_spatial <- glmmfields(y ~ temperature,
   prior_gp_sigma = half_t(3, 0, 3),
   seed = 123,
   method="NNGP",
-  nngp_neighbors = 5
+  nngp_neighbors = 10
 )
 ```
 
