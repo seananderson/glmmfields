@@ -29,11 +29,10 @@ functions{
             h = h + 1;
             if(cov_func==0) {
               iNNdistM[j, k] = exp(- NN_distM[(i - 1), h] / gp_theta);
-            }
-            if(cov_func==1) {
+            } else{
               iNNdistM[j, k] = exp(-inv(2.0 * pow(gp_theta, 2.0)) *  NN_distM[(i - 1), h]);
             }
-
+            //TODO: add matern
             iNNdistM[k, j] = iNNdistM[j, k];
           }
         }
@@ -45,29 +44,27 @@ functions{
       iNNCholL = cholesky_decompose(iNNdistM);
       if(cov_func==0) {
         iNNcorr = to_vector(exp(- NN_dist[(i - 1), 1:dim] / gp_theta));
-      }
-      if(cov_func==1) {
+      } else {
         iNNcorr = to_vector(exp(-inv(2.0 * pow(gp_theta, 2.0)) * NN_dist[(i - 1), 1:dim]));
       }
+      //TODO: add matern
       v = mdivide_left_tri_low(iNNCholL, iNNcorr);
-
       V[i] = 1 - dot_self(v);
-
       v2 = mdivide_right_tri_low(v', iNNCholL);
-
-                                 I_Aw[i] = I_Aw[i] - v2 * w[NN_ind[(i - 1), 1:dim]];
-
+      I_Aw[i] = I_Aw[i] - v2 * w[NN_ind[(i - 1), 1:dim]];
     }
-                                 V[1] = 1;
-                                 return - 0.5 * ( 1 / sigmasq * dot_product(I_Aw, (I_Aw ./ V)) +
-                                 sum(log(V)) + N * log(sigmasq));
+      V[1] = 1;
+      return - 0.5 * ( 1 / sigmasq * dot_product(I_Aw, (I_Aw ./ V)) + sum(log(V)) + N * log(sigmasq));
   }
 }
 
 
 data {
   int<lower=1> N;
+  int<lower=1> nT;
   int<lower=0> nCov;
+  int<lower=1> stationID[N];
+  int<lower=1> yearID[N];
   real y[N]; // y for normal and gamma obs. model
   int y_int[N]; // y for NB2 or poisson or binomial obs. model
   matrix[N, nCov] X;
@@ -81,50 +78,119 @@ data {
   real prior_beta[3];
   real prior_gp_theta[3];
   real prior_gp_sigma[3];
+  real prior_phi[3];
   real matern_kappa;
   int<lower=0, upper=2> cov_func; // 0 = exp, 1 = sq_exp, 2 = matern
-
+  int<lower=0, upper=1> est_temporalRE;
+  int<lower=0> n_year_effects;
+  real prior_rw_sigma[3];
+  int<lower=0, upper=1> est_df;
+  real<lower=1> fixed_df_value;
+  real<lower=1> df_lower_bound;
+  int<lower=0, upper=nT> nW; // if fixed nu is large, use MVN by setting nW = 0
+  int<lower=0, upper=1> est_phi;
+  real fixed_phi_value;
+  int<lower=0, upper=1> fixed_intercept;
+  real<lower=0> gp_sigma_scaling_factor; // a scaling factor to help sampling if gp_sigma is too small
+  // the following 4 arguments are unique to NNGP model versus the normal GP model
   int<lower=1> M;
   int NN_ind[N - 1, M];
   matrix[N - 1, M] NN_dist;
   matrix[N - 1, (M * (M - 1) / 2)] NN_distM;
-  real ss;
-  real st;
-  real ap;
-  real bp;
+  // for now, the following 4 models are not used in the NNGP version but are in the GP model
+  //int<lower=1> nKnots;
+  //int<lower=1> nLocs;
+  //matrix[nKnots, nKnots] distKnots;
+  //matrix[nLocs, nKnots] distKnots21;
 }
 parameters{
   vector[nCov] B;
-  vector[N] w;
+  vector[N] spatialDevs[nT];
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
   real<lower = 0> gp_theta;
   real<lower = 0> gp_sigma;
-
-  real<lower = 0> sigmasq;
-  real<lower = 0> tau;
-
+  real yearEffects[n_year_effects];
+  real<lower=0> year_sigma[est_temporalRE];
+  real<lower=0> W[nW];
+  real<lower=df_lower_bound> df[est_df];
+  real<lower=-1, upper=1> phi[est_phi];
 }
 transformed parameters {
   //real sigmasq = square(sigma);
   vector[N] y_hat; // vector to hold predicted values
-  real tausq = square(tau);
+  vector[N] spatialEffects[nT];
   real<lower=0> gammaA[gamma_params];
-    if (obs_model==0) {
+  real<lower=0> gp_sigma_sq;
+  gp_sigma_sq = pow(gp_sigma*gp_sigma_scaling_factor, 2.0);
+
+  if (obs_model==0) {
     gammaA[1] = inv(pow(CV[1], 2.0));
   }
-  // predicted
-  y_hat = X * B + w;
+
+  // spatial deviates in first time slice
+  spatialEffects[1] = spatialDevs[1];
+  // spatial deviates in remaining time slices
+  for (t in 2:nT) {
+    if (est_phi == 1) {
+      spatialEffects[t] = phi[1]*spatialEffects[t-1] + spatialDevs[t];
+    } else {
+      spatialEffects[t] = fixed_phi_value*spatialEffects[t-1] + spatialDevs[t];
+    }
+  }
+
+  // calculate predicted value of each observation
+  for (i in 1:N) {
+    if (est_temporalRE == 0) {
+      if (fixed_intercept == 0) {
+        y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]];
+      } else {
+        y_hat[i] = spatialEffects[yearID[i], stationID[i]];
+      }
+    } else {
+      y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+      if(nCov > 0) {
+        y_hat[i] = y_hat[i] + X[i] * B;
+      }
+    }
+  }
 }
 model{
-  B ~ normal(0,1);//multi_normal_cholesky(uB, L_VB);
-  tau ~ normal(0, st);
-  w ~ nngp_w(gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
-
   // priors:
   gp_theta ~ student_t(prior_gp_theta[1], prior_gp_theta[2], prior_gp_theta[3]);
   gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
+
+  // temporal random effects, if estimated global intercept = effect in first year
+  if (est_temporalRE == 1) {
+    year_sigma ~ student_t(prior_rw_sigma[1], prior_rw_sigma[2], prior_rw_sigma[3]);
+    // random walk in year terms
+    yearEffects[1] ~ student_t(prior_intercept[1], prior_intercept[2], prior_intercept[3]);
+    for (t in 2:nT) {
+      yearEffects[t] ~ normal(yearEffects[t-1], year_sigma);
+    }
+  }
+
+  // if est_df == 1 estimate MVT degrees of freedom, otherwise use fixed df
+  if (est_df == 1) {
+    W ~ scaled_inv_chi_square(df[1], 1);
+    df ~ gamma(2, 0.1);
+  } else {
+    if (nW > 0) { // if nW == 0, we are using MVN
+      W ~ scaled_inv_chi_square(fixed_df_value, 1);
+    }
+  }
+
+  if (nW > 0) { // if nW == 0, we are using MVN
+    // spatial deviates in remaining time slices
+    for (t in 1:nT) {
+        spatialDevs[t] ~ nngp_w(W[t]*gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
+    }
+  } else { // use MVN instead of MVT
+    for (t in 1:nT) {
+        spatialDevs[t] ~ nngp_w(gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
+    }
+  }
 
   if (nCov >= 1) {
     // global intercept, absorbed into year re [1] if those estimated

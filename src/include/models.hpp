@@ -1895,7 +1895,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_nngp");
-    reader.add_event(206, 206, "end", "model_nngp");
+    reader.add_event(272, 272, "end", "model_nngp");
     return reader;
 }
 
@@ -1995,8 +1995,7 @@ nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
                         if (as_bool(logical_eq(cov_func,0))) {
 
                             stan::math::assign(get_base1_lhs(iNNdistM,j,k,"iNNdistM",1), exp((-(get_base1(NN_distM,(i - 1),h,"NN_distM",1)) / gp_theta)));
-                        }
-                        if (as_bool(logical_eq(cov_func,1))) {
+                        } else {
 
                             stan::math::assign(get_base1_lhs(iNNdistM,j,k,"iNNdistM",1), exp((-(inv((2.0 * pow(gp_theta,2.0)))) * get_base1(NN_distM,(i - 1),h,"NN_distM",1))));
                         }
@@ -2012,8 +2011,7 @@ nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
             if (as_bool(logical_eq(cov_func,0))) {
 
                 stan::math::assign(iNNcorr, to_vector(exp(divide(minus(stan::model::rvalue(NN_dist, stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::cons_list(stan::model::index_min_max(1, dim), stan::model::nil_index_list())), "NN_dist")),gp_theta))));
-            }
-            if (as_bool(logical_eq(cov_func,1))) {
+            } else {
 
                 stan::math::assign(iNNcorr, to_vector(exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),stan::model::rvalue(NN_dist, stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::cons_list(stan::model::index_min_max(1, dim), stan::model::nil_index_list())), "NN_dist")))));
             }
@@ -2068,7 +2066,10 @@ struct nngp_w_lpdf_functor__ {
 class model_nngp : public prob_grad {
 private:
     int N;
+    int nT;
     int nCov;
+    vector<int> stationID;
+    vector<int> yearID;
     vector<double> y;
     vector<int> y_int;
     matrix_d X;
@@ -2082,16 +2083,24 @@ private:
     vector<double> prior_beta;
     vector<double> prior_gp_theta;
     vector<double> prior_gp_sigma;
+    vector<double> prior_phi;
     double matern_kappa;
     int cov_func;
+    int est_temporalRE;
+    int n_year_effects;
+    vector<double> prior_rw_sigma;
+    int est_df;
+    double fixed_df_value;
+    double df_lower_bound;
+    int nW;
+    int est_phi;
+    double fixed_phi_value;
+    int fixed_intercept;
+    double gp_sigma_scaling_factor;
     int M;
     vector<vector<int> > NN_ind;
     matrix_d NN_dist;
     matrix_d NN_distM;
-    double ss;
-    double st;
-    double ap;
-    double bp;
 public:
     model_nngp(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -2131,11 +2140,36 @@ public:
             vals_i__ = context__.vals_i("N");
             pos__ = 0;
             N = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "nT", "int", context__.to_vec());
+            nT = int(0);
+            vals_i__ = context__.vals_i("nT");
+            pos__ = 0;
+            nT = vals_i__[pos__++];
             context__.validate_dims("data initialization", "nCov", "int", context__.to_vec());
             nCov = int(0);
             vals_i__ = context__.vals_i("nCov");
             pos__ = 0;
             nCov = vals_i__[pos__++];
+            validate_non_negative_index("stationID", "N", N);
+            context__.validate_dims("data initialization", "stationID", "int", context__.to_vec(N));
+            validate_non_negative_index("stationID", "N", N);
+            stationID = std::vector<int>(N,int(0));
+            vals_i__ = context__.vals_i("stationID");
+            pos__ = 0;
+            size_t stationID_limit_0__ = N;
+            for (size_t i_0__ = 0; i_0__ < stationID_limit_0__; ++i_0__) {
+                stationID[i_0__] = vals_i__[pos__++];
+            }
+            validate_non_negative_index("yearID", "N", N);
+            context__.validate_dims("data initialization", "yearID", "int", context__.to_vec(N));
+            validate_non_negative_index("yearID", "N", N);
+            yearID = std::vector<int>(N,int(0));
+            vals_i__ = context__.vals_i("yearID");
+            pos__ = 0;
+            size_t yearID_limit_0__ = N;
+            for (size_t i_0__ = 0; i_0__ < yearID_limit_0__; ++i_0__) {
+                yearID[i_0__] = vals_i__[pos__++];
+            }
             validate_non_negative_index("y", "N", N);
             context__.validate_dims("data initialization", "y", "double", context__.to_vec(N));
             validate_non_negative_index("y", "N", N);
@@ -2246,6 +2280,16 @@ public:
             for (size_t i_0__ = 0; i_0__ < prior_gp_sigma_limit_0__; ++i_0__) {
                 prior_gp_sigma[i_0__] = vals_r__[pos__++];
             }
+            validate_non_negative_index("prior_phi", "3", 3);
+            context__.validate_dims("data initialization", "prior_phi", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_phi", "3", 3);
+            prior_phi = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_phi");
+            pos__ = 0;
+            size_t prior_phi_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_phi_limit_0__; ++i_0__) {
+                prior_phi[i_0__] = vals_r__[pos__++];
+            }
             context__.validate_dims("data initialization", "matern_kappa", "double", context__.to_vec());
             matern_kappa = double(0);
             vals_r__ = context__.vals_r("matern_kappa");
@@ -2256,6 +2300,66 @@ public:
             vals_i__ = context__.vals_i("cov_func");
             pos__ = 0;
             cov_func = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "est_temporalRE", "int", context__.to_vec());
+            est_temporalRE = int(0);
+            vals_i__ = context__.vals_i("est_temporalRE");
+            pos__ = 0;
+            est_temporalRE = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "n_year_effects", "int", context__.to_vec());
+            n_year_effects = int(0);
+            vals_i__ = context__.vals_i("n_year_effects");
+            pos__ = 0;
+            n_year_effects = vals_i__[pos__++];
+            validate_non_negative_index("prior_rw_sigma", "3", 3);
+            context__.validate_dims("data initialization", "prior_rw_sigma", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_rw_sigma", "3", 3);
+            prior_rw_sigma = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_rw_sigma");
+            pos__ = 0;
+            size_t prior_rw_sigma_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_rw_sigma_limit_0__; ++i_0__) {
+                prior_rw_sigma[i_0__] = vals_r__[pos__++];
+            }
+            context__.validate_dims("data initialization", "est_df", "int", context__.to_vec());
+            est_df = int(0);
+            vals_i__ = context__.vals_i("est_df");
+            pos__ = 0;
+            est_df = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "fixed_df_value", "double", context__.to_vec());
+            fixed_df_value = double(0);
+            vals_r__ = context__.vals_r("fixed_df_value");
+            pos__ = 0;
+            fixed_df_value = vals_r__[pos__++];
+            context__.validate_dims("data initialization", "df_lower_bound", "double", context__.to_vec());
+            df_lower_bound = double(0);
+            vals_r__ = context__.vals_r("df_lower_bound");
+            pos__ = 0;
+            df_lower_bound = vals_r__[pos__++];
+            context__.validate_dims("data initialization", "nW", "int", context__.to_vec());
+            nW = int(0);
+            vals_i__ = context__.vals_i("nW");
+            pos__ = 0;
+            nW = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "est_phi", "int", context__.to_vec());
+            est_phi = int(0);
+            vals_i__ = context__.vals_i("est_phi");
+            pos__ = 0;
+            est_phi = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "fixed_phi_value", "double", context__.to_vec());
+            fixed_phi_value = double(0);
+            vals_r__ = context__.vals_r("fixed_phi_value");
+            pos__ = 0;
+            fixed_phi_value = vals_r__[pos__++];
+            context__.validate_dims("data initialization", "fixed_intercept", "int", context__.to_vec());
+            fixed_intercept = int(0);
+            vals_i__ = context__.vals_i("fixed_intercept");
+            pos__ = 0;
+            fixed_intercept = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "gp_sigma_scaling_factor", "double", context__.to_vec());
+            gp_sigma_scaling_factor = double(0);
+            vals_r__ = context__.vals_r("gp_sigma_scaling_factor");
+            pos__ = 0;
+            gp_sigma_scaling_factor = vals_r__[pos__++];
             context__.validate_dims("data initialization", "M", "int", context__.to_vec());
             M = int(0);
             vals_i__ = context__.vals_i("M");
@@ -2306,30 +2410,17 @@ public:
                     NN_distM(m_mat__,n_mat__) = vals_r__[pos__++];
                 }
             }
-            context__.validate_dims("data initialization", "ss", "double", context__.to_vec());
-            ss = double(0);
-            vals_r__ = context__.vals_r("ss");
-            pos__ = 0;
-            ss = vals_r__[pos__++];
-            context__.validate_dims("data initialization", "st", "double", context__.to_vec());
-            st = double(0);
-            vals_r__ = context__.vals_r("st");
-            pos__ = 0;
-            st = vals_r__[pos__++];
-            context__.validate_dims("data initialization", "ap", "double", context__.to_vec());
-            ap = double(0);
-            vals_r__ = context__.vals_r("ap");
-            pos__ = 0;
-            ap = vals_r__[pos__++];
-            context__.validate_dims("data initialization", "bp", "double", context__.to_vec());
-            bp = double(0);
-            vals_r__ = context__.vals_r("bp");
-            pos__ = 0;
-            bp = vals_r__[pos__++];
 
             // validate, data variables
             check_greater_or_equal(function__,"N",N,1);
+            check_greater_or_equal(function__,"nT",nT,1);
             check_greater_or_equal(function__,"nCov",nCov,0);
+            for (int k0__ = 0; k0__ < N; ++k0__) {
+                check_greater_or_equal(function__,"stationID[k0__]",stationID[k0__],1);
+            }
+            for (int k0__ = 0; k0__ < N; ++k0__) {
+                check_greater_or_equal(function__,"yearID[k0__]",yearID[k0__],1);
+            }
             check_greater_or_equal(function__,"norm_params",norm_params,0);
             check_less_or_equal(function__,"norm_params",norm_params,1);
             check_greater_or_equal(function__,"gamma_params",gamma_params,0);
@@ -2341,6 +2432,20 @@ public:
             check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
             check_greater_or_equal(function__,"cov_func",cov_func,0);
             check_less_or_equal(function__,"cov_func",cov_func,2);
+            check_greater_or_equal(function__,"est_temporalRE",est_temporalRE,0);
+            check_less_or_equal(function__,"est_temporalRE",est_temporalRE,1);
+            check_greater_or_equal(function__,"n_year_effects",n_year_effects,0);
+            check_greater_or_equal(function__,"est_df",est_df,0);
+            check_less_or_equal(function__,"est_df",est_df,1);
+            check_greater_or_equal(function__,"fixed_df_value",fixed_df_value,1);
+            check_greater_or_equal(function__,"df_lower_bound",df_lower_bound,1);
+            check_greater_or_equal(function__,"nW",nW,0);
+            check_less_or_equal(function__,"nW",nW,nT);
+            check_greater_or_equal(function__,"est_phi",est_phi,0);
+            check_less_or_equal(function__,"est_phi",est_phi,1);
+            check_greater_or_equal(function__,"fixed_intercept",fixed_intercept,0);
+            check_less_or_equal(function__,"fixed_intercept",fixed_intercept,1);
+            check_greater_or_equal(function__,"gp_sigma_scaling_factor",gp_sigma_scaling_factor,0);
             check_greater_or_equal(function__,"M",M,1);
             // initialize data variables
 
@@ -2352,8 +2457,9 @@ public:
             param_ranges_i__.clear();
             validate_non_negative_index("B", "nCov", nCov);
             num_params_r__ += nCov;
-            validate_non_negative_index("w", "N", N);
-            num_params_r__ += N;
+            validate_non_negative_index("spatialDevs", "N", N);
+            validate_non_negative_index("spatialDevs", "nT", nT);
+            num_params_r__ += N * nT;
             validate_non_negative_index("sigma", "norm_params", norm_params);
             num_params_r__ += norm_params;
             validate_non_negative_index("CV", "gamma_params", gamma_params);
@@ -2362,8 +2468,16 @@ public:
             num_params_r__ += nb2_params;
             ++num_params_r__;
             ++num_params_r__;
-            ++num_params_r__;
-            ++num_params_r__;
+            validate_non_negative_index("yearEffects", "n_year_effects", n_year_effects);
+            num_params_r__ += n_year_effects;
+            validate_non_negative_index("year_sigma", "est_temporalRE", est_temporalRE);
+            num_params_r__ += est_temporalRE;
+            validate_non_negative_index("W", "nW", nW);
+            num_params_r__ += nW;
+            validate_non_negative_index("df", "est_df", est_df);
+            num_params_r__ += est_df;
+            validate_non_negative_index("phi", "est_phi", est_phi);
+            num_params_r__ += est_phi;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -2399,19 +2513,22 @@ public:
             throw std::runtime_error(std::string("Error transforming variable B: ") + e.what());
         }
 
-        if (!(context__.contains_r("w")))
-            throw std::runtime_error("variable w missing");
-        vals_r__ = context__.vals_r("w");
+        if (!(context__.contains_r("spatialDevs")))
+            throw std::runtime_error("variable spatialDevs missing");
+        vals_r__ = context__.vals_r("spatialDevs");
         pos__ = 0U;
-        validate_non_negative_index("w", "N", N);
-        context__.validate_dims("initialization", "w", "vector_d", context__.to_vec(N));
-        vector_d w(static_cast<Eigen::VectorXd::Index>(N));
+        validate_non_negative_index("spatialDevs", "nT", nT);
+        validate_non_negative_index("spatialDevs", "N", N);
+        context__.validate_dims("initialization", "spatialDevs", "vector_d", context__.to_vec(nT,N));
+        std::vector<vector_d> spatialDevs(nT,vector_d(static_cast<Eigen::VectorXd::Index>(N)));
         for (int j1__ = 0U; j1__ < N; ++j1__)
-            w(j1__) = vals_r__[pos__++];
-        try {
-            writer__.vector_unconstrain(w);
+            for (int i0__ = 0U; i0__ < nT; ++i0__)
+                spatialDevs[i0__](j1__) = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < nT; ++i0__)
+            try {
+            writer__.vector_unconstrain(spatialDevs[i0__]);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable w: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable spatialDevs: ") + e.what());
         }
 
         if (!(context__.contains_r("sigma")))
@@ -2488,30 +2605,84 @@ public:
             throw std::runtime_error(std::string("Error transforming variable gp_sigma: ") + e.what());
         }
 
-        if (!(context__.contains_r("sigmasq")))
-            throw std::runtime_error("variable sigmasq missing");
-        vals_r__ = context__.vals_r("sigmasq");
+        if (!(context__.contains_r("yearEffects")))
+            throw std::runtime_error("variable yearEffects missing");
+        vals_r__ = context__.vals_r("yearEffects");
         pos__ = 0U;
-        context__.validate_dims("initialization", "sigmasq", "double", context__.to_vec());
-        double sigmasq(0);
-        sigmasq = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,sigmasq);
+        validate_non_negative_index("yearEffects", "n_year_effects", n_year_effects);
+        context__.validate_dims("initialization", "yearEffects", "double", context__.to_vec(n_year_effects));
+        std::vector<double> yearEffects(n_year_effects,double(0));
+        for (int i0__ = 0U; i0__ < n_year_effects; ++i0__)
+            yearEffects[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < n_year_effects; ++i0__)
+            try {
+            writer__.scalar_unconstrain(yearEffects[i0__]);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable sigmasq: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable yearEffects: ") + e.what());
         }
 
-        if (!(context__.contains_r("tau")))
-            throw std::runtime_error("variable tau missing");
-        vals_r__ = context__.vals_r("tau");
+        if (!(context__.contains_r("year_sigma")))
+            throw std::runtime_error("variable year_sigma missing");
+        vals_r__ = context__.vals_r("year_sigma");
         pos__ = 0U;
-        context__.validate_dims("initialization", "tau", "double", context__.to_vec());
-        double tau(0);
-        tau = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,tau);
+        validate_non_negative_index("year_sigma", "est_temporalRE", est_temporalRE);
+        context__.validate_dims("initialization", "year_sigma", "double", context__.to_vec(est_temporalRE));
+        std::vector<double> year_sigma(est_temporalRE,double(0));
+        for (int i0__ = 0U; i0__ < est_temporalRE; ++i0__)
+            year_sigma[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < est_temporalRE; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,year_sigma[i0__]);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable tau: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable year_sigma: ") + e.what());
+        }
+
+        if (!(context__.contains_r("W")))
+            throw std::runtime_error("variable W missing");
+        vals_r__ = context__.vals_r("W");
+        pos__ = 0U;
+        validate_non_negative_index("W", "nW", nW);
+        context__.validate_dims("initialization", "W", "double", context__.to_vec(nW));
+        std::vector<double> W(nW,double(0));
+        for (int i0__ = 0U; i0__ < nW; ++i0__)
+            W[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < nW; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,W[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable W: ") + e.what());
+        }
+
+        if (!(context__.contains_r("df")))
+            throw std::runtime_error("variable df missing");
+        vals_r__ = context__.vals_r("df");
+        pos__ = 0U;
+        validate_non_negative_index("df", "est_df", est_df);
+        context__.validate_dims("initialization", "df", "double", context__.to_vec(est_df));
+        std::vector<double> df(est_df,double(0));
+        for (int i0__ = 0U; i0__ < est_df; ++i0__)
+            df[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < est_df; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(df_lower_bound,df[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable df: ") + e.what());
+        }
+
+        if (!(context__.contains_r("phi")))
+            throw std::runtime_error("variable phi missing");
+        vals_r__ = context__.vals_r("phi");
+        pos__ = 0U;
+        validate_non_negative_index("phi", "est_phi", est_phi);
+        context__.validate_dims("initialization", "phi", "double", context__.to_vec(est_phi));
+        std::vector<double> phi(est_phi,double(0));
+        for (int i0__ = 0U; i0__ < est_phi; ++i0__)
+            phi[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < est_phi; ++i0__)
+            try {
+            writer__.scalar_lub_unconstrain(-(1),1,phi[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable phi: ") + e.what());
         }
 
         params_r__ = writer__.data_r();
@@ -2552,12 +2723,15 @@ public:
             else
                 B = in__.vector_constrain(nCov);
 
-            Eigen::Matrix<T__,Eigen::Dynamic,1>  w;
-            (void) w;  // dummy to suppress unused var warning
-            if (jacobian__)
-                w = in__.vector_constrain(N,lp__);
-            else
-                w = in__.vector_constrain(N);
+            vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialDevs;
+            size_t dim_spatialDevs_0__ = nT;
+            spatialDevs.reserve(dim_spatialDevs_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_spatialDevs_0__; ++k_0__) {
+                if (jacobian__)
+                    spatialDevs.push_back(in__.vector_constrain(N,lp__));
+                else
+                    spatialDevs.push_back(in__.vector_constrain(N));
+            }
 
             vector<T__> sigma;
             size_t dim_sigma_0__ = norm_params;
@@ -2603,19 +2777,55 @@ public:
             else
                 gp_sigma = in__.scalar_lb_constrain(0);
 
-            T__ sigmasq;
-            (void) sigmasq;  // dummy to suppress unused var warning
-            if (jacobian__)
-                sigmasq = in__.scalar_lb_constrain(0,lp__);
-            else
-                sigmasq = in__.scalar_lb_constrain(0);
+            vector<T__> yearEffects;
+            size_t dim_yearEffects_0__ = n_year_effects;
+            yearEffects.reserve(dim_yearEffects_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
+                if (jacobian__)
+                    yearEffects.push_back(in__.scalar_constrain(lp__));
+                else
+                    yearEffects.push_back(in__.scalar_constrain());
+            }
 
-            T__ tau;
-            (void) tau;  // dummy to suppress unused var warning
-            if (jacobian__)
-                tau = in__.scalar_lb_constrain(0,lp__);
-            else
-                tau = in__.scalar_lb_constrain(0);
+            vector<T__> year_sigma;
+            size_t dim_year_sigma_0__ = est_temporalRE;
+            year_sigma.reserve(dim_year_sigma_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_year_sigma_0__; ++k_0__) {
+                if (jacobian__)
+                    year_sigma.push_back(in__.scalar_lb_constrain(0,lp__));
+                else
+                    year_sigma.push_back(in__.scalar_lb_constrain(0));
+            }
+
+            vector<T__> W;
+            size_t dim_W_0__ = nW;
+            W.reserve(dim_W_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_W_0__; ++k_0__) {
+                if (jacobian__)
+                    W.push_back(in__.scalar_lb_constrain(0,lp__));
+                else
+                    W.push_back(in__.scalar_lb_constrain(0));
+            }
+
+            vector<T__> df;
+            size_t dim_df_0__ = est_df;
+            df.reserve(dim_df_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
+                if (jacobian__)
+                    df.push_back(in__.scalar_lb_constrain(df_lower_bound,lp__));
+                else
+                    df.push_back(in__.scalar_lb_constrain(df_lower_bound));
+            }
+
+            vector<T__> phi;
+            size_t dim_phi_0__ = est_phi;
+            phi.reserve(dim_phi_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_phi_0__; ++k_0__) {
+                if (jacobian__)
+                    phi.push_back(in__.scalar_lub_constrain(-(1),1,lp__));
+                else
+                    phi.push_back(in__.scalar_lub_constrain(-(1),1));
+            }
 
 
             // transformed parameters
@@ -2625,23 +2835,58 @@ public:
 
             stan::math::initialize(y_hat, DUMMY_VAR__);
             stan::math::fill(y_hat,DUMMY_VAR__);
-            T__ tausq;
-            (void) tausq;  // dummy to suppress unused var warning
-
-            stan::math::initialize(tausq, DUMMY_VAR__);
-            stan::math::fill(tausq,DUMMY_VAR__);
-            stan::math::assign(tausq,square(tau));
+            validate_non_negative_index("spatialEffects", "N", N);
+            validate_non_negative_index("spatialEffects", "nT", nT);
+            vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffects(nT, (Eigen::Matrix<T__,Eigen::Dynamic,1> (static_cast<Eigen::VectorXd::Index>(N))));
+            stan::math::initialize(spatialEffects, DUMMY_VAR__);
+            stan::math::fill(spatialEffects,DUMMY_VAR__);
             validate_non_negative_index("gammaA", "gamma_params", gamma_params);
             vector<T__> gammaA(gamma_params);
             stan::math::initialize(gammaA, DUMMY_VAR__);
             stan::math::fill(gammaA,DUMMY_VAR__);
+            T__ gp_sigma_sq;
+            (void) gp_sigma_sq;  // dummy to suppress unused var warning
+
+            stan::math::initialize(gp_sigma_sq, DUMMY_VAR__);
+            stan::math::fill(gp_sigma_sq,DUMMY_VAR__);
 
 
+            stan::math::assign(gp_sigma_sq, pow((gp_sigma * gp_sigma_scaling_factor),2.0));
             if (as_bool(logical_eq(obs_model,0))) {
 
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
-            stan::math::assign(y_hat, add(multiply(X,B),w));
+            stan::math::assign(get_base1_lhs(spatialEffects,1,"spatialEffects",1), get_base1(spatialDevs,1,"spatialDevs",1));
+            for (int t = 2; t <= nT; ++t) {
+
+                if (as_bool(logical_eq(est_phi,1))) {
+
+                    stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), add(multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffects,(t - 1),"spatialEffects",1)),get_base1(spatialDevs,t,"spatialDevs",1)));
+                } else {
+
+                    stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), add(multiply(fixed_phi_value,get_base1(spatialEffects,(t - 1),"spatialEffects",1)),get_base1(spatialDevs,t,"spatialDevs",1)));
+                }
+            }
+            for (int i = 1; i <= N; ++i) {
+
+                if (as_bool(logical_eq(est_temporalRE,0))) {
+
+                    if (as_bool(logical_eq(fixed_intercept,0))) {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                    } else {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2));
+                    }
+                } else {
+
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                    if (as_bool(logical_gt(nCov,0))) {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(y_hat,i,"y_hat",1) + multiply(get_base1(X,i,"X",1),B)));
+                    }
+                }
+            }
 
             // validate transformed parameters
             for (int i0__ = 0; i0__ < N; ++i0__) {
@@ -2651,10 +2896,14 @@ public:
                     throw std::runtime_error(msg__.str());
                 }
             }
-            if (stan::math::is_uninitialized(tausq)) {
-                std::stringstream msg__;
-                msg__ << "Undefined transformed parameter: tausq";
-                throw std::runtime_error(msg__.str());
+            for (int i0__ = 0; i0__ < nT; ++i0__) {
+                for (int i1__ = 0; i1__ < N; ++i1__) {
+                    if (stan::math::is_uninitialized(spatialEffects[i0__](i1__))) {
+                        std::stringstream msg__;
+                        msg__ << "Undefined transformed parameter: spatialEffects" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                        throw std::runtime_error(msg__.str());
+                    }
+                }
             }
             for (int i0__ = 0; i0__ < gamma_params; ++i0__) {
                 if (stan::math::is_uninitialized(gammaA[i0__])) {
@@ -2663,20 +2912,56 @@ public:
                     throw std::runtime_error(msg__.str());
                 }
             }
+            if (stan::math::is_uninitialized(gp_sigma_sq)) {
+                std::stringstream msg__;
+                msg__ << "Undefined transformed parameter: gp_sigma_sq";
+                throw std::runtime_error(msg__.str());
+            }
 
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
             for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
                 check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
             }
+            check_greater_or_equal(function__,"gp_sigma_sq",gp_sigma_sq,0);
 
             // model body
 
-            lp_accum__.add(normal_log<propto__>(B, 0, 1));
-            lp_accum__.add(normal_log<propto__>(tau, 0, st));
-            lp_accum__.add(nngp_w_lpdf<propto__>(w, pow(gp_sigma,2), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
             lp_accum__.add(student_t_log<propto__>(gp_theta, get_base1(prior_gp_theta,1,"prior_gp_theta",1), get_base1(prior_gp_theta,2,"prior_gp_theta",1), get_base1(prior_gp_theta,3,"prior_gp_theta",1)));
             lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            if (as_bool(logical_eq(est_temporalRE,1))) {
+
+                lp_accum__.add(student_t_log<propto__>(year_sigma, get_base1(prior_rw_sigma,1,"prior_rw_sigma",1), get_base1(prior_rw_sigma,2,"prior_rw_sigma",1), get_base1(prior_rw_sigma,3,"prior_rw_sigma",1)));
+                lp_accum__.add(student_t_log<propto__>(get_base1(yearEffects,1,"yearEffects",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+                for (int t = 2; t <= nT; ++t) {
+
+                    lp_accum__.add(normal_log<propto__>(get_base1(yearEffects,t,"yearEffects",1), get_base1(yearEffects,(t - 1),"yearEffects",1), year_sigma));
+                }
+            }
+            if (as_bool(logical_eq(est_df,1))) {
+
+                lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, get_base1(df,1,"df",1), 1));
+                lp_accum__.add(gamma_log<propto__>(df, 2, 0.10000000000000001));
+            } else {
+
+                if (as_bool(logical_gt(nW,0))) {
+
+                    lp_accum__.add(scaled_inv_chi_square_log<propto__>(W, fixed_df_value, 1));
+                }
+            }
+            if (as_bool(logical_gt(nW,0))) {
+
+                for (int t = 1; t <= nT; ++t) {
+
+                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), (get_base1(W,t,"W",1) * pow(gp_sigma,2)), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
+                }
+            } else {
+
+                for (int t = 1; t <= nT; ++t) {
+
+                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), pow(gp_sigma,2), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
+                }
+            }
             if (as_bool(logical_gte(nCov,1))) {
 
                 lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
@@ -2754,17 +3039,21 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("B");
-        names__.push_back("w");
+        names__.push_back("spatialDevs");
         names__.push_back("sigma");
         names__.push_back("CV");
         names__.push_back("nb2_phi");
         names__.push_back("gp_theta");
         names__.push_back("gp_sigma");
-        names__.push_back("sigmasq");
-        names__.push_back("tau");
+        names__.push_back("yearEffects");
+        names__.push_back("year_sigma");
+        names__.push_back("W");
+        names__.push_back("df");
+        names__.push_back("phi");
         names__.push_back("y_hat");
-        names__.push_back("tausq");
+        names__.push_back("spatialEffects");
         names__.push_back("gammaA");
+        names__.push_back("gp_sigma_sq");
         names__.push_back("log_lik");
     }
 
@@ -2776,6 +3065,7 @@ public:
         dims__.push_back(nCov);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(nT);
         dims__.push_back(N);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -2792,16 +3082,31 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(n_year_effects);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(est_temporalRE);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nW);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(est_df);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(est_phi);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(N);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(nT);
+        dims__.push_back(N);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(gamma_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(N);
@@ -2822,7 +3127,11 @@ public:
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
         vector_d B = in__.vector_constrain(nCov);
-        vector_d w = in__.vector_constrain(N);
+        vector<vector_d> spatialDevs;
+        size_t dim_spatialDevs_0__ = nT;
+        for (size_t k_0__ = 0; k_0__ < dim_spatialDevs_0__; ++k_0__) {
+            spatialDevs.push_back(in__.vector_constrain(N));
+        }
         vector<double> sigma;
         size_t dim_sigma_0__ = norm_params;
         for (size_t k_0__ = 0; k_0__ < dim_sigma_0__; ++k_0__) {
@@ -2840,13 +3149,38 @@ public:
         }
         double gp_theta = in__.scalar_lb_constrain(0);
         double gp_sigma = in__.scalar_lb_constrain(0);
-        double sigmasq = in__.scalar_lb_constrain(0);
-        double tau = in__.scalar_lb_constrain(0);
+        vector<double> yearEffects;
+        size_t dim_yearEffects_0__ = n_year_effects;
+        for (size_t k_0__ = 0; k_0__ < dim_yearEffects_0__; ++k_0__) {
+            yearEffects.push_back(in__.scalar_constrain());
+        }
+        vector<double> year_sigma;
+        size_t dim_year_sigma_0__ = est_temporalRE;
+        for (size_t k_0__ = 0; k_0__ < dim_year_sigma_0__; ++k_0__) {
+            year_sigma.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> W;
+        size_t dim_W_0__ = nW;
+        for (size_t k_0__ = 0; k_0__ < dim_W_0__; ++k_0__) {
+            W.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> df;
+        size_t dim_df_0__ = est_df;
+        for (size_t k_0__ = 0; k_0__ < dim_df_0__; ++k_0__) {
+            df.push_back(in__.scalar_lb_constrain(df_lower_bound));
+        }
+        vector<double> phi;
+        size_t dim_phi_0__ = est_phi;
+        for (size_t k_0__ = 0; k_0__ < dim_phi_0__; ++k_0__) {
+            phi.push_back(in__.scalar_lub_constrain(-(1),1));
+        }
             for (int k_0__ = 0; k_0__ < nCov; ++k_0__) {
             vars__.push_back(B[k_0__]);
             }
-            for (int k_0__ = 0; k_0__ < N; ++k_0__) {
-            vars__.push_back(w[k_0__]);
+            for (int k_1__ = 0; k_1__ < N; ++k_1__) {
+                for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
+                vars__.push_back(spatialDevs[k_0__][k_1__]);
+                }
             }
             for (int k_0__ = 0; k_0__ < norm_params; ++k_0__) {
             vars__.push_back(sigma[k_0__]);
@@ -2859,8 +3193,21 @@ public:
             }
         vars__.push_back(gp_theta);
         vars__.push_back(gp_sigma);
-        vars__.push_back(sigmasq);
-        vars__.push_back(tau);
+            for (int k_0__ = 0; k_0__ < n_year_effects; ++k_0__) {
+            vars__.push_back(yearEffects[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < est_temporalRE; ++k_0__) {
+            vars__.push_back(year_sigma[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < nW; ++k_0__) {
+            vars__.push_back(W[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < est_df; ++k_0__) {
+            vars__.push_back(df[k_0__]);
+            }
+            for (int k_0__ = 0; k_0__ < est_phi; ++k_0__) {
+            vars__.push_back(phi[k_0__]);
+            }
 
         if (!include_tparams__) return;
         // declare and define transformed parameters
@@ -2878,37 +3225,78 @@ public:
 
             stan::math::initialize(y_hat, std::numeric_limits<double>::quiet_NaN());
             stan::math::fill(y_hat,DUMMY_VAR__);
-            double tausq(0.0);
-            (void) tausq;  // dummy to suppress unused var warning
-
-            stan::math::initialize(tausq, std::numeric_limits<double>::quiet_NaN());
-            stan::math::fill(tausq,DUMMY_VAR__);
-            stan::math::assign(tausq,square(tau));
+            validate_non_negative_index("spatialEffects", "N", N);
+            validate_non_negative_index("spatialEffects", "nT", nT);
+            vector<vector_d> spatialEffects(nT, (vector_d(static_cast<Eigen::VectorXd::Index>(N))));
+            stan::math::initialize(spatialEffects, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(spatialEffects,DUMMY_VAR__);
             validate_non_negative_index("gammaA", "gamma_params", gamma_params);
             vector<double> gammaA(gamma_params, 0.0);
             stan::math::initialize(gammaA, std::numeric_limits<double>::quiet_NaN());
             stan::math::fill(gammaA,DUMMY_VAR__);
+            double gp_sigma_sq(0.0);
+            (void) gp_sigma_sq;  // dummy to suppress unused var warning
+
+            stan::math::initialize(gp_sigma_sq, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(gp_sigma_sq,DUMMY_VAR__);
 
 
+            stan::math::assign(gp_sigma_sq, pow((gp_sigma * gp_sigma_scaling_factor),2.0));
             if (as_bool(logical_eq(obs_model,0))) {
 
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
-            stan::math::assign(y_hat, add(multiply(X,B),w));
+            stan::math::assign(get_base1_lhs(spatialEffects,1,"spatialEffects",1), get_base1(spatialDevs,1,"spatialDevs",1));
+            for (int t = 2; t <= nT; ++t) {
+
+                if (as_bool(logical_eq(est_phi,1))) {
+
+                    stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), add(multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffects,(t - 1),"spatialEffects",1)),get_base1(spatialDevs,t,"spatialDevs",1)));
+                } else {
+
+                    stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), add(multiply(fixed_phi_value,get_base1(spatialEffects,(t - 1),"spatialEffects",1)),get_base1(spatialDevs,t,"spatialDevs",1)));
+                }
+            }
+            for (int i = 1; i <= N; ++i) {
+
+                if (as_bool(logical_eq(est_temporalRE,0))) {
+
+                    if (as_bool(logical_eq(fixed_intercept,0))) {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)));
+                    } else {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2));
+                    }
+                } else {
+
+                    stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)));
+                    if (as_bool(logical_gt(nCov,0))) {
+
+                        stan::math::assign(get_base1_lhs(y_hat,i,"y_hat",1), (get_base1(y_hat,i,"y_hat",1) + multiply(get_base1(X,i,"X",1),B)));
+                    }
+                }
+            }
 
             // validate transformed parameters
             for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
                 check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
             }
+            check_greater_or_equal(function__,"gp_sigma_sq",gp_sigma_sq,0);
 
             // write transformed parameters
             for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(y_hat[k_0__]);
             }
-        vars__.push_back(tausq);
+            for (int k_1__ = 0; k_1__ < N; ++k_1__) {
+                for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
+                vars__.push_back(spatialEffects[k_0__][k_1__]);
+                }
+            }
             for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
             vars__.push_back(gammaA[k_0__]);
             }
+        vars__.push_back(gp_sigma_sq);
 
             if (!include_gqs__) return;
             // declare and define generated quantities
@@ -3000,10 +3388,12 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "w" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialDevs" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
         }
         for (int k_0__ = 1; k_0__ <= norm_params; ++k_0__) {
             param_name_stream__.str(std::string());
@@ -3026,12 +3416,31 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_sigma";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "sigmasq";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "tau";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= n_year_effects; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "yearEffects" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_temporalRE; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "year_sigma" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= nW; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "W" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_df; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "df" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_phi; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__ && !include_tparams__) return;
         for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
@@ -3039,14 +3448,21 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "tausq";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
         for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "gammaA" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigma_sq";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
         for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
@@ -3066,10 +3482,12 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "w" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialDevs" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
         }
         for (int k_0__ = 1; k_0__ <= norm_params; ++k_0__) {
             param_name_stream__.str(std::string());
@@ -3092,12 +3510,31 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "gp_sigma";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "sigmasq";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "tau";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_0__ = 1; k_0__ <= n_year_effects; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "yearEffects" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_temporalRE; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "year_sigma" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= nW; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "W" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_df; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "df" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= est_phi; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "phi" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
 
         if (!include_gqs__ && !include_tparams__) return;
         for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
@@ -3105,14 +3542,21 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "tausq";
-        param_names__.push_back(param_name_stream__.str());
+        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
         for (int k_0__ = 1; k_0__ <= gamma_params; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "gammaA" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigma_sq";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__) return;
         for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
