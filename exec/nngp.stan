@@ -2,7 +2,7 @@
 functions{
   real nngp_w_lpdf(vector w, real sigmasq, real gp_theta, matrix NN_dist,
                    matrix NN_distM, int[,] NN_ind, int N, int M,
-                   int cov_func){
+                   int cov_func, real matern_kappa){
 
     vector[N] V;
     vector[N] I_Aw = w;
@@ -33,6 +33,7 @@ functions{
             if(cov_func==1) {
               iNNdistM[j, k] = exp(-inv(2.0 * pow(gp_theta, 2.0)) *  NN_distM[(i - 1), h]);
             }
+
             iNNdistM[k, j] = iNNdistM[j, k];
           }
         }
@@ -80,6 +81,7 @@ data {
   real prior_beta[3];
   real prior_gp_theta[3];
   real prior_gp_sigma[3];
+  real matern_kappa;
   int<lower=0, upper=2> cov_func; // 0 = exp, 1 = sq_exp, 2 = matern
 
   int<lower=1> M;
@@ -118,7 +120,7 @@ transformed parameters {
 model{
   B ~ normal(0,1);//multi_normal_cholesky(uB, L_VB);
   tau ~ normal(0, st);
-  w ~ nngp_w(gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func);
+  w ~ nngp_w(gp_sigma^2, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
 
   // priors:
   gp_theta ~ student_t(prior_gp_theta[1], prior_gp_theta[2], prior_gp_theta[3]);

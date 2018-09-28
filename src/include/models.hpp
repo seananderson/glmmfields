@@ -1895,21 +1895,23 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_nngp");
-    reader.add_event(101, 101, "end", "model_nngp");
+    reader.add_event(206, 206, "end", "model_nngp");
     return reader;
 }
 
-template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
-typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type
+template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T9__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T9__>::type>::type
 nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
                 const T1__& sigmasq,
-                const T2__& phi,
+                const T2__& gp_theta,
                 const Eigen::Matrix<T3__, Eigen::Dynamic,Eigen::Dynamic>& NN_dist,
                 const Eigen::Matrix<T4__, Eigen::Dynamic,Eigen::Dynamic>& NN_distM,
                 const std::vector<std::vector<int> >& NN_ind,
                 const int& N,
-                const int& M, std::ostream* pstream__) {
-    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type fun_scalar_t__;
+                const int& M,
+                const int& cov_func,
+                const T9__& matern_kappa, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T9__>::type>::type fun_scalar_t__;
     typedef fun_scalar_t__ fun_return_scalar_t__;
     const static bool propto__ = true;
     (void) propto__;
@@ -1990,7 +1992,14 @@ nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
                     for (int k = (j + 1); k <= dim; ++k) {
 
                         stan::math::assign(h, (h + 1));
-                        stan::math::assign(get_base1_lhs(iNNdistM,j,k,"iNNdistM",1), exp((-(phi) * get_base1(NN_distM,(i - 1),h,"NN_distM",1))));
+                        if (as_bool(logical_eq(cov_func,0))) {
+
+                            stan::math::assign(get_base1_lhs(iNNdistM,j,k,"iNNdistM",1), exp((-(get_base1(NN_distM,(i - 1),h,"NN_distM",1)) / gp_theta)));
+                        }
+                        if (as_bool(logical_eq(cov_func,1))) {
+
+                            stan::math::assign(get_base1_lhs(iNNdistM,j,k,"iNNdistM",1), exp((-(inv((2.0 * pow(gp_theta,2.0)))) * get_base1(NN_distM,(i - 1),h,"NN_distM",1))));
+                        }
                         stan::math::assign(get_base1_lhs(iNNdistM,k,j,"iNNdistM",1), get_base1(iNNdistM,j,k,"iNNdistM",1));
                     }
                 }
@@ -2000,7 +2009,14 @@ nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
                 }
             }
             stan::math::assign(iNNCholL, cholesky_decompose(iNNdistM));
-            stan::math::assign(iNNcorr, to_vector(exp(multiply(-(phi),stan::model::rvalue(NN_dist, stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::cons_list(stan::model::index_min_max(1, dim), stan::model::nil_index_list())), "NN_dist")))));
+            if (as_bool(logical_eq(cov_func,0))) {
+
+                stan::math::assign(iNNcorr, to_vector(exp(divide(minus(stan::model::rvalue(NN_dist, stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::cons_list(stan::model::index_min_max(1, dim), stan::model::nil_index_list())), "NN_dist")),gp_theta))));
+            }
+            if (as_bool(logical_eq(cov_func,1))) {
+
+                stan::math::assign(iNNcorr, to_vector(exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),stan::model::rvalue(NN_dist, stan::model::cons_list(stan::model::index_uni((i - 1)), stan::model::cons_list(stan::model::index_min_max(1, dim), stan::model::nil_index_list())), "NN_dist")))));
+            }
             stan::math::assign(v, mdivide_left_tri_low(iNNCholL,iNNcorr));
             stan::math::assign(get_base1_lhs(V,i,"V",1), (1 - dot_self(v)));
             stan::math::assign(v2, mdivide_right_tri_low(transpose(v),iNNCholL));
@@ -2016,42 +2032,59 @@ nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
         throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
     }
 }
-template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
-typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type
+template <typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T9__>
+typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T9__>::type>::type
 nngp_w_lpdf(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
                 const T1__& sigmasq,
-                const T2__& phi,
+                const T2__& gp_theta,
                 const Eigen::Matrix<T3__, Eigen::Dynamic,Eigen::Dynamic>& NN_dist,
                 const Eigen::Matrix<T4__, Eigen::Dynamic,Eigen::Dynamic>& NN_distM,
                 const std::vector<std::vector<int> >& NN_ind,
                 const int& N,
-                const int& M, std::ostream* pstream__) {
-    return nngp_w_lpdf<false>(w,sigmasq,phi,NN_dist,NN_distM,NN_ind,N,M, pstream__);
+                const int& M,
+                const int& cov_func,
+                const T9__& matern_kappa, std::ostream* pstream__) {
+    return nngp_w_lpdf<false>(w,sigmasq,gp_theta,NN_dist,NN_distM,NN_ind,N,M,cov_func,matern_kappa, pstream__);
 }
 
 
 struct nngp_w_lpdf_functor__ {
-    template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__, typename T4__>
-        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__>::type>::type
+    template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__, typename T4__, typename T9__>
+        typename boost::math::tools::promote_args<T0__, T1__, T2__, T3__, typename boost::math::tools::promote_args<T4__, T9__>::type>::type
     operator()(const Eigen::Matrix<T0__, Eigen::Dynamic,1>& w,
                 const T1__& sigmasq,
-                const T2__& phi,
+                const T2__& gp_theta,
                 const Eigen::Matrix<T3__, Eigen::Dynamic,Eigen::Dynamic>& NN_dist,
                 const Eigen::Matrix<T4__, Eigen::Dynamic,Eigen::Dynamic>& NN_distM,
                 const std::vector<std::vector<int> >& NN_ind,
                 const int& N,
-                const int& M, std::ostream* pstream__) const {
-        return nngp_w_lpdf(w, sigmasq, phi, NN_dist, NN_distM, NN_ind, N, M, pstream__);
+                const int& M,
+                const int& cov_func,
+                const T9__& matern_kappa, std::ostream* pstream__) const {
+        return nngp_w_lpdf(w, sigmasq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__);
     }
 };
 
 class model_nngp : public prob_grad {
 private:
     int N;
-    int M;
-    int P;
-    vector_d Y;
+    int nCov;
+    vector<double> y;
+    vector<int> y_int;
     matrix_d X;
+    int norm_params;
+    int gamma_params;
+    int nb2_params;
+    int obs_model;
+    int lower_truncation;
+    vector<double> prior_sigma;
+    vector<double> prior_intercept;
+    vector<double> prior_beta;
+    vector<double> prior_gp_theta;
+    vector<double> prior_gp_sigma;
+    double matern_kappa;
+    int cov_func;
+    int M;
     vector<vector<int> > NN_ind;
     matrix_d NN_dist;
     matrix_d NN_distM;
@@ -2059,10 +2092,6 @@ private:
     double st;
     double ap;
     double bp;
-    int norm_params;
-    int gamma_params;
-    int nb2_params;
-    int obs_model;
 public:
     model_nngp(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -2102,41 +2131,136 @@ public:
             vals_i__ = context__.vals_i("N");
             pos__ = 0;
             N = vals_i__[pos__++];
-            context__.validate_dims("data initialization", "M", "int", context__.to_vec());
-            M = int(0);
-            vals_i__ = context__.vals_i("M");
+            context__.validate_dims("data initialization", "nCov", "int", context__.to_vec());
+            nCov = int(0);
+            vals_i__ = context__.vals_i("nCov");
             pos__ = 0;
-            M = vals_i__[pos__++];
-            context__.validate_dims("data initialization", "P", "int", context__.to_vec());
-            P = int(0);
-            vals_i__ = context__.vals_i("P");
+            nCov = vals_i__[pos__++];
+            validate_non_negative_index("y", "N", N);
+            context__.validate_dims("data initialization", "y", "double", context__.to_vec(N));
+            validate_non_negative_index("y", "N", N);
+            y = std::vector<double>(N,double(0));
+            vals_r__ = context__.vals_r("y");
             pos__ = 0;
-            P = vals_i__[pos__++];
-            validate_non_negative_index("Y", "N", N);
-            context__.validate_dims("data initialization", "Y", "vector_d", context__.to_vec(N));
-            validate_non_negative_index("Y", "N", N);
-            Y = vector_d(static_cast<Eigen::VectorXd::Index>(N));
-            vals_r__ = context__.vals_r("Y");
+            size_t y_limit_0__ = N;
+            for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
+                y[i_0__] = vals_r__[pos__++];
+            }
+            validate_non_negative_index("y_int", "N", N);
+            context__.validate_dims("data initialization", "y_int", "int", context__.to_vec(N));
+            validate_non_negative_index("y_int", "N", N);
+            y_int = std::vector<int>(N,int(0));
+            vals_i__ = context__.vals_i("y_int");
             pos__ = 0;
-            size_t Y_i_vec_lim__ = N;
-            for (size_t i_vec__ = 0; i_vec__ < Y_i_vec_lim__; ++i_vec__) {
-                Y[i_vec__] = vals_r__[pos__++];
+            size_t y_int_limit_0__ = N;
+            for (size_t i_0__ = 0; i_0__ < y_int_limit_0__; ++i_0__) {
+                y_int[i_0__] = vals_i__[pos__++];
             }
             validate_non_negative_index("X", "N", N);
-            validate_non_negative_index("X", "(P + 1)", (P + 1));
-            context__.validate_dims("data initialization", "X", "matrix_d", context__.to_vec(N,(P + 1)));
+            validate_non_negative_index("X", "nCov", nCov);
+            context__.validate_dims("data initialization", "X", "matrix_d", context__.to_vec(N,nCov));
             validate_non_negative_index("X", "N", N);
-            validate_non_negative_index("X", "(P + 1)", (P + 1));
-            X = matrix_d(static_cast<Eigen::VectorXd::Index>(N),static_cast<Eigen::VectorXd::Index>((P + 1)));
+            validate_non_negative_index("X", "nCov", nCov);
+            X = matrix_d(static_cast<Eigen::VectorXd::Index>(N),static_cast<Eigen::VectorXd::Index>(nCov));
             vals_r__ = context__.vals_r("X");
             pos__ = 0;
             size_t X_m_mat_lim__ = N;
-            size_t X_n_mat_lim__ = (P + 1);
+            size_t X_n_mat_lim__ = nCov;
             for (size_t n_mat__ = 0; n_mat__ < X_n_mat_lim__; ++n_mat__) {
                 for (size_t m_mat__ = 0; m_mat__ < X_m_mat_lim__; ++m_mat__) {
                     X(m_mat__,n_mat__) = vals_r__[pos__++];
                 }
             }
+            context__.validate_dims("data initialization", "norm_params", "int", context__.to_vec());
+            norm_params = int(0);
+            vals_i__ = context__.vals_i("norm_params");
+            pos__ = 0;
+            norm_params = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "gamma_params", "int", context__.to_vec());
+            gamma_params = int(0);
+            vals_i__ = context__.vals_i("gamma_params");
+            pos__ = 0;
+            gamma_params = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "nb2_params", "int", context__.to_vec());
+            nb2_params = int(0);
+            vals_i__ = context__.vals_i("nb2_params");
+            pos__ = 0;
+            nb2_params = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "obs_model", "int", context__.to_vec());
+            obs_model = int(0);
+            vals_i__ = context__.vals_i("obs_model");
+            pos__ = 0;
+            obs_model = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "lower_truncation", "int", context__.to_vec());
+            lower_truncation = int(0);
+            vals_i__ = context__.vals_i("lower_truncation");
+            pos__ = 0;
+            lower_truncation = vals_i__[pos__++];
+            validate_non_negative_index("prior_sigma", "3", 3);
+            context__.validate_dims("data initialization", "prior_sigma", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_sigma", "3", 3);
+            prior_sigma = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_sigma");
+            pos__ = 0;
+            size_t prior_sigma_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_sigma_limit_0__; ++i_0__) {
+                prior_sigma[i_0__] = vals_r__[pos__++];
+            }
+            validate_non_negative_index("prior_intercept", "3", 3);
+            context__.validate_dims("data initialization", "prior_intercept", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_intercept", "3", 3);
+            prior_intercept = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_intercept");
+            pos__ = 0;
+            size_t prior_intercept_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_intercept_limit_0__; ++i_0__) {
+                prior_intercept[i_0__] = vals_r__[pos__++];
+            }
+            validate_non_negative_index("prior_beta", "3", 3);
+            context__.validate_dims("data initialization", "prior_beta", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_beta", "3", 3);
+            prior_beta = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_beta");
+            pos__ = 0;
+            size_t prior_beta_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_beta_limit_0__; ++i_0__) {
+                prior_beta[i_0__] = vals_r__[pos__++];
+            }
+            validate_non_negative_index("prior_gp_theta", "3", 3);
+            context__.validate_dims("data initialization", "prior_gp_theta", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_gp_theta", "3", 3);
+            prior_gp_theta = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_gp_theta");
+            pos__ = 0;
+            size_t prior_gp_theta_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_gp_theta_limit_0__; ++i_0__) {
+                prior_gp_theta[i_0__] = vals_r__[pos__++];
+            }
+            validate_non_negative_index("prior_gp_sigma", "3", 3);
+            context__.validate_dims("data initialization", "prior_gp_sigma", "double", context__.to_vec(3));
+            validate_non_negative_index("prior_gp_sigma", "3", 3);
+            prior_gp_sigma = std::vector<double>(3,double(0));
+            vals_r__ = context__.vals_r("prior_gp_sigma");
+            pos__ = 0;
+            size_t prior_gp_sigma_limit_0__ = 3;
+            for (size_t i_0__ = 0; i_0__ < prior_gp_sigma_limit_0__; ++i_0__) {
+                prior_gp_sigma[i_0__] = vals_r__[pos__++];
+            }
+            context__.validate_dims("data initialization", "matern_kappa", "double", context__.to_vec());
+            matern_kappa = double(0);
+            vals_r__ = context__.vals_r("matern_kappa");
+            pos__ = 0;
+            matern_kappa = vals_r__[pos__++];
+            context__.validate_dims("data initialization", "cov_func", "int", context__.to_vec());
+            cov_func = int(0);
+            vals_i__ = context__.vals_i("cov_func");
+            pos__ = 0;
+            cov_func = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "M", "int", context__.to_vec());
+            M = int(0);
+            vals_i__ = context__.vals_i("M");
+            pos__ = 0;
+            M = vals_i__[pos__++];
             validate_non_negative_index("NN_ind", "(N - 1)", (N - 1));
             validate_non_negative_index("NN_ind", "M", M);
             context__.validate_dims("data initialization", "NN_ind", "int", context__.to_vec((N - 1),M));
@@ -2202,31 +2326,10 @@ public:
             vals_r__ = context__.vals_r("bp");
             pos__ = 0;
             bp = vals_r__[pos__++];
-            context__.validate_dims("data initialization", "norm_params", "int", context__.to_vec());
-            norm_params = int(0);
-            vals_i__ = context__.vals_i("norm_params");
-            pos__ = 0;
-            norm_params = vals_i__[pos__++];
-            context__.validate_dims("data initialization", "gamma_params", "int", context__.to_vec());
-            gamma_params = int(0);
-            vals_i__ = context__.vals_i("gamma_params");
-            pos__ = 0;
-            gamma_params = vals_i__[pos__++];
-            context__.validate_dims("data initialization", "nb2_params", "int", context__.to_vec());
-            nb2_params = int(0);
-            vals_i__ = context__.vals_i("nb2_params");
-            pos__ = 0;
-            nb2_params = vals_i__[pos__++];
-            context__.validate_dims("data initialization", "obs_model", "int", context__.to_vec());
-            obs_model = int(0);
-            vals_i__ = context__.vals_i("obs_model");
-            pos__ = 0;
-            obs_model = vals_i__[pos__++];
 
             // validate, data variables
             check_greater_or_equal(function__,"N",N,1);
-            check_greater_or_equal(function__,"M",M,1);
-            check_greater_or_equal(function__,"P",P,0);
+            check_greater_or_equal(function__,"nCov",nCov,0);
             check_greater_or_equal(function__,"norm_params",norm_params,0);
             check_less_or_equal(function__,"norm_params",norm_params,1);
             check_greater_or_equal(function__,"gamma_params",gamma_params,0);
@@ -2235,6 +2338,10 @@ public:
             check_less_or_equal(function__,"nb2_params",nb2_params,1);
             check_greater_or_equal(function__,"obs_model",obs_model,0);
             check_less_or_equal(function__,"obs_model",obs_model,6);
+            check_greater_or_equal(function__,"lower_truncation",lower_truncation,0);
+            check_greater_or_equal(function__,"cov_func",cov_func,0);
+            check_less_or_equal(function__,"cov_func",cov_func,2);
+            check_greater_or_equal(function__,"M",M,1);
             // initialize data variables
 
 
@@ -2243,11 +2350,8 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            validate_non_negative_index("beta", "(P + 1)", (P + 1));
-            num_params_r__ += (P + 1);
-            ++num_params_r__;
-            ++num_params_r__;
-            ++num_params_r__;
+            validate_non_negative_index("B", "nCov", nCov);
+            num_params_r__ += nCov;
             validate_non_negative_index("w", "N", N);
             num_params_r__ += N;
             validate_non_negative_index("sigma", "norm_params", norm_params);
@@ -2256,6 +2360,10 @@ public:
             num_params_r__ += gamma_params;
             validate_non_negative_index("nb2_phi", "nb2_params", nb2_params);
             num_params_r__ += nb2_params;
+            ++num_params_r__;
+            ++num_params_r__;
+            ++num_params_r__;
+            ++num_params_r__;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -2276,58 +2384,19 @@ public:
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
 
-        if (!(context__.contains_r("beta")))
-            throw std::runtime_error("variable beta missing");
-        vals_r__ = context__.vals_r("beta");
+        if (!(context__.contains_r("B")))
+            throw std::runtime_error("variable B missing");
+        vals_r__ = context__.vals_r("B");
         pos__ = 0U;
-        validate_non_negative_index("beta", "(P + 1)", (P + 1));
-        context__.validate_dims("initialization", "beta", "vector_d", context__.to_vec((P + 1)));
-        vector_d beta(static_cast<Eigen::VectorXd::Index>((P + 1)));
-        for (int j1__ = 0U; j1__ < (P + 1); ++j1__)
-            beta(j1__) = vals_r__[pos__++];
+        validate_non_negative_index("B", "nCov", nCov);
+        context__.validate_dims("initialization", "B", "vector_d", context__.to_vec(nCov));
+        vector_d B(static_cast<Eigen::VectorXd::Index>(nCov));
+        for (int j1__ = 0U; j1__ < nCov; ++j1__)
+            B(j1__) = vals_r__[pos__++];
         try {
-            writer__.vector_unconstrain(beta);
+            writer__.vector_unconstrain(B);
         } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable beta: ") + e.what());
-        }
-
-        if (!(context__.contains_r("sigmasq")))
-            throw std::runtime_error("variable sigmasq missing");
-        vals_r__ = context__.vals_r("sigmasq");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "sigmasq", "double", context__.to_vec());
-        double sigmasq(0);
-        sigmasq = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,sigmasq);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable sigmasq: ") + e.what());
-        }
-
-        if (!(context__.contains_r("tau")))
-            throw std::runtime_error("variable tau missing");
-        vals_r__ = context__.vals_r("tau");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "tau", "double", context__.to_vec());
-        double tau(0);
-        tau = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,tau);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable tau: ") + e.what());
-        }
-
-        if (!(context__.contains_r("phi")))
-            throw std::runtime_error("variable phi missing");
-        vals_r__ = context__.vals_r("phi");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "phi", "double", context__.to_vec());
-        double phi(0);
-        phi = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0,phi);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable phi: ") + e.what());
+            throw std::runtime_error(std::string("Error transforming variable B: ") + e.what());
         }
 
         if (!(context__.contains_r("w")))
@@ -2393,6 +2462,58 @@ public:
             throw std::runtime_error(std::string("Error transforming variable nb2_phi: ") + e.what());
         }
 
+        if (!(context__.contains_r("gp_theta")))
+            throw std::runtime_error("variable gp_theta missing");
+        vals_r__ = context__.vals_r("gp_theta");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "gp_theta", "double", context__.to_vec());
+        double gp_theta(0);
+        gp_theta = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,gp_theta);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable gp_theta: ") + e.what());
+        }
+
+        if (!(context__.contains_r("gp_sigma")))
+            throw std::runtime_error("variable gp_sigma missing");
+        vals_r__ = context__.vals_r("gp_sigma");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "gp_sigma", "double", context__.to_vec());
+        double gp_sigma(0);
+        gp_sigma = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,gp_sigma);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable gp_sigma: ") + e.what());
+        }
+
+        if (!(context__.contains_r("sigmasq")))
+            throw std::runtime_error("variable sigmasq missing");
+        vals_r__ = context__.vals_r("sigmasq");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "sigmasq", "double", context__.to_vec());
+        double sigmasq(0);
+        sigmasq = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,sigmasq);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable sigmasq: ") + e.what());
+        }
+
+        if (!(context__.contains_r("tau")))
+            throw std::runtime_error("variable tau missing");
+        vals_r__ = context__.vals_r("tau");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "tau", "double", context__.to_vec());
+        double tau(0);
+        tau = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0,tau);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable tau: ") + e.what());
+        }
+
         params_r__ = writer__.data_r();
         params_i__ = writer__.data_i();
     }
@@ -2424,33 +2545,12 @@ public:
             // model parameters
             stan::io::reader<T__> in__(params_r__,params_i__);
 
-            Eigen::Matrix<T__,Eigen::Dynamic,1>  beta;
-            (void) beta;  // dummy to suppress unused var warning
+            Eigen::Matrix<T__,Eigen::Dynamic,1>  B;
+            (void) B;  // dummy to suppress unused var warning
             if (jacobian__)
-                beta = in__.vector_constrain((P + 1),lp__);
+                B = in__.vector_constrain(nCov,lp__);
             else
-                beta = in__.vector_constrain((P + 1));
-
-            T__ sigmasq;
-            (void) sigmasq;  // dummy to suppress unused var warning
-            if (jacobian__)
-                sigmasq = in__.scalar_lb_constrain(0,lp__);
-            else
-                sigmasq = in__.scalar_lb_constrain(0);
-
-            T__ tau;
-            (void) tau;  // dummy to suppress unused var warning
-            if (jacobian__)
-                tau = in__.scalar_lb_constrain(0,lp__);
-            else
-                tau = in__.scalar_lb_constrain(0);
-
-            T__ phi;
-            (void) phi;  // dummy to suppress unused var warning
-            if (jacobian__)
-                phi = in__.scalar_lb_constrain(0,lp__);
-            else
-                phi = in__.scalar_lb_constrain(0);
+                B = in__.vector_constrain(nCov);
 
             Eigen::Matrix<T__,Eigen::Dynamic,1>  w;
             (void) w;  // dummy to suppress unused var warning
@@ -2489,8 +2589,42 @@ public:
                     nb2_phi.push_back(in__.scalar_lb_constrain(0));
             }
 
+            T__ gp_theta;
+            (void) gp_theta;  // dummy to suppress unused var warning
+            if (jacobian__)
+                gp_theta = in__.scalar_lb_constrain(0,lp__);
+            else
+                gp_theta = in__.scalar_lb_constrain(0);
+
+            T__ gp_sigma;
+            (void) gp_sigma;  // dummy to suppress unused var warning
+            if (jacobian__)
+                gp_sigma = in__.scalar_lb_constrain(0,lp__);
+            else
+                gp_sigma = in__.scalar_lb_constrain(0);
+
+            T__ sigmasq;
+            (void) sigmasq;  // dummy to suppress unused var warning
+            if (jacobian__)
+                sigmasq = in__.scalar_lb_constrain(0,lp__);
+            else
+                sigmasq = in__.scalar_lb_constrain(0);
+
+            T__ tau;
+            (void) tau;  // dummy to suppress unused var warning
+            if (jacobian__)
+                tau = in__.scalar_lb_constrain(0,lp__);
+            else
+                tau = in__.scalar_lb_constrain(0);
+
 
             // transformed parameters
+            validate_non_negative_index("y_hat", "N", N);
+            Eigen::Matrix<T__,Eigen::Dynamic,1>  y_hat(static_cast<Eigen::VectorXd::Index>(N));
+            (void) y_hat;  // dummy to suppress unused var warning
+
+            stan::math::initialize(y_hat, DUMMY_VAR__);
+            stan::math::fill(y_hat,DUMMY_VAR__);
             T__ tausq;
             (void) tausq;  // dummy to suppress unused var warning
 
@@ -2507,8 +2641,16 @@ public:
 
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
+            stan::math::assign(y_hat, add(multiply(X,B),w));
 
             // validate transformed parameters
+            for (int i0__ = 0; i0__ < N; ++i0__) {
+                if (stan::math::is_uninitialized(y_hat(i0__))) {
+                    std::stringstream msg__;
+                    msg__ << "Undefined transformed parameter: y_hat" << '[' << i0__ << ']';
+                    throw std::runtime_error(msg__.str());
+                }
+            }
             if (stan::math::is_uninitialized(tausq)) {
                 std::stringstream msg__;
                 msg__ << "Undefined transformed parameter: tausq";
@@ -2530,13 +2672,61 @@ public:
 
             // model body
 
-            lp_accum__.add(gamma_log<propto__>(sigmasq, ap, bp));
-            lp_accum__.add(normal_log<propto__>(beta, 0, 1));
-            lp_accum__.add(gamma_log<propto__>(phi, ap, bp));
-            lp_accum__.add(normal_log<propto__>(sigma, 0, ss));
+            lp_accum__.add(normal_log<propto__>(B, 0, 1));
             lp_accum__.add(normal_log<propto__>(tau, 0, st));
-            lp_accum__.add(nngp_w_lpdf<propto__>(w, sigmasq, phi, NN_dist, NN_distM, NN_ind, N, M, pstream__));
-            lp_accum__.add(normal_log<propto__>(Y, add(multiply(X,beta),w), tau));
+            lp_accum__.add(nngp_w_lpdf<propto__>(w, pow(gp_sigma,2), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
+            lp_accum__.add(student_t_log<propto__>(gp_theta, get_base1(prior_gp_theta,1,"prior_gp_theta",1), get_base1(prior_gp_theta,2,"prior_gp_theta",1), get_base1(prior_gp_theta,3,"prior_gp_theta",1)));
+            lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            if (as_bool(logical_gte(nCov,1))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(B,1,"B",1), get_base1(prior_intercept,1,"prior_intercept",1), get_base1(prior_intercept,2,"prior_intercept",1), get_base1(prior_intercept,3,"prior_intercept",1)));
+            }
+            if (as_bool(logical_gte(nCov,2))) {
+
+                for (int i = 2; i <= nCov; ++i) {
+
+                    lp_accum__.add(student_t_log<propto__>(get_base1(B,i,"B",1), get_base1(prior_beta,1,"prior_beta",1), get_base1(prior_beta,2,"prior_beta",1), get_base1(prior_beta,3,"prior_beta",1)));
+                }
+            }
+            if (as_bool(logical_eq(obs_model,0))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(CV,1,"CV",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                lp_accum__.add(gamma_log<propto__>(y, get_base1(gammaA,1,"gammaA",1), elt_divide(get_base1(gammaA,1,"gammaA",1),exp(y_hat))));
+            }
+            if (as_bool(logical_eq(obs_model,1))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                lp_accum__.add(normal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
+            }
+            if (as_bool(logical_eq(obs_model,2))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(nb2_phi,1,"nb2_phi",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                if (as_bool(logical_eq(lower_truncation,0))) {
+
+                    lp_accum__.add(neg_binomial_2_log_log<propto__>(y_int, y_hat, get_base1(nb2_phi,1,"nb2_phi",1)));
+                } else {
+
+                    for (int i = 1; i <= N; ++i) {
+
+                        lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(y_int,i,"y_int",1), exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)));
+                        if (get_base1(y_int,i,"y_int",1) < lower_truncation) lp_accum__.add(-std::numeric_limits<double>::infinity());
+                        else lp_accum__.add(-log_sum_exp(neg_binomial_2_ccdf_log(lower_truncation, exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1)), neg_binomial_2_log(lower_truncation, exp(get_base1(y_hat,i,"y_hat",1)), get_base1(nb2_phi,1,"nb2_phi",1))));
+                    }
+                }
+            }
+            if (as_bool(logical_eq(obs_model,4))) {
+
+                lp_accum__.add(bernoulli_logit_log<propto__>(y_int, y_hat));
+            }
+            if (as_bool(logical_eq(obs_model,5))) {
+
+                lp_accum__.add(poisson_log_log<propto__>(y_int, y_hat));
+            }
+            if (as_bool(logical_eq(obs_model,6))) {
+
+                lp_accum__.add(student_t_log<propto__>(get_base1(sigma,1,"sigma",1), get_base1(prior_sigma,1,"prior_sigma",1), get_base1(prior_sigma,2,"prior_sigma",1), get_base1(prior_sigma,3,"prior_sigma",1)));
+                lp_accum__.add(lognormal_log<propto__>(y, y_hat, get_base1(sigma,1,"sigma",1)));
+            }
 
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -2563,16 +2753,19 @@ public:
 
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
-        names__.push_back("beta");
-        names__.push_back("sigmasq");
-        names__.push_back("tau");
-        names__.push_back("phi");
+        names__.push_back("B");
         names__.push_back("w");
         names__.push_back("sigma");
         names__.push_back("CV");
         names__.push_back("nb2_phi");
+        names__.push_back("gp_theta");
+        names__.push_back("gp_sigma");
+        names__.push_back("sigmasq");
+        names__.push_back("tau");
+        names__.push_back("y_hat");
         names__.push_back("tausq");
         names__.push_back("gammaA");
+        names__.push_back("log_lik");
     }
 
 
@@ -2580,13 +2773,7 @@ public:
         dimss__.resize(0);
         std::vector<size_t> dims__;
         dims__.resize(0);
-        dims__.push_back((P + 1));
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
+        dims__.push_back(nCov);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(N);
@@ -2603,7 +2790,21 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
         dims__.push_back(gamma_params);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N);
         dimss__.push_back(dims__);
     }
 
@@ -2620,10 +2821,7 @@ public:
         static const char* function__ = "model_nngp_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        vector_d beta = in__.vector_constrain((P + 1));
-        double sigmasq = in__.scalar_lb_constrain(0);
-        double tau = in__.scalar_lb_constrain(0);
-        double phi = in__.scalar_lb_constrain(0);
+        vector_d B = in__.vector_constrain(nCov);
         vector_d w = in__.vector_constrain(N);
         vector<double> sigma;
         size_t dim_sigma_0__ = norm_params;
@@ -2640,12 +2838,13 @@ public:
         for (size_t k_0__ = 0; k_0__ < dim_nb2_phi_0__; ++k_0__) {
             nb2_phi.push_back(in__.scalar_lb_constrain(0));
         }
-            for (int k_0__ = 0; k_0__ < (P + 1); ++k_0__) {
-            vars__.push_back(beta[k_0__]);
+        double gp_theta = in__.scalar_lb_constrain(0);
+        double gp_sigma = in__.scalar_lb_constrain(0);
+        double sigmasq = in__.scalar_lb_constrain(0);
+        double tau = in__.scalar_lb_constrain(0);
+            for (int k_0__ = 0; k_0__ < nCov; ++k_0__) {
+            vars__.push_back(B[k_0__]);
             }
-        vars__.push_back(sigmasq);
-        vars__.push_back(tau);
-        vars__.push_back(phi);
             for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(w[k_0__]);
             }
@@ -2658,6 +2857,10 @@ public:
             for (int k_0__ = 0; k_0__ < nb2_params; ++k_0__) {
             vars__.push_back(nb2_phi[k_0__]);
             }
+        vars__.push_back(gp_theta);
+        vars__.push_back(gp_sigma);
+        vars__.push_back(sigmasq);
+        vars__.push_back(tau);
 
         if (!include_tparams__) return;
         // declare and define transformed parameters
@@ -2669,6 +2872,12 @@ public:
         (void) DUMMY_VAR__;  // suppress unused var warning
 
         try {
+            validate_non_negative_index("y_hat", "N", N);
+            vector_d y_hat(static_cast<Eigen::VectorXd::Index>(N));
+            (void) y_hat;  // dummy to suppress unused var warning
+
+            stan::math::initialize(y_hat, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(y_hat,DUMMY_VAR__);
             double tausq(0.0);
             (void) tausq;  // dummy to suppress unused var warning
 
@@ -2685,6 +2894,7 @@ public:
 
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
+            stan::math::assign(y_hat, add(multiply(X,B),w));
 
             // validate transformed parameters
             for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
@@ -2692,6 +2902,9 @@ public:
             }
 
             // write transformed parameters
+            for (int k_0__ = 0; k_0__ < N; ++k_0__) {
+            vars__.push_back(y_hat[k_0__]);
+            }
         vars__.push_back(tausq);
             for (int k_0__ = 0; k_0__ < gamma_params; ++k_0__) {
             vars__.push_back(gammaA[k_0__]);
@@ -2699,12 +2912,55 @@ public:
 
             if (!include_gqs__) return;
             // declare and define generated quantities
+            validate_non_negative_index("log_lik", "N", N);
+            vector_d log_lik(static_cast<Eigen::VectorXd::Index>(N));
+            (void) log_lik;  // dummy to suppress unused var warning
+
+            stan::math::initialize(log_lik, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(log_lik,DUMMY_VAR__);
 
 
+            for (int i = 1; i <= N; ++i) {
+
+                if (as_bool(logical_eq(obs_model,0))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), gamma_log(get_base1(y,i,"y",1),get_base1(gammaA,1,"gammaA",1),(get_base1(gammaA,1,"gammaA",1) / exp(get_base1(y_hat,i,"y_hat",1)))));
+                }
+                if (as_bool(logical_eq(obs_model,1))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), normal_log(get_base1(y,i,"y",1),get_base1(y_hat,i,"y_hat",1),get_base1(sigma,1,"sigma",1)));
+                }
+                if (as_bool(logical_eq(obs_model,2))) {
+
+                    if (as_bool(logical_eq(lower_truncation,0))) {
+
+                        stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), neg_binomial_2_log_log(get_base1(y_int,i,"y_int",1),get_base1(y_hat,i,"y_hat",1),get_base1(nb2_phi,1,"nb2_phi",1)));
+                    } else {
+
+                        stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), neg_binomial_2_log(get_base1(y_int,i,"y_int",1),exp(get_base1(y_hat,i,"y_hat",1)),get_base1(nb2_phi,1,"nb2_phi",1)));
+                    }
+                }
+                if (as_bool(logical_eq(obs_model,4))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), bernoulli_logit_log(get_base1(y_int,i,"y_int",1),get_base1(y_hat,i,"y_hat",1)));
+                }
+                if (as_bool(logical_eq(obs_model,5))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), poisson_log_log(get_base1(y_int,i,"y_int",1),get_base1(y_hat,i,"y_hat",1)));
+                }
+                if (as_bool(logical_eq(obs_model,6))) {
+
+                    stan::math::assign(get_base1_lhs(log_lik,i,"log_lik",1), lognormal_log(get_base1(y,i,"y",1),y_hat,get_base1(sigma,1,"sigma",1)));
+                }
+            }
 
             // validate generated quantities
 
             // write generated quantities
+            for (int k_0__ = 0; k_0__ < N; ++k_0__) {
+            vars__.push_back(log_lik[k_0__]);
+            }
+
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -2739,20 +2995,11 @@ public:
                                  bool include_tparams__ = true,
                                  bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
-        for (int k_0__ = 1; k_0__ <= (P + 1); ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= nCov; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "beta" << '.' << k_0__;
+            param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "sigmasq";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "tau";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "phi";
-        param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "w" << '.' << k_0__;
@@ -2773,8 +3020,25 @@ public:
             param_name_stream__ << "nb2_phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_theta";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigma";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "sigmasq";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "tau";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__ && !include_tparams__) return;
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "y_hat" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         param_name_stream__.str(std::string());
         param_name_stream__ << "tausq";
         param_names__.push_back(param_name_stream__.str());
@@ -2785,6 +3049,11 @@ public:
         }
 
         if (!include_gqs__) return;
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
 
 
@@ -2792,20 +3061,11 @@ public:
                                    bool include_tparams__ = true,
                                    bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
-        for (int k_0__ = 1; k_0__ <= (P + 1); ++k_0__) {
+        for (int k_0__ = 1; k_0__ <= nCov; ++k_0__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "beta" << '.' << k_0__;
+            param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "sigmasq";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "tau";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "phi";
-        param_names__.push_back(param_name_stream__.str());
         for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "w" << '.' << k_0__;
@@ -2826,8 +3086,25 @@ public:
             param_name_stream__ << "nb2_phi" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_theta";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "gp_sigma";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "sigmasq";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "tau";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__ && !include_tparams__) return;
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "y_hat" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         param_name_stream__.str(std::string());
         param_name_stream__ << "tausq";
         param_names__.push_back(param_name_stream__.str());
@@ -2838,6 +3115,11 @@ public:
         }
 
         if (!include_gqs__) return;
+        for (int k_0__ = 1; k_0__ <= N; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
 
 }; // model
