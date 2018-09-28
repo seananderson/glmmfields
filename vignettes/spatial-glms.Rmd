@@ -154,24 +154,22 @@ For large datasets, the predictive Gaussian process described above can be overw
 ```{r}
 set.seed(1)
 N <- 1000 # number of data points
-temperature <- rnorm(N, 0, 1) # simulated temperature data
-X <- cbind(1, temperature) # our design matrix
+X <- matrix(1,nrow=N) # our design matrix
 s <- sim_glmmfields(
   n_draws = 1, gp_theta = 1.5, n_data_points = N,
-  gp_sigma = 0.2, sd_obs = 0.2, n_knots = 12, obs_error = "gamma",
-  covariance = "squared-exponential", X = X,
-  B = c(0.5, 0.2) # B represents our intercept and slope
+  gp_sigma = 0.2, sd_obs = 0.2, n_knots = 20,
+  covariance = "squared-exponential", X = X
 )
 d <- s$dat
-d$temperature <- temperature
+
 ```
 
-Now we'll add two arguments to the glmmfields() call. First, we'll set method = "NNGP", and second we'll specify the number of neighbors used in calculations (nngp_neighbors, defaults to 5).  
+Now we'll add two arguments to the glmmfields() call. First, we'll set method = "NNGP", and second we'll specify the number of neighbors used in calculations (nngp_neighbors, defaults to 5). Increasing the number of neighbors tends to make calculations more slow, and the estimated surface more smooth.
 
 ```{r}
-m_spatial <- glmmfields(y ~ temperature,
-  data = d, family = Gamma(link = "log"),
-  lat = "lat", lon = "lon", nknots = 12, iter = 1000, chains = 1,
+m_spatial_gp <- glmmfields(y ~ 1,
+  data = d,
+  lat = "lat", lon = "lon", iter = 1000, chains = 1,
   prior_intercept = student_t(3, 0, 10), 
   prior_beta = student_t(3, 0, 3),
   prior_sigma = half_t(3, 0, 3),
@@ -181,6 +179,5 @@ m_spatial <- glmmfields(y ~ temperature,
   method="NNGP",
   nngp_neighbors = 10
 )
+
 ```
-
-

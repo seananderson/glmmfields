@@ -14,7 +14,7 @@
 stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
                       estimate_ar = FALSE, fixed_intercept = FALSE,
                       save_log_lik = FALSE, method="GP") {
-  p <- c(
+  p <- c("y_hat",
     "gp_sigma",
     "gp_theta",
     "B",
