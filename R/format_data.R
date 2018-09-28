@@ -122,23 +122,22 @@ format_data <- function(data, y, X, time,
     #NN_ind, two-dimensional array of indices whose i−1th row shows at most M closest points to si among the locations indexed less than i.
     #NN_dist, matrix whose i−1th row contains the distance of ith location to its selected neighbors.
     #NN_dist, matrix whose i−1th row contains the strictly lower triangular part of the distance matrix of the selected neighbors of ith location.
-    NN_matrix <- NNMatrix(coords = as.matrix(coords), n.neighbors = 3, n.omp.threads = 2)
-
-    nCov = if(fixed_intercept) 0 else ncol(X)
+    NN_matrix <- NNMatrix(coords = as.matrix(coords), n.neighbors = nngp_neighbors, n.omp.threads = 2)
 
     spatglm_data <- list(
       nT = max(yearID),
       N = length(y),
-      M = 3,
+      stationID = stationID,
       yearID = yearID,
-      y = y[NN_matrix$ord],
-      X = X[NN_matrix$ord,],
-      nCov = nCov,
+      y = y,
+      distKnots = distKnots,
+      distKnots21 = distKnots21,
+      X = X,
+      nCov = if(fixed_intercept) 0 else ncol(X),
+      M = nngp_neighbors,
       NN_ind = NN_matrix$NN_ind,
       NN_dist = NN_matrix$NN_dist,
-      NN_distM = NN_matrix$NN_distM,
-      ss = 3 * sqrt(2), st = 3 * sqrt(0.1),
-      ap = 3, bp = 0.5
+      NN_distM = NN_matrix$NN_distM
     )
     return(list(spatglm_data = spatglm_data))
   }
