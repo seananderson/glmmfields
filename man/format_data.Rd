@@ -35,6 +35,8 @@ format_data(data, y, X, time, lon = "lon", lat = "lat",
 to GPP models}
 
 \item{nngp_neighbors}{The number of nearest neighbors to include in nearest neighbor Gaussian process (method="NNGP")}
+
+\item{method}{The methods used for estimation of the Gaussian Process. Defaults to full predictive process ("GP") but nearest neighbor Gaussian Process can be used ("NNGP")}
 }
 \description{
 Format data for fitting a glmmfields model

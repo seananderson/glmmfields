@@ -156,7 +156,7 @@ set.seed(1)
 N <- 1000 # number of data points
 X <- matrix(1,nrow=N) # our design matrix
 s <- sim_glmmfields(
-  n_draws = 1, gp_theta = 1.5, n_data_points = N,
+  n_draws = 5, gp_theta = 1.5, n_data_points = N,
   gp_sigma = 0.2, sd_obs = 0.2, n_knots = 20,
   covariance = "squared-exponential", X = X
 )

@@ -15,8 +15,8 @@ glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
   year_re = FALSE, nb_lower_truncation = 0,
   control = list(adapt_delta = 0.9), save_log_lik = FALSE,
-  df_lower_bound = 2, cluster = c("pam", "kmeans"), use_NNGP = FALSE,
-  nngp_neighbors = 5, ...)
+  df_lower_bound = 2, cluster = c("pam", "kmeans"), method = c("GP",
+  "NNGP"), nngp_neighbors = 5, ...)
 }
 \arguments{
 \item{formula}{The model formula.}
@@ -129,14 +129,17 @@ convergence. Defaults to 2.}
 locations. \code{"pam"} = \code{\link[cluster:pam]{cluster::pam()}}. The \code{"kmeans"}
 algorithm will be faster on larger datasets.}
 
+\item{method}{The methods used for estimation of the Gaussian Process. Defaults to full
+predictive process ("GP") but nearest neighbor Gaussian Process can be used ("NNGP")}
+
+\item{nngp_neighbors}{Numeric, number of neighbors used to estimate nearest neighbor
+Gaussian process (NNGP). Defaults to 5 if the method is "NNGP"}
+
+\item{...}{Any other arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}}.}
+
 \item{use_NNGP}{Logical: if \code{TRUE} then nearest neighbor Gaussian processes
 will be used for estimation, othersise Gaussian predictive process is used. Defaults
 to \code{FALSE}}
-
-\item{nngp_neighbors}{Numeric, number of neighbors used to estimate nearest neighbor
-Gaussian process (NNGP). Defaults to 5, and not used if \code{use_NNGP} is FALSE}
-
-\item{...}{Any other arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}}.}
 }
 \description{
 Fit a spatiotemporal random fields model that optionally uses the MVT
