@@ -313,7 +313,8 @@ glmmfields <- function(formula, data, lon, lat,
     pars = stan_pars(
       obs_error = obs_error, estimate_df = estimate_df,
       est_temporalRE = est_temporalRE, estimate_ar = estimate_ar,
-      fixed_intercept = fixed_intercept, save_log_lik = save_log_lik
+      fixed_intercept = fixed_intercept, save_log_lik = save_log_lik,
+      method = method
     ),
     control = control, ...
   )

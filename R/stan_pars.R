@@ -10,18 +10,21 @@
 #' @param save_log_lik Logical: should the log likelihood for each data point be
 #'   saved so that information criteria such as LOOIC or WAIC can be calculated?
 #'   Defaults to \code{FALSE} so that the size of model objects is smaller.
+#' @param method Whether to use Gaussian Process (GP) or nearest neighbor Gaussian Process (NNGP). Defaults to "GP"
 stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
                       estimate_ar = FALSE, fixed_intercept = FALSE,
-                      save_log_lik = FALSE) {
+                      save_log_lik = FALSE, method="GP") {
   p <- c(
     "gp_sigma",
     "gp_theta",
     "B",
     switch(obs_error[[1]], lognormal = "sigma", gaussian = "sigma",
       gamma = "CV", nb2 = "nb2_phi"
-    ),
-    "spatialEffectsKnots"
+    )
   )
+
+  if(method=="GP") p = c(p, "spatialEffectsKnots")
+
   if (estimate_df) p <- c("df", p)
   if (estimate_ar) p <- c("phi", p)
   if (est_temporalRE) {
