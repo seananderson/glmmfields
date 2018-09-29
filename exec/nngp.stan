@@ -61,6 +61,7 @@ functions{
 
 data {
   int<lower=1> N;
+  int<lower=1> nLocs; // if stations redundant, nLocs<N
   int<lower=1> nT;
   int<lower=0> nCov;
   int<lower=1> stationID[N];
@@ -94,9 +95,9 @@ data {
   real<lower=0> gp_sigma_scaling_factor; // a scaling factor to help sampling if gp_sigma is too small
   // the following 4 arguments are unique to NNGP model versus the normal GP model
   int<lower=1> M;
-  int NN_ind[N - 1, M];
-  matrix[N - 1, M] NN_dist;
-  matrix[N - 1, (M * (M - 1) / 2)] NN_distM;
+  int NN_ind[nLocs - 1, M];
+  matrix[nLocs - 1, M] NN_dist;
+  matrix[nLocs - 1, (M * (M - 1) / 2)] NN_distM;
   // for now, the following 4 models are not used in the NNGP version but are in the GP model
   //int<lower=1> nKnots;
   //int<lower=1> nLocs;
@@ -105,7 +106,7 @@ data {
 }
 parameters{
   vector[nCov] B;
-  vector[N] spatialDevs[nT];
+  vector[nLocs] spatialDevs[nT];
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
@@ -120,7 +121,7 @@ parameters{
 transformed parameters {
   //real sigmasq = square(sigma);
   vector[N] y_hat; // vector to hold predicted values
-  vector[N] spatialEffects[nT];
+  vector[nLocs] spatialEffects[nT];
   real<lower=0> gammaA[gamma_params];
   real<lower=0> gp_sigma_sq;
   gp_sigma_sq = pow(gp_sigma*gp_sigma_scaling_factor, 2.0);
@@ -199,11 +200,11 @@ model{
   if (nW > 0) { // if nW == 0, we are using MVN
     // spatial deviates in remaining time slices
     for (t in 1:nT) {
-        spatialDevs[t] ~ nngp_w(W[t]*gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
+        spatialDevs[t] ~ nngp_w(W[t]*gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, nLocs, M, cov_func, matern_kappa);
     }
   } else { // use MVN instead of MVT
     for (t in 1:nT) {
-        spatialDevs[t] ~ nngp_w(gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa);
+        spatialDevs[t] ~ nngp_w(gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, nLocs, M, cov_func, matern_kappa);
     }
   }
 

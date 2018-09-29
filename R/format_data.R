@@ -114,9 +114,11 @@ format_data <- function(data, y, X, time,
     # Get coordinates
     if (length(unique(stationID)) < length(stationID)) {
       first_instance <- which(!duplicated(stationID))
+      nLocs <- length(first_instance)
       coords <- data[first_instance, c(lon, lat), drop = FALSE]
     } else {
       coords <- data[, c(lon, lat), drop = FALSE]
+      nLocs <- nrow(data)
     }
 
     # Matrices used to construct the A and D matrices described in Finley et al. (2017)
@@ -133,6 +135,7 @@ format_data <- function(data, y, X, time,
       y = y,
       X = X,
       nCov = if(fixed_intercept) 0 else ncol(X),
+      nLocs = nLocs,
       M = nngp_neighbors,
       NN_ind = NN_matrix$NN_ind,
       NN_dist = NN_matrix$NN_dist,

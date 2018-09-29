@@ -1895,7 +1895,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_nngp");
-    reader.add_event(276, 276, "end", "model_nngp");
+    reader.add_event(277, 277, "end", "model_nngp");
     return reader;
 }
 
@@ -2066,6 +2066,7 @@ struct nngp_w_lpdf_functor__ {
 class model_nngp : public prob_grad {
 private:
     int N;
+    int nLocs;
     int nT;
     int nCov;
     vector<int> stationID;
@@ -2140,6 +2141,11 @@ public:
             vals_i__ = context__.vals_i("N");
             pos__ = 0;
             N = vals_i__[pos__++];
+            context__.validate_dims("data initialization", "nLocs", "int", context__.to_vec());
+            nLocs = int(0);
+            vals_i__ = context__.vals_i("nLocs");
+            pos__ = 0;
+            nLocs = vals_i__[pos__++];
             context__.validate_dims("data initialization", "nT", "int", context__.to_vec());
             nT = int(0);
             vals_i__ = context__.vals_i("nT");
@@ -2365,45 +2371,45 @@ public:
             vals_i__ = context__.vals_i("M");
             pos__ = 0;
             M = vals_i__[pos__++];
-            validate_non_negative_index("NN_ind", "(N - 1)", (N - 1));
+            validate_non_negative_index("NN_ind", "(nLocs - 1)", (nLocs - 1));
             validate_non_negative_index("NN_ind", "M", M);
-            context__.validate_dims("data initialization", "NN_ind", "int", context__.to_vec((N - 1),M));
-            validate_non_negative_index("NN_ind", "(N - 1)", (N - 1));
+            context__.validate_dims("data initialization", "NN_ind", "int", context__.to_vec((nLocs - 1),M));
+            validate_non_negative_index("NN_ind", "(nLocs - 1)", (nLocs - 1));
             validate_non_negative_index("NN_ind", "M", M);
-            NN_ind = std::vector<std::vector<int> >((N - 1),std::vector<int>(M,int(0)));
+            NN_ind = std::vector<std::vector<int> >((nLocs - 1),std::vector<int>(M,int(0)));
             vals_i__ = context__.vals_i("NN_ind");
             pos__ = 0;
             size_t NN_ind_limit_1__ = M;
             for (size_t i_1__ = 0; i_1__ < NN_ind_limit_1__; ++i_1__) {
-                size_t NN_ind_limit_0__ = (N - 1);
+                size_t NN_ind_limit_0__ = (nLocs - 1);
                 for (size_t i_0__ = 0; i_0__ < NN_ind_limit_0__; ++i_0__) {
                     NN_ind[i_0__][i_1__] = vals_i__[pos__++];
                 }
             }
-            validate_non_negative_index("NN_dist", "(N - 1)", (N - 1));
+            validate_non_negative_index("NN_dist", "(nLocs - 1)", (nLocs - 1));
             validate_non_negative_index("NN_dist", "M", M);
-            context__.validate_dims("data initialization", "NN_dist", "matrix_d", context__.to_vec((N - 1),M));
-            validate_non_negative_index("NN_dist", "(N - 1)", (N - 1));
+            context__.validate_dims("data initialization", "NN_dist", "matrix_d", context__.to_vec((nLocs - 1),M));
+            validate_non_negative_index("NN_dist", "(nLocs - 1)", (nLocs - 1));
             validate_non_negative_index("NN_dist", "M", M);
-            NN_dist = matrix_d(static_cast<Eigen::VectorXd::Index>((N - 1)),static_cast<Eigen::VectorXd::Index>(M));
+            NN_dist = matrix_d(static_cast<Eigen::VectorXd::Index>((nLocs - 1)),static_cast<Eigen::VectorXd::Index>(M));
             vals_r__ = context__.vals_r("NN_dist");
             pos__ = 0;
-            size_t NN_dist_m_mat_lim__ = (N - 1);
+            size_t NN_dist_m_mat_lim__ = (nLocs - 1);
             size_t NN_dist_n_mat_lim__ = M;
             for (size_t n_mat__ = 0; n_mat__ < NN_dist_n_mat_lim__; ++n_mat__) {
                 for (size_t m_mat__ = 0; m_mat__ < NN_dist_m_mat_lim__; ++m_mat__) {
                     NN_dist(m_mat__,n_mat__) = vals_r__[pos__++];
                 }
             }
-            validate_non_negative_index("NN_distM", "(N - 1)", (N - 1));
+            validate_non_negative_index("NN_distM", "(nLocs - 1)", (nLocs - 1));
             validate_non_negative_index("NN_distM", "divide((M * (M - 1)),2)", divide((M * (M - 1)),2));
-            context__.validate_dims("data initialization", "NN_distM", "matrix_d", context__.to_vec((N - 1),divide((M * (M - 1)),2)));
-            validate_non_negative_index("NN_distM", "(N - 1)", (N - 1));
+            context__.validate_dims("data initialization", "NN_distM", "matrix_d", context__.to_vec((nLocs - 1),divide((M * (M - 1)),2)));
+            validate_non_negative_index("NN_distM", "(nLocs - 1)", (nLocs - 1));
             validate_non_negative_index("NN_distM", "divide((M * (M - 1)),2)", divide((M * (M - 1)),2));
-            NN_distM = matrix_d(static_cast<Eigen::VectorXd::Index>((N - 1)),static_cast<Eigen::VectorXd::Index>(divide((M * (M - 1)),2)));
+            NN_distM = matrix_d(static_cast<Eigen::VectorXd::Index>((nLocs - 1)),static_cast<Eigen::VectorXd::Index>(divide((M * (M - 1)),2)));
             vals_r__ = context__.vals_r("NN_distM");
             pos__ = 0;
-            size_t NN_distM_m_mat_lim__ = (N - 1);
+            size_t NN_distM_m_mat_lim__ = (nLocs - 1);
             size_t NN_distM_n_mat_lim__ = divide((M * (M - 1)),2);
             for (size_t n_mat__ = 0; n_mat__ < NN_distM_n_mat_lim__; ++n_mat__) {
                 for (size_t m_mat__ = 0; m_mat__ < NN_distM_m_mat_lim__; ++m_mat__) {
@@ -2413,6 +2419,7 @@ public:
 
             // validate, data variables
             check_greater_or_equal(function__,"N",N,1);
+            check_greater_or_equal(function__,"nLocs",nLocs,1);
             check_greater_or_equal(function__,"nT",nT,1);
             check_greater_or_equal(function__,"nCov",nCov,0);
             for (int k0__ = 0; k0__ < N; ++k0__) {
@@ -2457,9 +2464,9 @@ public:
             param_ranges_i__.clear();
             validate_non_negative_index("B", "nCov", nCov);
             num_params_r__ += nCov;
-            validate_non_negative_index("spatialDevs", "N", N);
+            validate_non_negative_index("spatialDevs", "nLocs", nLocs);
             validate_non_negative_index("spatialDevs", "nT", nT);
-            num_params_r__ += N * nT;
+            num_params_r__ += nLocs * nT;
             validate_non_negative_index("sigma", "norm_params", norm_params);
             num_params_r__ += norm_params;
             validate_non_negative_index("CV", "gamma_params", gamma_params);
@@ -2518,10 +2525,10 @@ public:
         vals_r__ = context__.vals_r("spatialDevs");
         pos__ = 0U;
         validate_non_negative_index("spatialDevs", "nT", nT);
-        validate_non_negative_index("spatialDevs", "N", N);
-        context__.validate_dims("initialization", "spatialDevs", "vector_d", context__.to_vec(nT,N));
-        std::vector<vector_d> spatialDevs(nT,vector_d(static_cast<Eigen::VectorXd::Index>(N)));
-        for (int j1__ = 0U; j1__ < N; ++j1__)
+        validate_non_negative_index("spatialDevs", "nLocs", nLocs);
+        context__.validate_dims("initialization", "spatialDevs", "vector_d", context__.to_vec(nT,nLocs));
+        std::vector<vector_d> spatialDevs(nT,vector_d(static_cast<Eigen::VectorXd::Index>(nLocs)));
+        for (int j1__ = 0U; j1__ < nLocs; ++j1__)
             for (int i0__ = 0U; i0__ < nT; ++i0__)
                 spatialDevs[i0__](j1__) = vals_r__[pos__++];
         for (int i0__ = 0U; i0__ < nT; ++i0__)
@@ -2728,9 +2735,9 @@ public:
             spatialDevs.reserve(dim_spatialDevs_0__);
             for (size_t k_0__ = 0; k_0__ < dim_spatialDevs_0__; ++k_0__) {
                 if (jacobian__)
-                    spatialDevs.push_back(in__.vector_constrain(N,lp__));
+                    spatialDevs.push_back(in__.vector_constrain(nLocs,lp__));
                 else
-                    spatialDevs.push_back(in__.vector_constrain(N));
+                    spatialDevs.push_back(in__.vector_constrain(nLocs));
             }
 
             vector<T__> sigma;
@@ -2835,9 +2842,9 @@ public:
 
             stan::math::initialize(y_hat, DUMMY_VAR__);
             stan::math::fill(y_hat,DUMMY_VAR__);
-            validate_non_negative_index("spatialEffects", "N", N);
+            validate_non_negative_index("spatialEffects", "nLocs", nLocs);
             validate_non_negative_index("spatialEffects", "nT", nT);
-            vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffects(nT, (Eigen::Matrix<T__,Eigen::Dynamic,1> (static_cast<Eigen::VectorXd::Index>(N))));
+            vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > spatialEffects(nT, (Eigen::Matrix<T__,Eigen::Dynamic,1> (static_cast<Eigen::VectorXd::Index>(nLocs))));
             stan::math::initialize(spatialEffects, DUMMY_VAR__);
             stan::math::fill(spatialEffects,DUMMY_VAR__);
             validate_non_negative_index("gammaA", "gamma_params", gamma_params);
@@ -2897,7 +2904,7 @@ public:
                 }
             }
             for (int i0__ = 0; i0__ < nT; ++i0__) {
-                for (int i1__ = 0; i1__ < N; ++i1__) {
+                for (int i1__ = 0; i1__ < nLocs; ++i1__) {
                     if (stan::math::is_uninitialized(spatialEffects[i0__](i1__))) {
                         std::stringstream msg__;
                         msg__ << "Undefined transformed parameter: spatialEffects" << '[' << i0__ << ']' << '[' << i1__ << ']';
@@ -2968,13 +2975,13 @@ public:
 
                 for (int t = 1; t <= nT; ++t) {
 
-                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), (get_base1(W,t,"W",1) * gp_sigma_sq), gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
+                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), (get_base1(W,t,"W",1) * gp_sigma_sq), gp_theta, NN_dist, NN_distM, NN_ind, nLocs, M, cov_func, matern_kappa, pstream__));
                 }
             } else {
 
                 for (int t = 1; t <= nT; ++t) {
 
-                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, N, M, cov_func, matern_kappa, pstream__));
+                    lp_accum__.add(nngp_w_lpdf<propto__>(get_base1(spatialDevs,t,"spatialDevs",1), gp_sigma_sq, gp_theta, NN_dist, NN_distM, NN_ind, nLocs, M, cov_func, matern_kappa, pstream__));
                 }
             }
             if (as_bool(logical_eq(obs_model,0))) {
@@ -3070,7 +3077,7 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nT);
-        dims__.push_back(N);
+        dims__.push_back(nLocs);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(norm_params);
@@ -3105,7 +3112,7 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nT);
-        dims__.push_back(N);
+        dims__.push_back(nLocs);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(gamma_params);
@@ -3134,7 +3141,7 @@ public:
         vector<vector_d> spatialDevs;
         size_t dim_spatialDevs_0__ = nT;
         for (size_t k_0__ = 0; k_0__ < dim_spatialDevs_0__; ++k_0__) {
-            spatialDevs.push_back(in__.vector_constrain(N));
+            spatialDevs.push_back(in__.vector_constrain(nLocs));
         }
         vector<double> sigma;
         size_t dim_sigma_0__ = norm_params;
@@ -3181,7 +3188,7 @@ public:
             for (int k_0__ = 0; k_0__ < nCov; ++k_0__) {
             vars__.push_back(B[k_0__]);
             }
-            for (int k_1__ = 0; k_1__ < N; ++k_1__) {
+            for (int k_1__ = 0; k_1__ < nLocs; ++k_1__) {
                 for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
                 vars__.push_back(spatialDevs[k_0__][k_1__]);
                 }
@@ -3229,9 +3236,9 @@ public:
 
             stan::math::initialize(y_hat, std::numeric_limits<double>::quiet_NaN());
             stan::math::fill(y_hat,DUMMY_VAR__);
-            validate_non_negative_index("spatialEffects", "N", N);
+            validate_non_negative_index("spatialEffects", "nLocs", nLocs);
             validate_non_negative_index("spatialEffects", "nT", nT);
-            vector<vector_d> spatialEffects(nT, (vector_d(static_cast<Eigen::VectorXd::Index>(N))));
+            vector<vector_d> spatialEffects(nT, (vector_d(static_cast<Eigen::VectorXd::Index>(nLocs))));
             stan::math::initialize(spatialEffects, std::numeric_limits<double>::quiet_NaN());
             stan::math::fill(spatialEffects,DUMMY_VAR__);
             validate_non_negative_index("gammaA", "gamma_params", gamma_params);
@@ -3292,7 +3299,7 @@ public:
             for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(y_hat[k_0__]);
             }
-            for (int k_1__ = 0; k_1__ < N; ++k_1__) {
+            for (int k_1__ = 0; k_1__ < nLocs; ++k_1__) {
                 for (int k_0__ = 0; k_0__ < nT; ++k_0__) {
                 vars__.push_back(spatialEffects[k_0__][k_1__]);
                 }
@@ -3392,7 +3399,7 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "spatialDevs" << '.' << k_0__ << '.' << k_1__;
@@ -3452,7 +3459,7 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
@@ -3486,7 +3493,7 @@ public:
             param_name_stream__ << "B" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "spatialDevs" << '.' << k_0__ << '.' << k_1__;
@@ -3546,7 +3553,7 @@ public:
             param_name_stream__ << "y_hat" << '.' << k_0__;
             param_names__.push_back(param_name_stream__.str());
         }
-        for (int k_1__ = 1; k_1__ <= N; ++k_1__) {
+        for (int k_1__ = 1; k_1__ <= nLocs; ++k_1__) {
             for (int k_0__ = 1; k_0__ <= nT; ++k_0__) {
                 param_name_stream__.str(std::string());
                 param_name_stream__ << "spatialEffects" << '.' << k_0__ << '.' << k_1__;
