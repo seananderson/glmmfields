@@ -4,10 +4,10 @@
 \alias{format_data}
 \title{Format data for fitting a glmmfields model}
 \usage{
-format_data(data, y, X, time, lon = "lon", lat = "lat",
-  station = NULL, nknots = 25L, covariance = c("squared-exponential",
-  "exponential", "matern"), fixed_intercept = FALSE, cluster = c("pam",
-  "kmeans"), nngp_neighbors = NULL, method = c("GP", "NNGP"))
+format_data(data, y, X, time, lon = "lon", lat = "lat", station = NULL,
+  nknots = 25L, covariance = c("squared-exponential", "exponential",
+  "matern"), fixed_intercept = FALSE, cluster = c("pam", "kmeans"),
+  nngp_neighbors = NULL, method = c("GP", "NNGP"))
 }
 \arguments{
 \item{data}{A data frame to be formatted}

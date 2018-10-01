@@ -83,7 +83,7 @@ We can compare the model above with a Nearest Neighbor Gaussian Process model, w
 start_time <- Sys.time()
 m_spatial_gp <- glmmfields(y ~ 1,
   data = d,
-  lat = "lat", lon = "lon", iter = 100, chains = 1,
+  lat = "lat", lon = "lon", iter = 1000, chains = 1,
   prior_intercept = student_t(3, 0, 10), 
   prior_beta = student_t(3, 0, 3),
   prior_sigma = half_t(3, 0, 3),
