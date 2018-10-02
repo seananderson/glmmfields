@@ -57,7 +57,8 @@ transformed parameters {
   matrix[nKnots, nKnots] transformed_dist;
   matrix[nLocs, nKnots] transformed_dist21;
   matrix[nLocs, nKnots] SigmaOffDiag;
-  matrix[nLocs, nKnots] invSigmaKnots;
+  cholesky_factor_cov[nKnots] cholSigmaKnots;
+  matrix[nKnots, nKnots] invChol;
   vector[N] y_hat;
   real<lower=0> gammaA[gamma_params];
   real<lower=0> gp_sigma_sq;
@@ -103,7 +104,10 @@ transformed parameters {
     muZeros[k] = 0;
   }
   // multiply and invert once, used below:
-  SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
+  cholSigmaKnots = cholesky_decompose(SigmaKnots); // lower triangular
+  invChol = inverse(cholSigmaKnots);
+  SigmaOffDiag = SigmaOffDiag * (invChol' * invChol); // inverse A^-1 = (L)^-1' * (L)^-1
+  //SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
   for (t in 1:nT) {
     spatialEffects[t] = SigmaOffDiag * spatialEffectsKnots[t];
   }
@@ -170,27 +174,28 @@ model {
 
   if (nW > 0) { // if nW == 0, we are using MVN
     // spatial deviates in first time slice
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, W[1] * SigmaKnots);
+    spatialEffectsKnots[1] ~ multi_normal_cholesky(muZeros, sqrt(W[1]) * cholSigmaKnots);
 
     // spatial deviates in remaining time slices
     for (t in 2:nT) {
       if (est_phi == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(phi[1] * spatialEffectsKnots[t-1],
-            W[t] * SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal_cholesky(phi[1] * spatialEffectsKnots[t-1],
+            sqrt(W[t]) * cholSigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],
-            W[t] * SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal_cholesky(fixed_phi_value * spatialEffectsKnots[t-1],
+            sqrt(W[t]) * cholSigmaKnots);
       }
     }
   } else { // use MVN instead of MVT
-    spatialEffectsKnots[1] ~ multi_normal(muZeros, SigmaKnots);
+    spatialEffectsKnots[1] ~ multi_normal_cholesky(muZeros, cholSigmaKnots);
+    //spatialEffectsKnots[1] ~ multi_normal(muZeros, SigmaKnots);
     for (t in 2:nT) {
       if (est_phi == 1) {
-        spatialEffectsKnots[t] ~ multi_normal(phi[1] * spatialEffectsKnots[t-1],
-          SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal_cholesky(phi[1] * spatialEffectsKnots[t-1],cholSigmaKnots);
+        //spatialEffectsKnots[t] ~ multi_normal(phi[1] * spatialEffectsKnots[t-1],SigmaKnots);
       } else {
-        spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],
-          SigmaKnots);
+        spatialEffectsKnots[t] ~ multi_normal_cholesky(fixed_phi_value * spatialEffectsKnots[t-1],cholSigmaKnots);
+        //spatialEffectsKnots[t] ~ multi_normal(fixed_phi_value * spatialEffectsKnots[t-1],SigmaKnots);
       }
     }
   }

@@ -13,3 +13,5 @@ inst/tests/mvt-mvn-difference_*
 *.html
 vignettes/*cache*
 vignettes/*files*
+inverse.stan
+cholesky.stan

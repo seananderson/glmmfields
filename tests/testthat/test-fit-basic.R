@@ -4,7 +4,7 @@ if (interactive()) options(mc.cores = parallel::detectCores())
 #   expect_equal(x[x[,term] == stan_term, "estimate"], true_value, tol = tolerance)
 # }
 
-ITER <- 600
+ITER <- 2000
 CHAINS <- 2
 SEED <- 9999
 TOL <- 0.2 # %

@@ -7,15 +7,16 @@
 glmmfields(formula, data, lon, lat, time = NULL, nknots = 15L,
   prior_gp_theta = half_t(3, 0, 5), prior_gp_sigma = half_t(3, 0, 5),
   prior_sigma = half_t(3, 0, 5), prior_rw_sigma = half_t(3, 0, 5),
-  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0, 3),
-  prior_phi = student_t(1000, 0, 0.5), fixed_df_value = 1000,
+  prior_intercept = student_t(3, 0, 10), prior_beta = student_t(3, 0,
+  3), prior_phi = student_t(1000, 0, 0.5), fixed_df_value = 1000,
   fixed_phi_value = 0, estimate_df = FALSE, estimate_ar = FALSE,
   family = gaussian(link = "identity"),
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5, algorithm = c("sampling", "meanfield"),
-  year_re = FALSE, nb_lower_truncation = 0, control = list(adapt_delta =
-  0.9), save_log_lik = FALSE, df_lower_bound = 2, cluster = c("pam",
-  "kmeans"), method = c("GP", "NNGP"), nngp_neighbors = 5, ...)
+  year_re = FALSE, nb_lower_truncation = 0,
+  control = list(adapt_delta = 0.9), save_log_lik = FALSE,
+  df_lower_bound = 2, cluster = c("pam", "kmeans"), method = c("GP",
+  "NNGP"), nngp_neighbors = 5, ...)
 }
 \arguments{
 \item{formula}{The model formula.}

@@ -27,7 +27,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_glmmfields");
-    reader.add_event(263, 263, "end", "model_glmmfields");
+    reader.add_event(268, 268, "end", "model_glmmfields");
     return reader;
 }
 
@@ -827,13 +827,20 @@ public:
 
             stan::math::initialize(SigmaOffDiag, DUMMY_VAR__);
             stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
-            validate_non_negative_index("invSigmaKnots", "nLocs", nLocs);
-            validate_non_negative_index("invSigmaKnots", "nKnots", nKnots);
-            Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  invSigmaKnots(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
-            (void) invSigmaKnots;  // dummy to suppress unused var warning
+            validate_non_negative_index("cholSigmaKnots", "nKnots", nKnots);
+            validate_non_negative_index("cholSigmaKnots", "nKnots", nKnots);
+            Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  cholSigmaKnots(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+            (void) cholSigmaKnots;  // dummy to suppress unused var warning
 
-            stan::math::initialize(invSigmaKnots, DUMMY_VAR__);
-            stan::math::fill(invSigmaKnots,DUMMY_VAR__);
+            stan::math::initialize(cholSigmaKnots, DUMMY_VAR__);
+            stan::math::fill(cholSigmaKnots,DUMMY_VAR__);
+            validate_non_negative_index("invChol", "nKnots", nKnots);
+            validate_non_negative_index("invChol", "nKnots", nKnots);
+            Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  invChol(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+            (void) invChol;  // dummy to suppress unused var warning
+
+            stan::math::initialize(invChol, DUMMY_VAR__);
+            stan::math::fill(invChol,DUMMY_VAR__);
             validate_non_negative_index("y_hat", "N", N);
             Eigen::Matrix<T__,Eigen::Dynamic,1>  y_hat(static_cast<Eigen::VectorXd::Index>(N));
             (void) y_hat;  // dummy to suppress unused var warning
@@ -883,7 +890,9 @@ public:
 
                 stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
             }
-            stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
+            stan::math::assign(cholSigmaKnots, cholesky_decompose(SigmaKnots));
+            stan::math::assign(invChol, inverse(cholSigmaKnots));
+            stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,multiply(transpose(invChol),invChol)));
             for (int t = 1; t <= nT; ++t) {
 
                 stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
@@ -966,11 +975,20 @@ public:
                     }
                 }
             }
-            for (int i0__ = 0; i0__ < nLocs; ++i0__) {
+            for (int i0__ = 0; i0__ < nKnots; ++i0__) {
                 for (int i1__ = 0; i1__ < nKnots; ++i1__) {
-                    if (stan::math::is_uninitialized(invSigmaKnots(i0__,i1__))) {
+                    if (stan::math::is_uninitialized(cholSigmaKnots(i0__,i1__))) {
                         std::stringstream msg__;
-                        msg__ << "Undefined transformed parameter: invSigmaKnots" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                        msg__ << "Undefined transformed parameter: cholSigmaKnots" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                        throw std::runtime_error(msg__.str());
+                    }
+                }
+            }
+            for (int i0__ = 0; i0__ < nKnots; ++i0__) {
+                for (int i1__ = 0; i1__ < nKnots; ++i1__) {
+                    if (stan::math::is_uninitialized(invChol(i0__,i1__))) {
+                        std::stringstream msg__;
+                        msg__ << "Undefined transformed parameter: invChol" << '[' << i0__ << ']' << '[' << i1__ << ']';
                         throw std::runtime_error(msg__.str());
                     }
                 }
@@ -997,6 +1015,7 @@ public:
 
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
+            stan::math::check_cholesky_factor(function__,"cholSigmaKnots",cholSigmaKnots);
             for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
                 check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
             }
@@ -1043,28 +1062,28 @@ public:
             }
             if (as_bool(logical_gt(nW,0))) {
 
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(get_base1(W,1,"W",1),SigmaKnots)));
+                lp_accum__.add(multi_normal_cholesky_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, multiply(sqrt(get_base1(W,1,"W",1)),cholSigmaKnots)));
                 for (int t = 2; t <= nT; ++t) {
 
                     if (as_bool(logical_eq(est_phi,1))) {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                        lp_accum__.add(multi_normal_cholesky_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(sqrt(get_base1(W,t,"W",1)),cholSigmaKnots)));
                     } else {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_phi_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(get_base1(W,t,"W",1),SigmaKnots)));
+                        lp_accum__.add(multi_normal_cholesky_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_phi_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), multiply(sqrt(get_base1(W,t,"W",1)),cholSigmaKnots)));
                     }
                 }
             } else {
 
-                lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, SigmaKnots));
+                lp_accum__.add(multi_normal_cholesky_log<propto__>(get_base1(spatialEffectsKnots,1,"spatialEffectsKnots",1), muZeros, cholSigmaKnots));
                 for (int t = 2; t <= nT; ++t) {
 
                     if (as_bool(logical_eq(est_phi,1))) {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                        lp_accum__.add(multi_normal_cholesky_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(get_base1(phi,1,"phi",1),get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), cholSigmaKnots));
                     } else {
 
-                        lp_accum__.add(multi_normal_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_phi_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), SigmaKnots));
+                        lp_accum__.add(multi_normal_cholesky_log<propto__>(get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1), multiply(fixed_phi_value,get_base1(spatialEffectsKnots,(t - 1),"spatialEffectsKnots",1)), cholSigmaKnots));
                     }
                 }
             }
@@ -1151,7 +1170,8 @@ public:
         names__.push_back("transformed_dist");
         names__.push_back("transformed_dist21");
         names__.push_back("SigmaOffDiag");
-        names__.push_back("invSigmaKnots");
+        names__.push_back("cholSigmaKnots");
+        names__.push_back("invChol");
         names__.push_back("y_hat");
         names__.push_back("gammaA");
         names__.push_back("gp_sigma_sq");
@@ -1221,7 +1241,11 @@ public:
         dims__.push_back(nKnots);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(nLocs);
+        dims__.push_back(nKnots);
+        dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nKnots);
         dims__.push_back(nKnots);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -1382,13 +1406,20 @@ public:
 
             stan::math::initialize(SigmaOffDiag, std::numeric_limits<double>::quiet_NaN());
             stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
-            validate_non_negative_index("invSigmaKnots", "nLocs", nLocs);
-            validate_non_negative_index("invSigmaKnots", "nKnots", nKnots);
-            matrix_d invSigmaKnots(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
-            (void) invSigmaKnots;  // dummy to suppress unused var warning
+            validate_non_negative_index("cholSigmaKnots", "nKnots", nKnots);
+            validate_non_negative_index("cholSigmaKnots", "nKnots", nKnots);
+            matrix_d cholSigmaKnots(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+            (void) cholSigmaKnots;  // dummy to suppress unused var warning
 
-            stan::math::initialize(invSigmaKnots, std::numeric_limits<double>::quiet_NaN());
-            stan::math::fill(invSigmaKnots,DUMMY_VAR__);
+            stan::math::initialize(cholSigmaKnots, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(cholSigmaKnots,DUMMY_VAR__);
+            validate_non_negative_index("invChol", "nKnots", nKnots);
+            validate_non_negative_index("invChol", "nKnots", nKnots);
+            matrix_d invChol(static_cast<Eigen::VectorXd::Index>(nKnots),static_cast<Eigen::VectorXd::Index>(nKnots));
+            (void) invChol;  // dummy to suppress unused var warning
+
+            stan::math::initialize(invChol, std::numeric_limits<double>::quiet_NaN());
+            stan::math::fill(invChol,DUMMY_VAR__);
             validate_non_negative_index("y_hat", "N", N);
             vector_d y_hat(static_cast<Eigen::VectorXd::Index>(N));
             (void) y_hat;  // dummy to suppress unused var warning
@@ -1438,7 +1469,9 @@ public:
 
                 stan::math::assign(get_base1_lhs(muZeros,k,"muZeros",1), 0);
             }
-            stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,inverse_spd(SigmaKnots)));
+            stan::math::assign(cholSigmaKnots, cholesky_decompose(SigmaKnots));
+            stan::math::assign(invChol, inverse(cholSigmaKnots));
+            stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiag,multiply(transpose(invChol),invChol)));
             for (int t = 1; t <= nT; ++t) {
 
                 stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), multiply(SigmaOffDiag,get_base1(spatialEffectsKnots,t,"spatialEffectsKnots",1)));
@@ -1469,6 +1502,7 @@ public:
             }
 
             // validate transformed parameters
+            stan::math::check_cholesky_factor(function__,"cholSigmaKnots",cholSigmaKnots);
             for (int k0__ = 0; k0__ < gamma_params; ++k0__) {
                 check_greater_or_equal(function__,"gammaA[k0__]",gammaA[k0__],0);
             }
@@ -1504,8 +1538,13 @@ public:
                 }
             }
             for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
-                for (int k_0__ = 0; k_0__ < nLocs; ++k_0__) {
-                vars__.push_back(invSigmaKnots(k_0__, k_1__));
+                for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
+                vars__.push_back(cholSigmaKnots(k_0__, k_1__));
+                }
+            }
+            for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
+                for (int k_0__ = 0; k_0__ < nKnots; ++k_0__) {
+                vars__.push_back(invChol(k_0__, k_1__));
                 }
             }
             for (int k_0__ = 0; k_0__ < N; ++k_0__) {
@@ -1702,9 +1741,16 @@ public:
             }
         }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
                 param_name_stream__.str(std::string());
-                param_name_stream__ << "invSigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_name_stream__ << "cholSigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "invChol" << '.' << k_0__ << '.' << k_1__;
                 param_names__.push_back(param_name_stream__.str());
             }
         }
@@ -1835,10 +1881,15 @@ public:
                 param_names__.push_back(param_name_stream__.str());
             }
         }
+        for (int k_0__ = 1; k_0__ <= (((nKnots * (nKnots + 1)) / 2) + ((nKnots - nKnots) * nKnots)); ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "cholSigmaKnots" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
         for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+            for (int k_0__ = 1; k_0__ <= nKnots; ++k_0__) {
                 param_name_stream__.str(std::string());
-                param_name_stream__ << "invSigmaKnots" << '.' << k_0__ << '.' << k_1__;
+                param_name_stream__ << "invChol" << '.' << k_0__ << '.' << k_1__;
                 param_names__.push_back(param_name_stream__.str());
             }
         }
