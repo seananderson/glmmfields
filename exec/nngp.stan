@@ -110,8 +110,8 @@ parameters{
   real<lower=0> sigma[norm_params];
   real<lower=0> CV[gamma_params];
   real<lower=0> nb2_phi[nb2_params];
-  real<lower = 0> gp_theta;
-  real<lower = 0> gp_sigma;
+  real<lower = 0> gp_theta2;
+  real<lower = 0> gp_sigma2;
   real yearEffects[n_year_effects];
   real<lower=0> year_sigma[est_temporalRE];
   real<lower=0> W[nW];
@@ -122,23 +122,28 @@ transformed parameters {
   //real sigmasq = square(sigma);
   vector[N] y_hat; // vector to hold predicted values
   vector[nLocs] spatialEffects[nT];
-  real<lower=0> gammaA[gamma_params];
-  real<lower=0> gp_sigma_sq;
+  real<lower = 0> gammaA[gamma_params];
+  real<lower = 0> gp_sigma_sq;
+  real<lower = 0> gp_theta;
+  real<lower = 0> gp_sigma;
+  gp_theta = sqrt(gp_theta2);
+  gp_sigma = sqrt(gp_sigma2);
   gp_sigma_sq = pow(gp_sigma*gp_sigma_scaling_factor, 2.0);
 
   if (obs_model==0) {
     gammaA[1] = inv(pow(CV[1], 2.0));
   }
 
-  // spatial deviates in first time slice
-  spatialEffects[1] = spatialDevs[1] - mean(spatialDevs[1]);
+  // spatial deviates in first time slice.
+  spatialEffects[1] = spatialDevs[1] - mean(spatialDevs[1]);//ensure centered
   // spatial deviates in remaining time slices
   for (t in 2:nT) {
     if (est_phi == 1) {
-      spatialEffects[t] = phi[1]*spatialEffects[t-1] + spatialDevs[t]-mean(spatialDevs[t]);
+      spatialEffects[t] = phi[1]*spatialEffects[t-1] + spatialDevs[t];
     } else {
-      spatialEffects[t] = fixed_phi_value*spatialEffects[t-1] + spatialDevs[t] - mean(spatialDevs[t]);
+      spatialEffects[t] = fixed_phi_value*spatialEffects[t-1] + spatialDevs[t];
     }
+    spatialEffects[t] = spatialEffects[t] - mean(spatialEffects[t]);//center effects like first time slice
   }
 
   // calculate predicted value of each observation
@@ -159,8 +164,10 @@ transformed parameters {
 }
 model{
   // priors:
-  gp_theta ~ student_t(prior_gp_theta[1], prior_gp_theta[2], prior_gp_theta[3]);
-  gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
+  //gp_theta ~ student_t(prior_gp_theta[1], prior_gp_theta[2], prior_gp_theta[3]);
+  //gp_sigma ~ student_t(prior_gp_sigma[1], prior_gp_sigma[2], prior_gp_sigma[3]);
+  gp_theta2 ~ inv_gamma(1,1);
+  gp_sigma2 ~ inv_gamma(1,1);
 
   if (est_phi == 1) {
     phi ~ student_t(prior_phi[1], prior_phi[2], prior_phi[3]);
