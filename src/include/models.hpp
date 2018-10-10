@@ -1946,7 +1946,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_nngp");
-    reader.add_event(277, 277, "end", "model_nngp");
+    reader.add_event(280, 280, "end", "model_nngp");
     return reader;
 }
 
@@ -2914,7 +2914,7 @@ public:
 
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
-            stan::math::assign(get_base1_lhs(spatialEffects,1,"spatialEffects",1), get_base1(spatialDevs,1,"spatialDevs",1));
+            stan::math::assign(get_base1_lhs(spatialEffects,1,"spatialEffects",1), subtract(get_base1(spatialDevs,1,"spatialDevs",1),mean(get_base1(spatialDevs,1,"spatialDevs",1))));
             for (int t = 2; t <= nT; ++t) {
 
                 if (as_bool(logical_eq(est_phi,1))) {
@@ -2924,6 +2924,7 @@ public:
 
                     stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), add(multiply(fixed_phi_value,get_base1(spatialEffects,(t - 1),"spatialEffects",1)),get_base1(spatialDevs,t,"spatialDevs",1)));
                 }
+                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), subtract(get_base1(spatialEffects,t,"spatialEffects",1),mean(get_base1(spatialEffects,t,"spatialEffects",1))));
             }
             for (int i = 1; i <= N; ++i) {
 
@@ -2985,8 +2986,8 @@ public:
 
             // model body
 
-            lp_accum__.add(student_t_log<propto__>(gp_theta, get_base1(prior_gp_theta,1,"prior_gp_theta",1), get_base1(prior_gp_theta,2,"prior_gp_theta",1), get_base1(prior_gp_theta,3,"prior_gp_theta",1)));
-            lp_accum__.add(student_t_log<propto__>(gp_sigma, get_base1(prior_gp_sigma,1,"prior_gp_sigma",1), get_base1(prior_gp_sigma,2,"prior_gp_sigma",1), get_base1(prior_gp_sigma,3,"prior_gp_sigma",1)));
+            lp_accum__.add(inv_gamma_log<propto__>(gp_theta, 1, 1));
+            lp_accum__.add(inv_gamma_log<propto__>(gp_sigma, 1, 1));
             if (as_bool(logical_eq(est_phi,1))) {
 
                 lp_accum__.add(student_t_log<propto__>(phi, get_base1(prior_phi,1,"prior_phi",1), get_base1(prior_phi,2,"prior_phi",1), get_base1(prior_phi,3,"prior_phi",1)));
@@ -3308,7 +3309,7 @@ public:
 
                 stan::math::assign(get_base1_lhs(gammaA,1,"gammaA",1), inv(pow(get_base1(CV,1,"CV",1),2.0)));
             }
-            stan::math::assign(get_base1_lhs(spatialEffects,1,"spatialEffects",1), get_base1(spatialDevs,1,"spatialDevs",1));
+            stan::math::assign(get_base1_lhs(spatialEffects,1,"spatialEffects",1), subtract(get_base1(spatialDevs,1,"spatialDevs",1),mean(get_base1(spatialDevs,1,"spatialDevs",1))));
             for (int t = 2; t <= nT; ++t) {
 
                 if (as_bool(logical_eq(est_phi,1))) {
@@ -3318,6 +3319,7 @@ public:
 
                     stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), add(multiply(fixed_phi_value,get_base1(spatialEffects,(t - 1),"spatialEffects",1)),get_base1(spatialDevs,t,"spatialDevs",1)));
                 }
+                stan::math::assign(get_base1_lhs(spatialEffects,t,"spatialEffects",1), subtract(get_base1(spatialEffects,t,"spatialEffects",1),mean(get_base1(spatialEffects,t,"spatialEffects",1))));
             }
             for (int i = 1; i <= N; ++i) {
 

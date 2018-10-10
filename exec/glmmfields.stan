@@ -53,7 +53,7 @@ parameters {
 transformed parameters {
   vector[nKnots] muZeros;
   vector[nLocs] spatialEffects[nT];
-  matrix[nKnots, nKnots] SigmaKnots;
+  matrix[nKnots,nKnots] SigmaKnots;
   matrix[nKnots, nKnots] transformed_dist;
   matrix[nLocs, nKnots] transformed_dist21;
   matrix[nLocs, nKnots] SigmaOffDiag;

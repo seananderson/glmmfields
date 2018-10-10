@@ -84,11 +84,6 @@ start_time <- Sys.time()
 m_spatial_gp <- glmmfields(y ~ 1,
   data = d,
   lat = "lat", lon = "lon", iter = 1000, chains = 1,
-  prior_intercept = student_t(3, 0, 10), 
-  prior_beta = student_t(3, 0, 3),
-  prior_sigma = half_t(3, 0, 3),
-  prior_gp_theta = half_t(3, 0, 10),
-  prior_gp_sigma = half_t(3, 0, 3),
   seed = 123,
   method="NNGP",
   nngp_neighbors = 5

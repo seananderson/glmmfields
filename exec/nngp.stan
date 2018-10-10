@@ -131,13 +131,13 @@ transformed parameters {
   }
 
   // spatial deviates in first time slice
-  spatialEffects[1] = spatialDevs[1];
+  spatialEffects[1] = spatialDevs[1] - mean(spatialDevs[1]);
   // spatial deviates in remaining time slices
   for (t in 2:nT) {
     if (est_phi == 1) {
-      spatialEffects[t] = phi[1]*spatialEffects[t-1] + spatialDevs[t];
+      spatialEffects[t] = phi[1]*spatialEffects[t-1] + spatialDevs[t]-mean(spatialDevs[t]);
     } else {
-      spatialEffects[t] = fixed_phi_value*spatialEffects[t-1] + spatialDevs[t];
+      spatialEffects[t] = fixed_phi_value*spatialEffects[t-1] + spatialDevs[t] - mean(spatialDevs[t]);
     }
   }
 
