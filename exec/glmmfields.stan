@@ -57,6 +57,7 @@ transformed parameters {
   matrix[nKnots, nKnots] transformed_dist;
   matrix[nLocs, nKnots] transformed_dist21;
   matrix[nLocs, nKnots] SigmaOffDiag;
+  matrix[nLocs, nKnots] SigmaOffDiagTemp;
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
   real<lower=0> gammaA[gamma_params];
@@ -68,14 +69,14 @@ transformed parameters {
     // cov matrix between knots
     SigmaKnots = gp_sigma_sq * exp(-distKnots / gp_theta);
     // cov matrix between knots and projected locs
-    SigmaOffDiag = gp_sigma_sq * exp(-distKnots21 / gp_theta);
+    SigmaOffDiagTemp = gp_sigma_sq * exp(-distKnots21 / gp_theta);
   }
   if (cov_func == 1) {
     // cov matrix between knots:
     SigmaKnots = gp_sigma_sq *
       exp(-inv(2.0 * pow(gp_theta, 2.0)) * distKnots); // dist^2 as data
     // cov matrix between knots and projected locs:
-    SigmaOffDiag = gp_sigma_sq *
+    SigmaOffDiagTemp = gp_sigma_sq *
       exp(-inv(2.0 * pow(gp_theta, 2.0)) * distKnots21); // dist^2 as data
   }
   if (cov_func == 2) {
@@ -85,7 +86,7 @@ transformed parameters {
       SigmaKnots = gp_sigma_sq * (1.0 + transformed_dist) .* exp (-transformed_dist);
       // cov matrix between knots and projected locs
       transformed_dist21 = sqrt(3.0) * distKnots21 / gp_theta;
-      SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21) .* exp (-transformed_dist21);
+      SigmaOffDiagTemp = gp_sigma_sq * (1.0 + transformed_dist21) .* exp (-transformed_dist21);
     }
     if (matern_kappa == 2.5) {
       // cov matrix between knots
@@ -94,7 +95,7 @@ transformed parameters {
         (transformed_dist .* transformed_dist)/3.0) .* exp (-transformed_dist);
       // cov matrix between knots and projected locs
       transformed_dist21 = sqrt(5.0) * distKnots21 / gp_theta;
-      SigmaOffDiag = gp_sigma_sq * (1.0 + transformed_dist21 +
+      SigmaOffDiagTemp = gp_sigma_sq * (1.0 + transformed_dist21 +
         (transformed_dist21 .* transformed_dist21)/3.0) .* exp (-transformed_dist21);
     }
   }
@@ -103,7 +104,7 @@ transformed parameters {
     muZeros[k] = 0;
   }
   // multiply and invert once, used below:
-  SigmaOffDiag = SigmaOffDiag * inverse_spd(SigmaKnots);
+  SigmaOffDiag = SigmaOffDiagTemp * inverse_spd(SigmaKnots);
   for (t in 1:nT) {
     spatialEffects[t] = SigmaOffDiag * spatialEffectsKnots[t];
   }
@@ -117,9 +118,11 @@ transformed parameters {
         y_hat[i] = spatialEffects[yearID[i], stationID[i]];
       }
     } else {
-      y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+      if(nCov == 0) {
+        y_hat[i] = spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
+      }
       if(nCov > 0) {
-        y_hat[i] = y_hat[i] + X[i] * B;
+        y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
       }
     }
   }

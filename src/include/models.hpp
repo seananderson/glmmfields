@@ -23,7 +23,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_glmmfields");
-    reader.add_event(265, 263, "end", "model_glmmfields");
+    reader.add_event(268, 266, "end", "model_glmmfields");
     return reader;
 }
 
@@ -827,6 +827,13 @@ public:
 
             stan::math::initialize(SigmaOffDiag, DUMMY_VAR__);
             stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
+            validate_non_negative_index("SigmaOffDiagTemp", "nLocs", nLocs);
+            validate_non_negative_index("SigmaOffDiagTemp", "nKnots", nKnots);
+            Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,Eigen::Dynamic>  SigmaOffDiagTemp(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+            (void) SigmaOffDiagTemp;  // dummy to suppress unused var warning
+
+            stan::math::initialize(SigmaOffDiagTemp, DUMMY_VAR__);
+            stan::math::fill(SigmaOffDiagTemp,DUMMY_VAR__);
             validate_non_negative_index("invSigmaKnots", "nLocs", nLocs);
             validate_non_negative_index("invSigmaKnots", "nKnots", nKnots);
             Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,Eigen::Dynamic>  invSigmaKnots(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
@@ -855,12 +862,12 @@ public:
             if (as_bool(logical_eq(cov_func,0))) {
 
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,stan::math::exp(divide(minus(distKnots),gp_theta))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,stan::math::exp(divide(minus(distKnots21),gp_theta))));
+                stan::math::assign(SigmaOffDiagTemp, multiply(gp_sigma_sq,stan::math::exp(divide(minus(distKnots21),gp_theta))));
             }
             if (as_bool(logical_eq(cov_func,1))) {
 
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,stan::math::exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,stan::math::exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),distKnots21))));
+                stan::math::assign(SigmaOffDiagTemp, multiply(gp_sigma_sq,stan::math::exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),distKnots21))));
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
@@ -869,14 +876,14 @@ public:
                     stan::math::assign(transformed_dist, divide(multiply(stan::math::sqrt(3.0),distKnots),gp_theta));
                     stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist)),stan::math::exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(stan::math::sqrt(3.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),stan::math::exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiagTemp, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),stan::math::exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(stan::math::sqrt(5.0),distKnots),gp_theta));
                     stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3.0))),stan::math::exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(stan::math::sqrt(5.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),stan::math::exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiagTemp, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),stan::math::exp(minus(transformed_dist21))));
                 }
             }
             for (int k = 1; k <= nKnots; ++k) {
@@ -886,7 +893,7 @@ public:
                             0, 
                             "assigning variable muZeros");
             }
-            stan::math::assign(SigmaOffDiag, stan::model::deep_copy(multiply(SigmaOffDiag,inverse_spd(SigmaKnots))));
+            stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiagTemp,inverse_spd(SigmaKnots)));
             for (int t = 1; t <= nT; ++t) {
 
                 stan::model::assign(spatialEffects, 
@@ -913,15 +920,18 @@ public:
                     }
                 } else {
 
-                    stan::model::assign(y_hat, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)), 
-                                "assigning variable y_hat");
+                    if (as_bool(logical_eq(nCov,0))) {
+
+                        stan::model::assign(y_hat, 
+                                    stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                    (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)), 
+                                    "assigning variable y_hat");
+                    }
                     if (as_bool(logical_gt(nCov,0))) {
 
                         stan::model::assign(y_hat, 
                                     stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                    stan::model::deep_copy((get_base1(y_hat,i,"y_hat",1) + multiply(get_base1(X,i,"X",1),B))), 
+                                    ((multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)), 
                                     "assigning variable y_hat");
                     }
                 }
@@ -983,6 +993,15 @@ public:
                     if (stan::math::is_uninitialized(SigmaOffDiag(i0__,i1__))) {
                         std::stringstream msg__;
                         msg__ << "Undefined transformed parameter: SigmaOffDiag" << '[' << i0__ << ']' << '[' << i1__ << ']';
+                        throw std::runtime_error(msg__.str());
+                    }
+                }
+            }
+            for (int i0__ = 0; i0__ < nLocs; ++i0__) {
+                for (int i1__ = 0; i1__ < nKnots; ++i1__) {
+                    if (stan::math::is_uninitialized(SigmaOffDiagTemp(i0__,i1__))) {
+                        std::stringstream msg__;
+                        msg__ << "Undefined transformed parameter: SigmaOffDiagTemp" << '[' << i0__ << ']' << '[' << i1__ << ']';
                         throw std::runtime_error(msg__.str());
                     }
                 }
@@ -1172,6 +1191,7 @@ public:
         names__.push_back("transformed_dist");
         names__.push_back("transformed_dist21");
         names__.push_back("SigmaOffDiag");
+        names__.push_back("SigmaOffDiagTemp");
         names__.push_back("invSigmaKnots");
         names__.push_back("y_hat");
         names__.push_back("gammaA");
@@ -1231,6 +1251,10 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(nKnots);
+        dims__.push_back(nKnots);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(nLocs);
         dims__.push_back(nKnots);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -1404,6 +1428,13 @@ public:
 
             stan::math::initialize(SigmaOffDiag, DUMMY_VAR__);
             stan::math::fill(SigmaOffDiag,DUMMY_VAR__);
+            validate_non_negative_index("SigmaOffDiagTemp", "nLocs", nLocs);
+            validate_non_negative_index("SigmaOffDiagTemp", "nKnots", nKnots);
+            Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,Eigen::Dynamic>  SigmaOffDiagTemp(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
+            (void) SigmaOffDiagTemp;  // dummy to suppress unused var warning
+
+            stan::math::initialize(SigmaOffDiagTemp, DUMMY_VAR__);
+            stan::math::fill(SigmaOffDiagTemp,DUMMY_VAR__);
             validate_non_negative_index("invSigmaKnots", "nLocs", nLocs);
             validate_non_negative_index("invSigmaKnots", "nKnots", nKnots);
             Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,Eigen::Dynamic>  invSigmaKnots(static_cast<Eigen::VectorXd::Index>(nLocs),static_cast<Eigen::VectorXd::Index>(nKnots));
@@ -1432,12 +1463,12 @@ public:
             if (as_bool(logical_eq(cov_func,0))) {
 
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,stan::math::exp(divide(minus(distKnots),gp_theta))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,stan::math::exp(divide(minus(distKnots21),gp_theta))));
+                stan::math::assign(SigmaOffDiagTemp, multiply(gp_sigma_sq,stan::math::exp(divide(minus(distKnots21),gp_theta))));
             }
             if (as_bool(logical_eq(cov_func,1))) {
 
                 stan::math::assign(SigmaKnots, multiply(gp_sigma_sq,stan::math::exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),distKnots))));
-                stan::math::assign(SigmaOffDiag, multiply(gp_sigma_sq,stan::math::exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),distKnots21))));
+                stan::math::assign(SigmaOffDiagTemp, multiply(gp_sigma_sq,stan::math::exp(multiply(-(inv((2.0 * pow(gp_theta,2.0)))),distKnots21))));
             }
             if (as_bool(logical_eq(cov_func,2))) {
 
@@ -1446,14 +1477,14 @@ public:
                     stan::math::assign(transformed_dist, divide(multiply(stan::math::sqrt(3.0),distKnots),gp_theta));
                     stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist)),stan::math::exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(stan::math::sqrt(3.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),stan::math::exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiagTemp, elt_multiply(multiply(gp_sigma_sq,add(1.0,transformed_dist21)),stan::math::exp(minus(transformed_dist21))));
                 }
                 if (as_bool(logical_eq(matern_kappa,2.5))) {
 
                     stan::math::assign(transformed_dist, divide(multiply(stan::math::sqrt(5.0),distKnots),gp_theta));
                     stan::math::assign(SigmaKnots, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist),divide(elt_multiply(transformed_dist,transformed_dist),3.0))),stan::math::exp(minus(transformed_dist))));
                     stan::math::assign(transformed_dist21, divide(multiply(stan::math::sqrt(5.0),distKnots21),gp_theta));
-                    stan::math::assign(SigmaOffDiag, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),stan::math::exp(minus(transformed_dist21))));
+                    stan::math::assign(SigmaOffDiagTemp, elt_multiply(multiply(gp_sigma_sq,add(add(1.0,transformed_dist21),divide(elt_multiply(transformed_dist21,transformed_dist21),3.0))),stan::math::exp(minus(transformed_dist21))));
                 }
             }
             for (int k = 1; k <= nKnots; ++k) {
@@ -1463,7 +1494,7 @@ public:
                             0, 
                             "assigning variable muZeros");
             }
-            stan::math::assign(SigmaOffDiag, stan::model::deep_copy(multiply(SigmaOffDiag,inverse_spd(SigmaKnots))));
+            stan::math::assign(SigmaOffDiag, multiply(SigmaOffDiagTemp,inverse_spd(SigmaKnots)));
             for (int t = 1; t <= nT; ++t) {
 
                 stan::model::assign(spatialEffects, 
@@ -1490,15 +1521,18 @@ public:
                     }
                 } else {
 
-                    stan::model::assign(y_hat, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)), 
-                                "assigning variable y_hat");
+                    if (as_bool(logical_eq(nCov,0))) {
+
+                        stan::model::assign(y_hat, 
+                                    stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                    (get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)), 
+                                    "assigning variable y_hat");
+                    }
                     if (as_bool(logical_gt(nCov,0))) {
 
                         stan::model::assign(y_hat, 
                                     stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                    stan::model::deep_copy((get_base1(y_hat,i,"y_hat",1) + multiply(get_base1(X,i,"X",1),B))), 
+                                    ((multiply(get_base1(X,i,"X",1),B) + get_base1(get_base1(spatialEffects,get_base1(yearID,i,"yearID",1),"spatialEffects",1),get_base1(stationID,i,"stationID",1),"spatialEffects",2)) + get_base1(yearEffects,get_base1(yearID,i,"yearID",1),"yearEffects",1)), 
                                     "assigning variable y_hat");
                     }
                 }
@@ -1545,6 +1579,11 @@ public:
             for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
                 for (int k_0__ = 0; k_0__ < nLocs; ++k_0__) {
                 vars__.push_back(SigmaOffDiag(k_0__, k_1__));
+                }
+            }
+            for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
+                for (int k_0__ = 0; k_0__ < nLocs; ++k_0__) {
+                vars__.push_back(SigmaOffDiagTemp(k_0__, k_1__));
                 }
             }
             for (int k_1__ = 0; k_1__ < nKnots; ++k_1__) {
@@ -1771,6 +1810,13 @@ public:
             for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
                 for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
                     param_name_stream__.str(std::string());
+                    param_name_stream__ << "SigmaOffDiagTemp" << '.' << k_0__ << '.' << k_1__;
+                    param_names__.push_back(param_name_stream__.str());
+                }
+            }
+            for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+                for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                    param_name_stream__.str(std::string());
                     param_name_stream__ << "invSigmaKnots" << '.' << k_0__ << '.' << k_1__;
                     param_names__.push_back(param_name_stream__.str());
                 }
@@ -1903,6 +1949,13 @@ public:
                 for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
                     param_name_stream__.str(std::string());
                     param_name_stream__ << "SigmaOffDiag" << '.' << k_0__ << '.' << k_1__;
+                    param_names__.push_back(param_name_stream__.str());
+                }
+            }
+            for (int k_1__ = 1; k_1__ <= nKnots; ++k_1__) {
+                for (int k_0__ = 1; k_0__ <= nLocs; ++k_0__) {
+                    param_name_stream__.str(std::string());
+                    param_name_stream__ << "SigmaOffDiagTemp" << '.' << k_0__ << '.' << k_1__;
                     param_names__.push_back(param_name_stream__.str());
                 }
             }
