@@ -90,5 +90,5 @@ test_that("Ordering of time slices doesn't matter if stations aren't always pres
   d2 <- dplyr::arrange(d2, ID)
 
   plot(d2$pred, d$pred)
-  expect_equal(d2$pred, d$pred, tolerance = .001)
+  expect_equal(d2$pred, d$pred, tolerance = .01)
 })
