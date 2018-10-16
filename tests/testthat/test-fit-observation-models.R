@@ -42,10 +42,10 @@ test_that("mvt-nb2 model fits", {
   p <- predict(m)
 
   b <- tidy(m, estimate.method = "median")
-  # expect_equal(b[b$term == "nb2_phi[1]", "estimate"], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_theta * TOL)
+  # expect_equal(b[b$term == "nb2_phi[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate", drop = TRUE], b0, tol = gp_theta * TOL)
 })
 
 # ------------------------------------------------------
@@ -81,10 +81,10 @@ test_that("mvt-gamma model fits", {
   p <- predict(m)
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "CV[1]", "estimate"], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_theta * TOL)
+  expect_equal(b[b$term == "CV[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate", drop = TRUE], b0, tol = gp_theta * TOL)
 })
 
 # ------------------------------------------------------
@@ -130,8 +130,8 @@ test_that("mvt-binomial model fits", {
   # p <- predict(m, interval = "prediction")
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
 })
 
 # ------------------------------------------------------
@@ -168,7 +168,7 @@ test_that("mvt-poisson model fits", {
   m
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "gp_sigma", "estimate"], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate"], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate"], b0, tol = gp_theta * TOL)
+  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(b[b$term == "B[1]", "estimate", drop = TRUE], b0, tol = gp_theta * TOL)
 })
