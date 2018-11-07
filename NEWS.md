@@ -1,3 +1,7 @@
+# glmmfields 0.1.1
+
+* Changed how Stan finds directories / files
+
 # glmmfields 0.1.0.9000
 
 * Add support for random walk year effects with covariates. There are a few
