@@ -1,15 +1,6 @@
 ## Release summary
 
-This is a resubmission that addresses three requested changes:
-
-- Added copyright holder 
-  `person("Trustees of", "Columbia University", role = "cph"))`
-  to `Authors@R` field.
-  
-- Added DOI for method to 'Description' field (was waiting on publisher).
-  Format: `Anderson and Ward (2018) <doi:10.1002/ecy.2403>`.
-  
-- Replaced `\dontrun{}` by `\donttest{}` in examples.
+This is a new version to address Stan / path issues. Specifically changed the 1st line of src/Makevars, and the added SystemRequirements: GNU make to the DESCRIPTION file.
 
 ## Test environments
 
