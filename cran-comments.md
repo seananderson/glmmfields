@@ -1,15 +1,10 @@
 ## Release summary
 
-This is a resubmission that addresses three requested changes:
+This is a new version that addresses issues related to the Stan path:
 
-- Added copyright holder 
-  `person("Trustees of", "Columbia University", role = "cph"))`
-  to `Authors@R` field.
-  
-- Added DOI for method to 'Description' field (was waiting on publisher).
-  Format: `Anderson and Ward (2018) <doi:10.1002/ecy.2403>`.
-  
-- Replaced `\dontrun{}` by `\donttest{}` in examples.
+- Changed the Makevars file to identify the location of model files
+
+- Added SystemRequirements to the DESCRIPTION file
 
 ## Test environments
 
