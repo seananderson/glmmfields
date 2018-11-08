@@ -19,8 +19,8 @@
 
 \method{predict}{glmmfields}(object, newdata = NULL,
   estimate_method = c("median", "mean"), conf_level = 0.95,
-  interval = c("confidence", "prediction"), type = c("link", "response"),
-  return_mcmc = FALSE, iter = "all", ...)
+  interval = c("confidence", "prediction"), type = c("link",
+  "response"), return_mcmc = FALSE, iter = "all", ...)
 }
 \arguments{
 \item{object}{An object returned by \code{\link[=glmmfields]{glmmfields()}}.}
