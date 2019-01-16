@@ -4,8 +4,6 @@
 
 [![Travis-CI Build
 Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
-[![AppVeyor Build
-Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
 <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
@@ -18,8 +16,8 @@ distribution instead of a multivariate normal. The models are fit with
 
 We published a paper describing the model and package in *Ecology*:
 
-Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
-spatiotemporal processes with extremes. In press at Ecology.
+Anderson, S. C., Ward, E. J. 2019. Black swans in space: modelling
+spatiotemporal processes with extremes. 100(1):e02403.
 <https://doi.org/10.1002/ecy.2403>
 
 You can install the [CRAN
@@ -74,7 +72,7 @@ head(s$dat)
 print(s$plot)
 ```
 
-![](README-figs/plot-sim-1.png)
+![](README-figs/plot-sim-1.png)<!-- -->
 
 Fit the model:
 
@@ -94,13 +92,13 @@ print(m)
 #> post-warmup draws per chain=400, total post-warmup draws=1600.
 #> 
 #>             mean se_mean   sd    2.5%     25%     50%     75%   97.5% n_eff Rhat
-#> df[1]       3.80    0.04 1.48    2.10    2.74    3.46    4.43    7.58  1440 1.00
-#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   569 1.00
-#> gp_theta    2.59    0.00 0.07    2.47    2.54    2.59    2.63    2.72  1600 1.00
-#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1600 1.00
-#> lp__     2291.58    0.41 9.35 2272.47 2285.72 2291.79 2298.18 2308.96   516 1.01
+#> df[1]       3.79    0.04 1.39    2.15    2.74    3.47    4.44    7.26  1169    1
+#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   464    1
+#> gp_theta    2.59    0.00 0.07    2.46    2.54    2.58    2.63    2.72  1189    1
+#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1805    1
+#> lp__     2291.54    0.38 9.45 2271.16 2285.75 2291.95 2297.94 2308.92   623    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu May  3 15:36:11 2018.
+#> Samples were drawn using NUTS(diag_e) at Wed Jan 16 15:22:32 2019.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -129,12 +127,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0287  -0.0871    0.0300
-#> 2  -0.290   -0.360    -0.218 
-#> 3  -0.396   -0.447    -0.344 
-#> 4  -0.197   -0.266    -0.129 
-#> 5  -0.0356  -0.108     0.0338
-#> 6  -0.215   -0.285    -0.142
+#> 1  -0.0294  -0.0894    0.0343
+#> 2  -0.290   -0.362    -0.221 
+#> 3  -0.397   -0.450    -0.346 
+#> 4  -0.195   -0.268    -0.124 
+#> 5  -0.0353  -0.109     0.0389
+#> 6  -0.215   -0.291    -0.135
 
 # posterior predictive intervals on new observations (include observation error):
 p <- predictive_interval(m)
@@ -142,12 +140,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0287   -0.229   0.180  
-#> 2  -0.290    -0.490  -0.0931 
-#> 3  -0.396    -0.603  -0.196  
-#> 4  -0.197    -0.391   0.00359
-#> 5  -0.0356   -0.238   0.166  
-#> 6  -0.215    -0.429  -0.00893
+#> 1  -0.0294   -0.243   0.181  
+#> 2  -0.290    -0.508  -0.0944 
+#> 3  -0.397    -0.607  -0.209  
+#> 4  -0.195    -0.395   0.00251
+#> 5  -0.0353   -0.245   0.179  
+#> 6  -0.215    -0.429  -0.0121
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
@@ -155,13 +153,15 @@ Use the `tidy` method to extract parameter estimates as a data frame:
 ``` r
 x <- tidy(m, conf.int = TRUE)
 head(x)
-#>                       term    estimate   std.error    conf.low   conf.high
-#> 1                    df[1]  3.80038696 1.484906573  2.09881985  7.57545322
-#> 2                 gp_sigma  0.30206707 0.042116979  0.22379764  0.38976618
-#> 3                 gp_theta  2.58866483 0.065031189  2.46802568  2.72087920
-#> 4                 sigma[1]  0.09797513 0.002108619  0.09381234  0.10216097
-#> 5 spatialEffectsKnots[1,1] -0.10977109 0.035134765 -0.17942243 -0.04241248
-#> 6 spatialEffectsKnots[2,1] -0.23122316 0.034852007 -0.29929125 -0.16103601
+#> # A tibble: 6 x 5
+#>   term                     estimate std.error conf.low conf.high
+#>   <chr>                       <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 df[1]                      3.79     1.39      2.15      7.26  
+#> 2 gp_sigma                   0.300    0.0428    0.218     0.389 
+#> 3 gp_theta                   2.59     0.0656    2.46      2.72  
+#> 4 sigma[1]                   0.0979   0.00216   0.0935    0.102 
+#> 5 spatialEffectsKnots[1,1]  -0.110    0.0366   -0.179    -0.0373
+#> 6 spatialEffectsKnots[2,1]  -0.231    0.0341   -0.296    -0.164
 ```
 
 Make predictions on a fine-scale spatial grid:

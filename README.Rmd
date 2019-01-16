@@ -19,7 +19,6 @@ options(width = 120) # for printing Stan output
 # glmmfields <img src="inst/logo.png" align="right" />
 
 [![Travis-CI Build Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/seananderson/glmmfields?branch=master&svg=true)](https://ci.appveyor.com/project/seananderson/glmmfields)
 [![CRAN status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
 <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
 
@@ -30,8 +29,8 @@ multivariate normal. The models are fit with [Stan](http://mc-stan.org/).
 
 We published a paper describing the model and package in *Ecology*:
 
-Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
-spatiotemporal processes with extremes. In press at Ecology.
+Anderson, S. C., Ward, E. J. 2019. Black swans in space: modelling
+spatiotemporal processes with extremes. 100(1):e02403.
 <https://doi.org/10.1002/ecy.2403>
 
 You can install the [CRAN version](https://cran.r-project.org/package=glmmfields) of the package with:
