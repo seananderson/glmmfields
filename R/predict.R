@@ -155,6 +155,10 @@ predict.glmmfields <- function(object, newdata = NULL,
   X <- model.matrix(object$formula,
     model.frame(object$formula, newdata, na.action = na.omit))
 
+  .missing <- colnames(object$X)[!colnames(object$X) %in% colnames(X)]
+  if (length(.missing) > 0L)
+    stop(paste(.missing, collapse = ", "), " are missing in `newdata`.")
+
   if (nrow(X) < nrow(newdata))
     stop("Some predictors in newdata had NA values.")
 
