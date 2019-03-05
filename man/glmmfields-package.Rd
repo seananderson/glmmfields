@@ -3,7 +3,6 @@
 \docType{package}
 \name{glmmfields-package}
 \alias{glmmfields-package}
-\alias{glmmfields}
 \title{The 'glmmfields' package.}
 \description{
 A DESCRIPTION OF THE PACKAGE

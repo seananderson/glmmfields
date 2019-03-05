@@ -4,7 +4,6 @@
 #'
 #' @docType package
 #' @name glmmfields-package
-#' @aliases glmmfields
 #' @useDynLib glmmfields, .registration = TRUE
 #' @import methods
 #' @import Rcpp
