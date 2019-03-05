@@ -17,23 +17,23 @@ License: GPL (>=3)
 Encoding: UTF-8
 Depends:
     R (>= 3.4.0),
-    Rcpp (>= 0.12.0)
+    Rcpp (>= 0.12.18),
+    methods
 Imports:
-    rstan (>= 2.18.1),
+    rstan (>= 2.18.2),
     ggplot2 (>= 2.2.0),
+    rstantools (>= 1.5.1),
     cluster,
-    dplyr (>= 0.7.0),
+    dplyr (>= 0.8.0),
     reshape2,
     mvtnorm,
     broom,
-    methods,
-    loo,
+    loo (>= 2.0.0),
     assertthat,
     nlme,
-    forcats,
-    rstantools
-LinkingTo: StanHeaders (>= 2.18.0), rstan (>= 2.18.1), BH (>= 1.66.0), Rcpp (>=
-    0.12.0), RcppEigen
+    forcats
+LinkingTo: StanHeaders (>= 2.18.0), rstan (>= 2.18.2), BH (>= 1.66.0), Rcpp (>=
+    0.12.8), RcppEigen (>= 0.3.3.3.0)
 Suggests:
     testthat,
     parallel,
