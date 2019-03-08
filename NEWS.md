@@ -1,3 +1,7 @@
+# glmmfields 0.1.2
+
+* Make compatible with R 3.6.0 staged installation and latest rstantools.
+
 # glmmfields 0.1.1
 
 * Changed how Stan finds directories / files
