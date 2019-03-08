@@ -10,4 +10,14 @@ This is a new version that is compatible with R 3.6.0 staged installation.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 2 notes
+
+* checking for GNU extensions in Makefiles ... NOTE
+  GNU make is a SystemRequirements.
+  
+* checking installed package size ... NOTE
+  installed size is 38.5Mb
+  sub-directories of 1Mb or more:
+    libs  38.3Mb
+
+This is from the compiled C++ code from Stan.
