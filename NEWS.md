@@ -1,3 +1,7 @@
+# glmmfields 0.1.3
+
+* Make compatible with C++14.
+
 # glmmfields 0.1.2
 
 * Make compatible with R 3.6.0 staged installation and latest rstantools.
