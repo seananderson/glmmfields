@@ -4,7 +4,7 @@ This is a new version that is compatible the C++14 and StanHeaders 2.19.
 
 ## Test environments
 
-* local OS X install, R 3.5.2
+* local OS X install, R 3.6.0
 * Ubuntu 14.04 (on travis-ci), devel
 * win-builder (devel)
 
