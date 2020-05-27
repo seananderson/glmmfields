@@ -60,9 +60,9 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   expect_equal(coverage, 0.95, tol = 0.025)
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
 })
 
 # ------------------------------------------------------

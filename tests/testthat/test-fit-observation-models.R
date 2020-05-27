@@ -43,9 +43,9 @@ test_that("mvt-nb2 model fits", {
 
   b <- tidy(m, estimate.method = "median")
   # expect_equal(b[b$term == "nb2_phi[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[b$term == "B[1]", "estimate", drop = TRUE], b0, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "B[1]", "estimate", drop = TRUE]), b0, tol = gp_theta * TOL)
 })
 
 # ------------------------------------------------------

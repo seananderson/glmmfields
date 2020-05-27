@@ -49,11 +49,11 @@ test_that("mvt-norm estimates random walk year effects", {
   m
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[grep("yearEffects\\[*", b$term), "estimate", drop = TRUE], B, tol = 0.1)
-  expect_equal(b[grep("year_sigma", b$term), "estimate", drop = TRUE], year_sigma, tol = 0.1)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[grep("yearEffects\\[*", b$term), "estimate", drop = TRUE]), B, tol = 0.1)
+  expect_equal(as.numeric(b[grep("year_sigma", b$term), "estimate", drop = TRUE]), year_sigma, tol = 0.1)
 })
 
 # ------------------------------------------------------
@@ -105,11 +105,11 @@ test_that("mvt-norm estimates random walk year effects with covariate", {
   m
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[grep("yearEffects\\[*", b$term), "estimate", drop = TRUE], B, tol = 0.1)
-  expect_equal(b[grep("year_sigma", b$term), "estimate", drop = TRUE], year_sigma, tol = 0.1)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[grep("yearEffects\\[*", b$term), "estimate", drop = TRUE]), B, tol = 0.1)
+  expect_equal(as.numeric(b[grep("year_sigma", b$term), "estimate", drop = TRUE]), year_sigma, tol = 0.1)
 })
 
 # ---------------
