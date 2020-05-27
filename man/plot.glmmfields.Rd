@@ -4,8 +4,12 @@
 \alias{plot.glmmfields}
 \title{Plot predictions from an glmmfields model}
 \usage{
-\method{plot}{glmmfields}(x, type = c("prediction", "spatial-residual",
-  "residual-vs-fitted"), link = TRUE, ...)
+\method{plot}{glmmfields}(
+  x,
+  type = c("prediction", "spatial-residual", "residual-vs-fitted"),
+  link = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object returned by \code{\link{glmmfields}}}

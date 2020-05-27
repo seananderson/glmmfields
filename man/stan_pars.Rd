@@ -4,8 +4,14 @@
 \alias{stan_pars}
 \title{Return a vector of parameters}
 \usage{
-stan_pars(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
-  estimate_ar = FALSE, fixed_intercept = FALSE, save_log_lik = FALSE)
+stan_pars(
+  obs_error,
+  estimate_df = TRUE,
+  est_temporalRE = FALSE,
+  estimate_ar = FALSE,
+  fixed_intercept = FALSE,
+  save_log_lik = FALSE
+)
 }
 \arguments{
 \item{obs_error}{The observation error distribution}
