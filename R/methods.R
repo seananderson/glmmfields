@@ -19,7 +19,7 @@ tidy <- function(x, ...) {
 #' @export
 #' @rdname tidy
 tidy.glmmfields <- function(x, ...) {
-  broom::tidyMCMC(x$model, ...)
+  broom.mixed::tidyMCMC(x$model, ...)
 }
 
 #' Return LOO information criteria

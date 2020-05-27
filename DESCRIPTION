@@ -27,6 +27,7 @@ Imports:
     dplyr (>= 0.8.0),
     reshape2,
     mvtnorm,
+    broom.mixed,
     broom,
     loo (>= 2.0.0),
     assertthat,
