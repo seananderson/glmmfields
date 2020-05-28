@@ -198,11 +198,11 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
 
   TOL <- 0.15
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "year_sigma[1]", "estimate", drop = TRUE], year_sigma, tol = year_sigma * 0.2)
-  expect_equal(b[b$term == "phi[1]", "estimate", drop = TRUE], phi, tol = phi * TOL)
-  expect_equal(b[b$term == "phi[1]", "estimate", drop = TRUE], phi, tol = phi * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "year_sigma[1]", "estimate", drop = TRUE]), year_sigma, tol = year_sigma * 0.2)
+  expect_equal(as.numeric(b[b$term == "phi[1]", "estimate", drop = TRUE]), phi, tol = phi * TOL)
+  expect_equal(as.numeric(b[b$term == "phi[1]", "estimate", drop = TRUE]), phi, tol = phi * TOL)
 })
 
 # -------------------
@@ -260,10 +260,10 @@ test_that("mvt-norm estimates ar process *with* year random walk effects and cov
 
   TOL <- 0.15
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[grep("yearEffects\\[*", b$term), "estimate", drop = TRUE], B, tol = 0.1)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[grep("yearEffects\\[*", b$term), "estimate", drop = TRUE]), B, tol = 0.1)
   #expect_equal(b[b$term == "year_sigma[1]", "estimate"], year_sigma, tol = 0.1)
   #expect_equal(b[b$term == "phi[1]", "estimate"], phi, tol = phi * TOL)
 })
@@ -313,9 +313,9 @@ test_that("mvt-norm estimates global int + AR RF", {
   m
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "phi[1]", "estimate", drop = TRUE], phi, tol = phi * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "phi[1]", "estimate", drop = TRUE]), phi, tol = phi * TOL)
 })
 
 # --------------------------
@@ -385,8 +385,8 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   m2
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
 
   B_hat <- subset(b, grepl("B", term))
   expect_equal(B, B_hat$estimate, tol = TOL)
