@@ -1,19 +1,30 @@
 language: r
 sudo: false
-r: devel
-cache: packages
+r: release
+latex: false
+cache:
+  - packages
+  - ccache
 
 r_build_args: '--no-build-vignettes'
-r_check_args: '--ignore-vignettes --no-examples'
+r_check_args: '--ignore-vignettes'
 
 notifications:
   email:
     on_success: change
     on_failure: change
-    
+
+addons:
+  apt:
+    packages:
+      - libudunits2-dev
+      - libgdal-dev
+      - libproj-dev
+
 before_install:
   - mkdir -p ~/.R
-  - echo "CXX14FLAGS=-O3 -mtune=native -march=native -Wno-unused-variable -Wno-unused-function  -Wno-macro-redefined" >> ~/.R/Makevars
-  - echo "CXX14=g++ -std=c++1y -fPIC" >> ~/.R/Makevars
+  - echo "PKG_CPPFLAG=-DBOOST_NO_AUTO_PTR" >> ~/.R/Makevars
+  - echo "CXX14FLAGS=-O3 -mtune=native -march=native -Wno-macro-redefined -Wno-unused -Wno-deprecated-declarations" >> ~/.R/Makevars
+  - echo "CXX14=g++ -std=c++1y -fext-numeric-literals -fPIC" >> ~/.R/Makevars
 
-warnings_are_errors: false
+warnings_are_errors: true
