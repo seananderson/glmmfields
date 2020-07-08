@@ -20,6 +20,7 @@ addons:
       - libudunits2-dev
       - libgdal-dev
       - libproj-dev
+      - libnode-dev
 
 before_install:
   - mkdir -p ~/.R
