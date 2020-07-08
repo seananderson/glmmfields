@@ -307,9 +307,9 @@ glmmfields <- function(formula, data, lon, lat,
 
   out <- list(
     model = m,
-    knots = dplyr::as.tbl(as.data.frame(data_knots)),
+    knots = tibble::as_tibble(as.data.frame(data_knots)),
     y = y, X = X,
-    data = dplyr::as.tbl(data), formula = formula,
+    data = tibble::as_tibble(data), formula = formula,
     covariance = covariance, matern_kappa = matern_kappa,
     lon = lon, lat = lat,
     time = time, year_re = year_re,

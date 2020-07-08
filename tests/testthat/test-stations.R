@@ -32,7 +32,7 @@ test_that("Stations in second time slice can be in different order from first ti
   d2 <- dplyr::arrange(d2, ID)
 
   plot(d2$pred, d$pred)
-  expect_equal(d2$pred, d$pred)
+  expect_equal(d2$pred, d$pred, tolerance = 0.000001)
 })
 
 test_that("Stations in second time slice introduce new stations", {

@@ -195,7 +195,7 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
   # Reshape for output
   out <- reshape2::melt(y)
   names(out) <- c("time", "pt", "y")
-  out <- dplyr::arrange_(out, "time", "pt")
+  out <- dplyr::arrange(out, time, pt)
   out$lon <- rep(g$lon, n_draws)
   out$lat <- rep(g$lat, n_draws)
   out$station_id <- rep(station_id, n_draws)

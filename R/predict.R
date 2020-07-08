@@ -150,7 +150,7 @@ predict.glmmfields <- function(object, newdata = NULL,
   response <- all.vars(nlme::getResponseFormula(object$formula))
   newdata[[response]] <- 1.0
 
-  newdata <- dplyr::as.tbl(newdata)
+  newdata <- tibble::as_tibble(newdata)
   # create model.matrix() as in fitting function, only with newdata
   X <- model.matrix(object$formula,
     model.frame(object$formula, newdata, na.action = na.omit))
@@ -327,7 +327,7 @@ predict.glmmfields <- function(object, newdata = NULL,
     out$conf_high <- apply(pp, 1, quantile, probs = 1 - (1 - conf_level) / 2)
   }
 
-  out <- dplyr::as.tbl(out)
+  out <- tibble::as_tibble(out)
   if (return_mcmc) out <- t(pred_values) # to match rstanarm generic methods
   out
 }

@@ -19,3 +19,7 @@
 #' version 2.18.2. http://mc-stan.org
 #'
 NULL
+
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("pt", "time"))
+}
