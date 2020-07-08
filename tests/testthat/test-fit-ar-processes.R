@@ -148,9 +148,9 @@ test_that("mvt-norm estimates ar process", {
   m
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "phi[1]", "estimate", drop = TRUE], phi, tol = phi * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "phi[1]", "estimate", drop = TRUE]), phi, tol = phi * TOL)
 })
 
 # -------------------
@@ -389,7 +389,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
   expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
 
   B_hat <- subset(b, grepl("B", term))
-  expect_equal(B, B_hat$estimate, tol = TOL)
+  expect_equal(B, as.numeric(B_hat$estimate), tol = TOL)
 
   library(dplyr)
   q <- subset(b, grepl("B", term))

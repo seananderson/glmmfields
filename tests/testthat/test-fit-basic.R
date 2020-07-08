@@ -97,9 +97,9 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   )
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
 })
 
 # ------------------------------------------------------
@@ -136,9 +136,9 @@ test_that("mvn-norm model fits with an matern covariance function", {
   )
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
 })
 
 test_that("predictions work with one time slice", {
@@ -200,7 +200,7 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
 
   b_mvt <- tidy(m_mvt, estimate.method = "median")
   b_mvn <- tidy(m_mvn, estimate.method = "median")
-  expect_equal(b_mvn$estimate, b_mvt$estimate, tol = 0.02)
+  expect_equal(as.numeric(b_mvn$estimate), as.numeric(b_mvt$estimate), tol = 0.02)
 })
 
 # -------------------------------------------------------------------
@@ -236,7 +236,7 @@ test_that("A basic model fits with missing time elements", {
   )
 
   b <- tidy(m, estimate.method = "median")
-  expect_equal(b[b$term == "sigma[1]", "estimate", drop = TRUE], sigma, tol = sigma * TOL)
-  expect_equal(b[b$term == "gp_sigma", "estimate", drop = TRUE], gp_sigma, tol = gp_sigma * TOL * 1.5)
-  expect_equal(b[b$term == "gp_theta", "estimate", drop = TRUE], gp_theta, tol = gp_theta * TOL)
+  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
+  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), gp_sigma, tol = gp_sigma * TOL * 1.5)
+  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), gp_theta, tol = gp_theta * TOL)
 })
