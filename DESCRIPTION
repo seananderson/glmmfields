@@ -1,51 +1,65 @@
-Package: glmmfields
 Type: Package
-Title: Generalized Linear Mixed Models with Robust Random Fields for Spatiotemporal Modeling
+Package: glmmfields
+Title: Generalized Linear Mixed Models with Robust Random Fields
+    for Spatiotemporal Modeling
 Version: 0.1.4
-Authors@R: c(
-    person(c("Sean", "C."), "Anderson", email = "sean@seananderson.ca",
-      role = c("aut", "cre")),
-    person(c("Eric", "J."), "Ward", role = "aut"),
-    person("Trustees of", "Columbia University", role = "cph"))
-Description: Implements Bayesian spatial and spatiotemporal models that
-    optionally allow for extreme spatial deviations through time. 'glmmfields'
-    uses a predictive process approach with random fields implemented through
-    a multivariate-t distribution instead of the usual multivariate normal.
-    Sampling is conducted with 'Stan'. References: Anderson and Ward (2019)
-    <doi:10.1002/ecy.2403>.
+Authors@R: 
+    c(person(given = c("Sean", "C."),
+             family = "Anderson",
+             role = c("aut", "cre"),
+             email = "sean@seananderson.ca"),
+      person(given = c("Eric", "J."),
+             family = "Ward",
+             role = "aut"),
+      person(given = "Trustees of",
+             family = "Columbia University",
+             role = "cph"))
+Description: Implements Bayesian spatial and spatiotemporal
+    models that optionally allow for extreme spatial deviations through
+    time. 'glmmfields' uses a predictive process approach with random
+    fields implemented through a multivariate-t distribution instead of
+    the usual multivariate normal.  Sampling is conducted with 'Stan'.
+    References: Anderson and Ward (2019) <doi:10.1002/ecy.2403>.
 License: GPL (>=3)
-Encoding: UTF-8
-Depends:
-    R (>= 3.4.0),
-    Rcpp (>= 0.12.18),
-    methods
-Imports:
-    rstan (>= 2.18.2),
-    ggplot2 (>= 2.2.0),
-    rstantools (>= 1.5.1),
-    cluster,
-    dplyr (>= 0.8.0),
-    reshape2,
-    mvtnorm,
-    broom.mixed,
-    broom,
-    loo (>= 2.0.0),
-    assertthat,
-    nlme,
-    forcats
-LinkingTo: StanHeaders (>= 2.18.0), rstan (>= 2.18.2), BH (>= 1.66.0), Rcpp (>=
-    0.12.8), RcppEigen (>= 0.3.3.3.0)
-Suggests:
-    testthat,
-    parallel,
-    bayesplot,
-    knitr,
-    rmarkdown,
-    viridis,
-    coda
 URL: https://github.com/seananderson/glmmfields
 BugReports: https://github.com/seananderson/glmmfields/issues
-RoxygenNote: 7.1.1
+Depends:
+    methods,
+    R (>= 3.4.0),
+    Rcpp (>= 0.12.18)
+Imports:
+    assertthat,
+    broom,
+    broom.mixed,
+    cluster,
+    dplyr (>= 0.8.0),
+    forcats,
+    ggplot2 (>= 2.2.0),
+    loo (>= 2.0.0),
+    mvtnorm,
+    nlme,
+    reshape2,
+    rstan (>= 2.18.2),
+    rstantools (>= 1.5.1),
+    tibble
+Suggests:
+    bayesplot,
+    coda,
+    knitr,
+    parallel,
+    rmarkdown,
+    testthat,
+    viridis
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>=
+    0.12.8),
+    RcppEigen (>= 0.3.3.3.0),
+    rstan (>= 2.18.2),
+    StanHeaders (>= 2.18.0)
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-VignetteBuilder: knitr
+RoxygenNote: 7.1.1
 SystemRequirements: GNU make
