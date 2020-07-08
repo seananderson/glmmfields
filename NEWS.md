@@ -1,3 +1,7 @@
+# glmmfields 0.1.4
+
+* Make compatible with updated broom.mixed
+
 # glmmfields 0.1.3
 
 * Make compatible with C++14.
