@@ -45,7 +45,7 @@ Suggests:
     coda
 URL: https://github.com/seananderson/glmmfields
 BugReports: https://github.com/seananderson/glmmfields/issues
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 SystemRequirements: GNU make

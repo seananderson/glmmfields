@@ -11,7 +11,7 @@
 \item{x}{Output from \code{\link[=glmmfields]{glmmfields()}}.
 Must be fit with \code{save_log_lik = TRUE}, which is \emph{not} the default.}
 
-\item{...}{Arguments for \code{\link[loo:relative_eff]{loo::relative_eff()}} and \code{\link[loo:loo.array]{loo::loo.array()}}.}
+\item{...}{Arguments for \code{\link[loo:relative_eff]{loo::relative_eff()}} and \code{\link[loo:loo]{loo::loo.array()}}.}
 }
 \description{
 Extract the LOOIC (leave-one-out information criterion) using
