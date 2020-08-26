@@ -56,6 +56,9 @@
 #'   lognormal (specified via [lognormal()] as `lognormal(link = "log")`.
 #'   Besides the negative binomial and lognormal, other families are specified
 #'   as shown in \code{\link[stats]{family}}.
+#' @param binomial_N A character object giving the optional name of the column containing
+#'   Binomial sample size. Leave as `NULL` to fit a spatial GLMM with sample sizes (N) = 1,
+#'   equivalent to bernoulli model.
 #' @param covariance The covariance function of the Gaussian Process.
 #'   One of "squared-exponential", "exponential", or "matern".
 #' @param matern_kappa Optional parameter for the Matern covariance function.
@@ -158,6 +161,7 @@ glmmfields <- function(formula, data, lon, lat,
                        estimate_df = FALSE,
                        estimate_ar = FALSE,
                        family = gaussian(link = "identity"),
+                       binomial_N = NULL,
                        covariance = c("squared-exponential", "exponential", "matern"),
                        matern_kappa = 0.5,
                        algorithm = c("sampling", "meanfield"),
@@ -220,6 +224,11 @@ glmmfields <- function(formula, data, lon, lat,
     time <- "null_time_"
   }
 
+  if (is.null(binomial_N)) {
+    data$null_N_ <- 1
+    binomial_N <- "null_N_"
+  }
+
   if ("station" %in% names(list(...))) {
     stop(
       "The 'station' argument is no longer needed when calling glmmfields().",
@@ -276,7 +285,8 @@ glmmfields <- function(formula, data, lon, lat,
       matern_kappa = matern_kappa,
       gp_sigma_scaling_factor = gp_sigma_scaling_factor,
       nW = if (fixed_df_value[[1]] > 999 && !estimate_df) 0L else stan_data$nT,
-      df_lower_bound = df_lower_bound
+      df_lower_bound = df_lower_bound,
+      binomialN = data[,binomial_N]
     )
   )
 

@@ -23,6 +23,7 @@ glmmfields(
   estimate_df = FALSE,
   estimate_ar = FALSE,
   family = gaussian(link = "identity"),
+  binomial_N = NULL,
   covariance = c("squared-exponential", "exponential", "matern"),
   matern_kappa = 0.5,
   algorithm = c("sampling", "meanfield"),
@@ -104,6 +105,10 @@ have a log link. Binomial must have a logit link. Also implemented is the
 lognormal (specified via \code{\link[=lognormal]{lognormal()}} as \code{lognormal(link = "log")}.
 Besides the negative binomial and lognormal, other families are specified
 as shown in \code{\link[stats]{family}}.}
+
+\item{binomial_N}{A character object giving the optional name of the column containing
+Binomial sample size. Leave as \code{NULL} to fit a spatial GLMM with sample sizes (N) = 1,
+equivalent to bernoulli model.}
 
 \item{covariance}{The covariance function of the Gaussian Process.
 One of "squared-exponential", "exponential", or "matern".}

@@ -5,6 +5,7 @@ data {
   int<lower=1> N;
   int<lower=1> stationID[N];
   int<lower=1> yearID[N];
+  int<lower=0> binomialN[N];
   real y[N]; // y for normal and gamma obs. model
   int y_int[N]; // y for NB2 or poisson or binomial obs. model
   real prior_gp_theta[3];
@@ -221,7 +222,7 @@ model {
     }
   }
   if (obs_model == 4) {
-    y_int ~ bernoulli_logit(y_hat);
+    y_int ~ binomial_logit(binomialN, y_hat);
   }
   if (obs_model == 5) {
     y_int ~ poisson_log(y_hat);
@@ -254,7 +255,7 @@ generated quantities {
       }
     }
     if (obs_model == 4) {
-      log_lik[i] = bernoulli_logit_lpmf(y_int[i] | y_hat[i]);
+      log_lik[i] = binomial_logit_lpmf(y_int[i] | binomialN[i], y_hat[i]);
     }
     if (obs_model == 5) {
       log_lik[i] = poisson_log_lpmf(y_int[i] | y_hat[i]);
