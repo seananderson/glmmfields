@@ -2,8 +2,8 @@
 
 # glmmfields <img src="inst/logo.png" align="right" />
 
-[![Travis-CI Build
-Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
+[![R build
+status](https://github.com/seananderson/glmmfields/workflows/R-CMD-check/badge.svg)](https://github.com/seananderson/glmmfields/actions)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
 <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
@@ -92,13 +92,13 @@ print(m)
 #> post-warmup draws per chain=400, total post-warmup draws=1600.
 #> 
 #>             mean se_mean   sd    2.5%     25%     50%     75%   97.5% n_eff Rhat
-#> df[1]       3.79    0.04 1.39    2.15    2.74    3.47    4.44    7.26  1169    1
-#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   464    1
-#> gp_theta    2.59    0.00 0.07    2.46    2.54    2.58    2.63    2.72  1189    1
-#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1805    1
-#> lp__     2291.54    0.38 9.45 2271.16 2285.75 2291.95 2297.94 2308.92   623    1
+#> df[1]       3.78    0.04 1.40    2.09    2.73    3.45    4.44    7.46  1422 1.00
+#> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   441 1.01
+#> gp_theta    2.59    0.00 0.06    2.46    2.55    2.59    2.63    2.71  1493 1.00
+#> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1695 1.00
+#> lp__     2291.18    0.41 9.24 2271.74 2285.06 2291.84 2297.72 2307.86   516 1.01
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Jan 16 15:22:32 2019.
+#> Samples were drawn using NUTS(diag_e) at Sat Jan  9 09:30:08 2021.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -127,12 +127,12 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0294  -0.0894    0.0343
-#> 2  -0.290   -0.362    -0.221 
-#> 3  -0.397   -0.450    -0.346 
-#> 4  -0.195   -0.268    -0.124 
-#> 5  -0.0353  -0.109     0.0389
-#> 6  -0.215   -0.291    -0.135
+#> 1  -0.0292  -0.0864    0.0312
+#> 2  -0.291   -0.361    -0.219 
+#> 3  -0.397   -0.451    -0.344 
+#> 4  -0.194   -0.271    -0.120 
+#> 5  -0.0367  -0.111     0.0416
+#> 6  -0.216   -0.294    -0.140
 
 # posterior predictive intervals on new observations (include observation error):
 p <- predictive_interval(m)
@@ -140,28 +140,31 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0294   -0.243   0.181  
-#> 2  -0.290    -0.508  -0.0944 
-#> 3  -0.397    -0.607  -0.209  
-#> 4  -0.195    -0.395   0.00251
-#> 5  -0.0353   -0.245   0.179  
-#> 6  -0.215    -0.429  -0.0121
+#> 1  -0.0292   -0.237   0.178  
+#> 2  -0.291    -0.503  -0.0869 
+#> 3  -0.397    -0.603  -0.195  
+#> 4  -0.194    -0.401   0.0137 
+#> 5  -0.0367   -0.242   0.172  
+#> 6  -0.216    -0.425  -0.00916
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
 
 ``` r
 x <- tidy(m, conf.int = TRUE)
+#> Registered S3 method overwritten by 'broom.mixed':
+#>   method      from 
+#>   tidy.gamlss broom
 head(x)
 #> # A tibble: 6 x 5
 #>   term                     estimate std.error conf.low conf.high
 #>   <chr>                       <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 df[1]                      3.79     1.39      2.15      7.26  
-#> 2 gp_sigma                   0.300    0.0428    0.218     0.389 
-#> 3 gp_theta                   2.59     0.0656    2.46      2.72  
-#> 4 sigma[1]                   0.0979   0.00216   0.0935    0.102 
-#> 5 spatialEffectsKnots[1,1]  -0.110    0.0366   -0.179    -0.0373
-#> 6 spatialEffectsKnots[2,1]  -0.231    0.0341   -0.296    -0.164
+#> 1 df[1]                      3.45     1.40      2.09      7.46  
+#> 2 gp_sigma                   0.299    0.0442    0.217     0.389 
+#> 3 gp_theta                   2.59     0.0640    2.46      2.71  
+#> 4 sigma[1]                   0.0979   0.00216   0.0941    0.102 
+#> 5 spatialEffectsKnots[1,1]  -0.110    0.0355   -0.182    -0.0413
+#> 6 spatialEffectsKnots[2,1]  -0.230    0.0357   -0.302    -0.163
 ```
 
 Make predictions on a fine-scale spatial grid:
@@ -187,8 +190,8 @@ ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
 
 # References
 
-Anderson, S. C., Ward, E. J. 2018. Black swans in space: modelling
-spatiotemporal processes with extremes. In press at *Ecology*.
+Anderson, S. C., Ward, E. J. 2019. Black swans in space: modelling
+spatiotemporal processes with extremes. 100(1):e02403.
 <https://doi.org/10.1002/ecy.2403>
 
 Latimer, A. M., S. Banerjee, H. Sang Jr, E. S. Mosher, and J. A.

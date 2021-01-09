@@ -3,7 +3,6 @@ cleanup*
 ^\.Rproj\.user$
 ^README-*
 ^README\.Rmd
-^\.travis\.yml$
 ^appveyor\.yml$
 ^Session.vim$
 ^cran-comments\.md$
@@ -12,3 +11,4 @@ cleanup*
 ^CRAN-RELEASE$
 ^_pkgdown\.yml$
 ^docs$
+^\.github$

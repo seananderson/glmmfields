@@ -18,7 +18,7 @@ options(width = 120) # for printing Stan output
 
 # glmmfields <img src="inst/logo.png" align="right" />
 
-[![Travis-CI Build Status](https://travis-ci.org/seananderson/glmmfields.svg?branch=master)](https://travis-ci.org/seananderson/glmmfields)
+[![R build status](https://github.com/seananderson/glmmfields/workflows/R-CMD-check/badge.svg)](https://github.com/seananderson/glmmfields/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/glmmfields)](https://cran.r-project.org/package=glmmfields)
 <!-- [![codecov](https://codecov.io/github/seananderson/glmmfields/branch/master/graphs/badge.svg)](https://codecov.io/github/seananderson/glmmfields) -->
 
