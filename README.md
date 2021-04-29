@@ -98,7 +98,7 @@ print(m)
 #> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1695 1.00
 #> lp__     2291.18    0.41 9.24 2271.74 2285.06 2291.84 2297.72 2307.86   516 1.01
 #> 
-#> Samples were drawn using NUTS(diag_e) at Sat Jan  9 09:30:08 2021.
+#> Samples were drawn using NUTS(diag_e) at Thu Apr 29 10:58:34 2021.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -140,18 +140,22 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0292   -0.237   0.178  
-#> 2  -0.291    -0.503  -0.0869 
-#> 3  -0.397    -0.603  -0.195  
-#> 4  -0.194    -0.401   0.0137 
-#> 5  -0.0367   -0.242   0.172  
-#> 6  -0.216    -0.425  -0.00916
+#> 1  -0.0292   -0.226    0.181 
+#> 2  -0.291    -0.502   -0.0875
+#> 3  -0.397    -0.611   -0.195 
+#> 4  -0.194    -0.394    0.0112
+#> 5  -0.0367   -0.243    0.175 
+#> 6  -0.216    -0.425   -0.0100
 ```
 
 Use the `tidy` method to extract parameter estimates as a data frame:
 
 ``` r
 x <- tidy(m, conf.int = TRUE)
+#> Warning in checkMatrixPackageVersion(): Package version inconsistency detected.
+#> TMB was built with Matrix version 1.3.2
+#> Current Matrix version is 1.2.18
+#> Please re-install 'TMB' from source using install.packages('TMB', type = 'source') or ask CRAN for a binary version of 'TMB' matching CRAN's 'Matrix' package
 #> Registered S3 method overwritten by 'broom.mixed':
 #>   method      from 
 #>   tidy.gamlss broom
@@ -203,3 +207,19 @@ Shelton, A. O., J. T. Thorson, E. J. Ward, and B. E. Feist. 2014.
 Spatial semiparametric models improve estimates of species abundance and
 distribution. Canadian Journal of Fisheries and Aquatic Sciences
 71:1655–1666.
+
+### NOAA Disclaimer
+
+This repository is a scientific product and is not official
+communication of the National Oceanic and Atmospheric Administration, or
+the United States Department of Commerce. All NOAA GitHub project code
+is provided on an ‘as is’ basis and the user assumes responsibility for
+its use. Any claims against the Department of Commerce or Department of
+Commerce bureaus stemming from the use of this GitHub project will be
+governed by all applicable Federal law. Any reference to specific
+commercial products, processes, or services by service mark, trademark,
+manufacturer, or otherwise, does not constitute or imply their
+endorsement, recommendation or favoring by the Department of Commerce.
+The Department of Commerce seal and logo, or the seal and logo of a DOC
+bureau, shall not be used in any manner to imply endorsement of any
+commercial product or activity by DOC or the United States Government.
