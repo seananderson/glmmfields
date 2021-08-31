@@ -38,9 +38,10 @@ Imports:
     loo (>= 2.0.0),
     mvtnorm,
     nlme,
+    RcppParallel (>= 5.0.1),
     reshape2,
     rstan (>= 2.18.2),
-    rstantools (>= 1.5.1),
+    rstantools (>= 2.1.1),
     tibble
 Suggests:
     bayesplot,
@@ -52,9 +53,9 @@ Suggests:
     viridis
 LinkingTo: 
     BH (>= 1.66.0),
-    Rcpp (>=
-    0.12.8),
+    Rcpp (>= 0.12.8),
     RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.0)
 VignetteBuilder: 
@@ -63,3 +64,4 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 SystemRequirements: GNU make
+Biarch: true

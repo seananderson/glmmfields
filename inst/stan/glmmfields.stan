@@ -235,6 +235,7 @@ model {
 generated quantities {
   // log_lik is for use with the loo package
   vector[N] log_lik;
+  //int<lower = 0> y_new[N];
 
   for (i in 1:N) {
     if (obs_model == 0) {
@@ -259,6 +260,7 @@ generated quantities {
     }
     if (obs_model == 5) {
       log_lik[i] = poisson_log_lpmf(y_int[i] | y_hat[i]);
+      //y_new[i] = poisson_log_rng(y_hat[i]);
     }
     if (obs_model == 6) {
       log_lik[i] = lognormal_lpdf(y[i] | y_hat, sigma[1]);

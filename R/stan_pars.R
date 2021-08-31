@@ -14,6 +14,7 @@ stan_pars <- function(obs_error, estimate_df = TRUE, est_temporalRE = FALSE,
                       estimate_ar = FALSE, fixed_intercept = FALSE,
                       save_log_lik = FALSE) {
   p <- c(
+    #"y_new",
     "gp_sigma",
     "gp_theta",
     "B",
