@@ -1,12 +1,12 @@
 ## Release summary
 
-This is a new version that is compatible with updates to broom.mixed and dplyr
+This is a new version that is compatible with upcoming updates to rstan and StanHeaders.
 
 ## Test environments
 
-* local OS X install, R 4.0.2
-* Ubuntu 16.04 (on travis-ci), devel
-* win-builder (devel)
+* local mac OS install, R 4.1.1
+* Ubuntu 20.04 (on GitHub CI), devel
+* win-builder, devel
 
 ## R CMD check results
 
