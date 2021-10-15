@@ -25,6 +25,7 @@
   interval = c("confidence", "prediction"),
   type = c("link", "response"),
   return_mcmc = FALSE,
+  offset = NULL,
   iter = "all",
   ...
 )
@@ -49,6 +50,8 @@
 
 \item{return_mcmc}{Logical. Should the full MCMC draws be returned for the
 predictions?}
+
+\item{offset}{Optional offset vector to be used in prediction.}
 
 \item{iter}{Number of MCMC iterations to draw. Defaults to all.}
 }

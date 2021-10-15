@@ -261,7 +261,7 @@ test_that("A offset in formula works", {
     covariance = "squared-exponential"
   )
   # print(s$plot)
-  s$dat$offset = 0
+  s$dat$offset <- rnorm(nrow(s$dat), mean = 0, sd = 0.1)
 
   m <- glmmfields(y ~ 1,
                   data = s$dat, time = "time",
@@ -270,7 +270,7 @@ test_that("A offset in formula works", {
                   estimate_df = FALSE, fixed_df_value = df,
                   covariance = "squared-exponential"
   )
-  m_offset <- glmmfields(y ~ 1 + offset,
+  m_offset <- glmmfields(y ~ 1, offset = s$dat$offset,
                   data = s$dat, time = "time",
                   lat = "lat", lon = "lon", nknots = nknots,
                   iter = ITER, chains = CHAINS, seed = SEED,
@@ -280,7 +280,8 @@ test_that("A offset in formula works", {
   b <- tidy(m, estimate.method = "median")
   b_offset <- tidy(m_offset, estimate.method = "median")
 
-  expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), as.numeric(b_offset[b_offset$term == "sigma[1]", "estimate", drop = TRUE]), tol = sigma * TOL)
-  expect_equal(as.numeric(b[b$term == "gp_sigma", "estimate", drop = TRUE]), as.numeric(b_offset[b_offset$term == "gp_sigma", "estimate", drop = TRUE]), tol = gp_sigma * TOL * 1.5)
-  expect_equal(as.numeric(b[b$term == "gp_theta", "estimate", drop = TRUE]), as.numeric(b_offset[b_offset$term == "gp_theta", "estimate", drop = TRUE]), tol = gp_theta * TOL)
+  p1 <- predict(m_offset)
+  p2 <- predict(m_offset, newdata = s$dat, offset = s$dat$offset)
+  expect_identical(p1, p2)
+  expect_error(p3 <- predict(m_offset, newdata = s$dat), regexp = "offset")
 })

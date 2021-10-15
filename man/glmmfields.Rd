@@ -33,14 +33,12 @@ glmmfields(
   save_log_lik = FALSE,
   df_lower_bound = 2,
   cluster = c("pam", "kmeans"),
+  offset = NULL,
   ...
 )
 }
 \arguments{
-\item{formula}{The model formula. This is generally similar to formulas used
-in other packages, such as \code{\link[=lm]{lm()}} or \code{\link[=glm]{glm()}} with the exception of how the offset
-is handled. To include the offset, a named column of the dataframe must be
-\code{offset}, and the formula needs to include \code{+ offset}.}
+\item{formula}{The model formula.}
 
 \item{data}{A data frame.}
 
@@ -153,6 +151,8 @@ convergence. Defaults to 2.}
 \item{cluster}{The type of clustering algorithm used to determine the knot
 locations. \code{"pam"} = \code{\link[cluster:pam]{cluster::pam()}}. The \code{"kmeans"}
 algorithm will be faster on larger datasets.}
+
+\item{offset}{An optional offset vector.}
 
 \item{...}{Any other arguments to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
 }

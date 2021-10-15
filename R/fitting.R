@@ -5,10 +5,7 @@
 #' through time. It is also possible to fit a spatial random fields model
 #' without a time component.
 #'
-#' @param formula The model formula. This is generally similar to formulas used
-#' in other packages, such as [lm()] or [glm()] with the exception of how the offset
-#' is handled. To include the offset, a named column of the dataframe must be
-#' `offset`, and the formula needs to include `+ offset`.
+#' @param formula The model formula.
 #' @param data A data frame.
 #' @param time A character object giving the name of the time column. Leave
 #'   as `NULL` to fit a spatial GLMM without a time element.
@@ -94,6 +91,7 @@
 #' @param cluster The type of clustering algorithm used to determine the knot
 #'   locations. `"pam"` = [cluster::pam()]. The `"kmeans"`
 #'   algorithm will be faster on larger datasets.
+#' @param offset An optional offset vector.
 #' @param ... Any other arguments to pass to [rstan::sampling()].
 #'
 #' @details
@@ -174,6 +172,7 @@ glmmfields <- function(formula, data, lon, lat,
                        save_log_lik = FALSE,
                        df_lower_bound = 2,
                        cluster = c("pam", "kmeans"),
+                       offset = NULL,
                        ...) {
 
   # argument checks:
@@ -222,7 +221,6 @@ glmmfields <- function(formula, data, lon, lat,
   y <- model.response(mf, "numeric")
   fixed_intercept <- ncol(X) == 0
 
-  offset <- as.vector(model.offset(mf))
   if (is.null(offset)) offset <- rep(0, length(y))
 
   if (is.null(time)) {
@@ -331,6 +329,7 @@ glmmfields <- function(formula, data, lon, lat,
     lon = lon, lat = lat,
     time = time, year_re = year_re,
     station = data_list$stationID, obs_model = obs_model,
+    offset = offset,
     fixed_intercept = fixed_intercept, family = family
   )
   out <- structure(out, class = "glmmfields")

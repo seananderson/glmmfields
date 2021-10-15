@@ -15,6 +15,7 @@
 #'   "response" scale (Same as for [stats::predict.glm()]).
 #' @param return_mcmc Logical. Should the full MCMC draws be returned for the
 #'   predictions?
+#' @param offset Optional offset vector to be used in prediction.
 #' @param iter Number of MCMC iterations to draw. Defaults to all.
 #' @param ... Ignored currently
 #'
@@ -127,6 +128,7 @@ predict.glmmfields <- function(object, newdata = NULL,
                                interval = c("confidence", "prediction"),
                                type = c("link", "response"),
                                return_mcmc = FALSE,
+                               offset = NULL,
                                iter = "all", ...) {
   estimate_method <- match.arg(estimate_method)
   interval <- match.arg(interval)
@@ -142,6 +144,11 @@ predict.glmmfields <- function(object, newdata = NULL,
   }
 
   obs_model <- object$obs_model
+
+  if (is.null(newdata))  offset <- object$offset
+  if (!is.null(newdata) && !is.null(object$offset)) {
+    if (is.null(offset)) stop("Missing `offset` argument.", call. = FALSE)
+  }
 
   # newdata is df with time, y, lon, lat
   # if null, defaults to data used to fit model
@@ -264,6 +271,8 @@ predict.glmmfields <- function(object, newdata = NULL,
   # If predictions other than on link scale, use observation model and link to
   # generate (1) confidence intervals on mean or (2) prediction intervals
   # including obs error
+
+  pred_values <- pred_values + offset
 
   if (type == "response") {
     # gamma or NB2 or poisson:
