@@ -8,6 +8,7 @@ data {
   int<lower=0> binomialN[N];
   real y[N]; // y for normal and gamma obs. model
   int y_int[N]; // y for NB2 or poisson or binomial obs. model
+  real offset[N]; // optional offset, is 0 if not included
   real prior_gp_theta[3];
   real prior_gp_sigma[3];
   real prior_sigma[3];
@@ -126,6 +127,7 @@ transformed parameters {
         y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
       }
     }
+    y_hat[i] = y_hat[i] + offset[i]; // optional offset, additive in link space
   }
 
   if (obs_model==0) {

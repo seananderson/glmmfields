@@ -5,7 +5,10 @@
 #' through time. It is also possible to fit a spatial random fields model
 #' without a time component.
 #'
-#' @param formula The model formula.
+#' @param formula The model formula. This is generally similar to formulas used
+#' in other packages, such as [lm()] or [glm()] with the exception of how the offset
+#' is handled. To include the offset, a named column of the dataframe must be
+#' `offset`, and the formula needs to include `+ offset`.
 #' @param data A data frame.
 #' @param time A character object giving the name of the time column. Leave
 #'   as `NULL` to fit a spatial GLMM without a time element.
@@ -219,6 +222,9 @@ glmmfields <- function(formula, data, lon, lat,
   y <- model.response(mf, "numeric")
   fixed_intercept <- ncol(X) == 0
 
+  offset <- as.vector(model.offset(mf))
+  if (is.null(offset)) offset <- rep(0, length(y))
+
   if (is.null(time)) {
     data$null_time_ <- 1
     time <- "null_time_"
@@ -264,6 +270,7 @@ glmmfields <- function(formula, data, lon, lat,
       prior_rw_sigma = parse_t_prior(prior_rw_sigma),
       prior_beta = parse_t_prior(prior_beta),
       prior_phi = parse_t_prior(prior_phi),
+      offset = offset,
       cov_func = switch(covariance,
         exponential = 0L,
         `squared-exponential` = 1L,

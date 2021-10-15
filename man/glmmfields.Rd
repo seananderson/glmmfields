@@ -37,7 +37,10 @@ glmmfields(
 )
 }
 \arguments{
-\item{formula}{The model formula.}
+\item{formula}{The model formula. This is generally similar to formulas used
+in other packages, such as \code{\link[=lm]{lm()}} or \code{\link[=glm]{glm()}} with the exception of how the offset
+is handled. To include the offset, a named column of the dataframe must be
+\code{offset}, and the formula needs to include \code{+ offset}.}
 
 \item{data}{A data frame.}
 
