@@ -110,7 +110,7 @@
 #' @export
 #' @importFrom rstan sampling vb
 #' @import Rcpp
-#' @importFrom stats dist model.frame model.matrix model.response rnorm runif
+#' @importFrom stats dist model.frame model.matrix model.response rnorm runif model.offset
 #' @importFrom assertthat assert_that is.count is.number
 #' @importFrom stats gaussian na.omit
 #'
