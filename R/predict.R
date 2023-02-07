@@ -69,7 +69,7 @@
 #' )
 #' pred_grid$prediction <- predict(m,
 #'   newdata = pred_grid, type = "response", iter = 100,
-#'   estimate_method = "median"
+#'   estimate_method = "median", offset = rep(0, nrow(pred_grid))
 #' )$estimate
 #'
 #' ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
