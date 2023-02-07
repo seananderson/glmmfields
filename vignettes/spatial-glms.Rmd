@@ -141,6 +141,7 @@ pred_grid <- expand.grid(lat = seq(min(d$lat), max(d$lat), length.out = 30),
   lon = seq(min(d$lon), max(d$lon), length.out = 30))
 pred_grid$temperature <- mean(d$temperature)
 pred_grid$prediction <- predict(m_spatial, newdata = pred_grid, 
+                                offset = rep(0, nrow(pred_grid)),
   type = "response")$estimate
 ggplot(pred_grid, aes(lon, lat, fill = prediction)) + 
   geom_raster() +
