@@ -88,19 +88,19 @@ m <- glmmfields(y ~ 0,
 ``` r
 print(m)
 #> Inference for Stan model: glmmfields.
-#> 4 chains, each with iter=800; warmup=400; thin=1; 
+#> 4 chains, each with iter=800; warmup=400; thin=1;
 #> post-warmup draws per chain=400, total post-warmup draws=1600.
-#> 
+#>
 #>             mean se_mean   sd    2.5%     25%     50%     75%   97.5% n_eff Rhat
 #> df[1]       3.78    0.04 1.40    2.09    2.73    3.45    4.44    7.46  1422 1.00
 #> gp_sigma    0.30    0.00 0.04    0.22    0.27    0.30    0.33    0.39   441 1.01
 #> gp_theta    2.59    0.00 0.06    2.46    2.55    2.59    2.63    2.71  1493 1.00
 #> sigma[1]    0.10    0.00 0.00    0.09    0.10    0.10    0.10    0.10  1695 1.00
 #> lp__     2291.18    0.41 9.24 2271.74 2285.06 2291.84 2297.72 2307.86   516 1.01
-#> 
+#>
 #> Samples were drawn using NUTS(diag_e) at Thu Apr 29 10:58:34 2021.
 #> For each parameter, n_eff is a crude measure of effective sample size,
-#> and Rhat is the potential scale reduction factor on split chains (at 
+#> and Rhat is the potential scale reduction factor on split chains (at
 #> convergence, Rhat=1).
 ```
 
@@ -128,9 +128,9 @@ head(p)
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
 #> 1  -0.0292  -0.0864    0.0312
-#> 2  -0.291   -0.361    -0.219 
-#> 3  -0.397   -0.451    -0.344 
-#> 4  -0.194   -0.271    -0.120 
+#> 2  -0.291   -0.361    -0.219
+#> 3  -0.397   -0.451    -0.344
+#> 4  -0.194   -0.271    -0.120
 #> 5  -0.0367  -0.111     0.0416
 #> 6  -0.216   -0.294    -0.140
 
@@ -140,11 +140,11 @@ head(p)
 #> # A tibble: 6 x 3
 #>   estimate conf_low conf_high
 #>      <dbl>    <dbl>     <dbl>
-#> 1  -0.0292   -0.226    0.181 
+#> 1  -0.0292   -0.226    0.181
 #> 2  -0.291    -0.502   -0.0875
-#> 3  -0.397    -0.611   -0.195 
+#> 3  -0.397    -0.611   -0.195
 #> 4  -0.194    -0.394    0.0112
-#> 5  -0.0367   -0.243    0.175 
+#> 5  -0.0367   -0.243    0.175
 #> 6  -0.216    -0.425   -0.0100
 ```
 
@@ -157,16 +157,16 @@ x <- tidy(m, conf.int = TRUE)
 #> Current Matrix version is 1.2.18
 #> Please re-install 'TMB' from source using install.packages('TMB', type = 'source') or ask CRAN for a binary version of 'TMB' matching CRAN's 'Matrix' package
 #> Registered S3 method overwritten by 'broom.mixed':
-#>   method      from 
+#>   method      from
 #>   tidy.gamlss broom
 head(x)
 #> # A tibble: 6 x 5
 #>   term                     estimate std.error conf.low conf.high
 #>   <chr>                       <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 df[1]                      3.45     1.40      2.09      7.46  
-#> 2 gp_sigma                   0.299    0.0442    0.217     0.389 
-#> 3 gp_theta                   2.59     0.0640    2.46      2.71  
-#> 4 sigma[1]                   0.0979   0.00216   0.0941    0.102 
+#> 1 df[1]                      3.45     1.40      2.09      7.46
+#> 2 gp_sigma                   0.299    0.0442    0.217     0.389
+#> 3 gp_theta                   2.59     0.0640    2.46      2.71
+#> 4 sigma[1]                   0.0979   0.00216   0.0941    0.102
 #> 5 spatialEffectsKnots[1,1]  -0.110    0.0355   -0.182    -0.0413
 #> 6 spatialEffectsKnots[2,1]  -0.230    0.0357   -0.302    -0.163
 ```
@@ -181,7 +181,8 @@ pred_grid <- expand.grid(
 )
 
 pred_grid$prediction <- predict(m,
-  newdata = pred_grid, type = "response", iter = 100, estimate_method = "median"
+  newdata = pred_grid, type = "response", iter = 100, estimate_method = "median",
+  offset = rep(0, nrow(pred_grid))
 )$estimate
 
 ggplot(pred_grid, aes(lon, lat, fill = prediction)) +

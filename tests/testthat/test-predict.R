@@ -48,7 +48,8 @@ test_that("predict.glmmfields works", {
 
   # with a subset of data
   random_subset <- sample(seq_len(nrow(s$dat)), size = 200)
-  p_newdata <- predict(m, newdata = s$dat[random_subset, ])
+  p_newdata <- predict(m, newdata = s$dat[random_subset, ],
+                        offset = rep(0, nrow(s$dat[random_subset, ])))
   plot(s$dat$y[random_subset], p_newdata$estimate)
   expect_gte(cor(s$dat$y[random_subset], p_newdata$estimate), 0.75)
 
