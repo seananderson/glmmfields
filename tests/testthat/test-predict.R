@@ -54,5 +54,5 @@ test_that("predict.glmmfields works", {
 
   nd <- s$dat
   nd$y <- NULL
-  p <- predict(m, newdata = nd)
+  p <- predict(m, newdata = nd, offset = rep(0, nrow(nd)))
 })
