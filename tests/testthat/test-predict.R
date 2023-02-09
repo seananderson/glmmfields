@@ -33,8 +33,8 @@ test_that("predict.glmmfields works", {
   )
 
   p <- predict(m)
-  p_newdata <- predict(m, newdata = s$dat)
-  p_newdata2 <- predict(m, newdata = m$data)
+  p_newdata <- predict(m, newdata = s$dat, offset = rep(0, nrow(s$dat)))
+  p_newdata2 <- predict(m, newdata = m$data, offset = rep(0, nrow(s$dat)))
 
   plot(s$dat$y, p$estimate)
   plot(s$dat$y, p_newdata$estimate)
