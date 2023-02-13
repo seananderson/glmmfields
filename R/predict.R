@@ -145,7 +145,8 @@ predict.glmmfields <- function(object, newdata = NULL,
 
   obs_model <- object$obs_model
 
-  if (is.null(newdata))  offset <- object$offset
+  if (is.null(newdata)) offset <- object$offset
+  if (is.null(offset) && !is.null(newdata)) offset <- rep(0, nrow(newdata))
   if (!is.null(newdata) && !is.null(object$offset)) {
     if (is.null(offset)) stop("Missing `offset` argument.", call. = FALSE)
   }

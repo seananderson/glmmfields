@@ -42,8 +42,8 @@ install.packages("glmmfields")
 If you have a C++ compiler installed, you can install the development version of the package with:
 
 ```{r, eval=FALSE}
-# install.packages("devtools")
-devtools::install_github("seananderson/glmmfields", build_vignettes = TRUE)
+# install.packages("remotes")
+remotes::install_github("seananderson/glmmfields", build_vignettes = TRUE)
 ```
 
 glmmfields can also fit spatial GLMs with Stan. See the vignette:
@@ -125,8 +125,7 @@ pred_grid <- expand.grid(
 )
 
 pred_grid$prediction <- predict(m,
-  newdata = pred_grid, type = "response", iter = 100, estimate_method = "median",
-  offset = rep(0, nrow(pred_grid))
+  newdata = pred_grid, type = "response", iter = 100, estimate_method = "median"
 )$estimate
 
 ggplot(pred_grid, aes(lon, lat, fill = prediction)) +
