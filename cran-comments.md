@@ -2,6 +2,8 @@
 
 This is a new version that is compatible with updates to 'rstantools'.
 
+At the same time, we have made minor updates to avoid R CMD check NOTES with R devel. 
+
 ## Test environments
 
 * local macOS install, R 4.2.2
