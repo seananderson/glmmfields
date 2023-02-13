@@ -31,6 +31,7 @@ test_that("mvt-nb2 model fits", {
   )
   # print(s$plot)
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -38,6 +39,7 @@ test_that("mvt-nb2 model fits", {
     estimate_df = FALSE, fixed_df_value = df,
     control = list(adapt_delta = 0.9), seed = SEED
   )
+  })
 
   p <- predict(m)
 
@@ -71,12 +73,14 @@ test_that("mvt-gamma model fits", {
   )
   # print(s$plot)
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = Gamma(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED
   )
+  })
 
   p <- predict(m)
 
@@ -118,12 +122,14 @@ test_that("mvt-binomial model fits", {
   # ggplot2::ggplot(out, ggplot2::aes(lon, lat, colour = plogis(y))) + ggplot2::geom_point() +
   #   ggplot2::facet_wrap(~time)
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = binomial(link = "logit"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED
   )
+  })
   # m
   #
   # p <- predict(m)
@@ -159,12 +165,14 @@ test_that("mvt-poisson model fits", {
   # print(s$plot)
   # hist(s$dat$y)
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, family = poisson(link = "log"),
     estimate_df = FALSE, fixed_df_value = df, seed = SEED
   )
+  })
   m
 
   b <- tidy(m, estimate.method = "median")

@@ -31,6 +31,7 @@ test_that("mvt-norm estimates betas", {
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
+  suppressWarnings({
   m <- glmmfields(y ~ as.factor(time) - 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -38,6 +39,7 @@ test_that("mvt-norm estimates betas", {
     estimate_df = FALSE, fixed_df_value = df,
     prior_beta = student_t(50, 0, 2)
   )
+  })
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)

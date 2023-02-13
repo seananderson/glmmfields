@@ -34,12 +34,14 @@ test_that("mvt-norm model fits with repeat stations (plus other main functions)"
   )
   # s$plot
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df
   )
+  })
 
   expect_output(print(m), "Inference for Stan model")
 
@@ -88,6 +90,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
   )
   # print(s$plot)
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -95,6 +98,7 @@ test_that("mvt-norm model fits with an exponential covariance function", {
     estimate_df = FALSE, fixed_df_value = df,
     covariance = "exponential"
   )
+  })
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
@@ -127,6 +131,7 @@ test_that("mvn-norm model fits with an matern covariance function", {
   # print(s$plot)
 
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -134,6 +139,7 @@ test_that("mvn-norm model fits with an matern covariance function", {
     estimate_df = FALSE, fixed_df_value = df,
     covariance = "matern", matern_kappa = matern_kappa
   )
+  })
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
@@ -152,12 +158,14 @@ test_that("predictions work with one time slice", {
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points
   )
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df
   )
+  })
 
   p <- predict(m)
 })
@@ -184,19 +192,23 @@ test_that("true MVN model closely resembles MVT model with a large fixed df", {
     df = 800, n_data_points = n_data_points
   )
 
+  suppressWarnings({
   m_mvt <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = 800
   )
+  })
 
+  suppressWarnings({
   m_mvn <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = 1e9
   ) # internally switched to true MVN
+  })
 
   b_mvt <- tidy(m_mvt, estimate.method = "median")
   b_mvn <- tidy(m_mvn, estimate.method = "median")
@@ -227,6 +239,7 @@ test_that("A basic model fits with missing time elements", {
 
   s$dat <- s$dat[s$dat$time != 4, , drop = FALSE]
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -234,6 +247,7 @@ test_that("A basic model fits with missing time elements", {
     estimate_df = FALSE, fixed_df_value = df,
     covariance = "squared-exponential"
   )
+  })
 
   b <- tidy(m, estimate.method = "median")
   expect_equal(as.numeric(b[b$term == "sigma[1]", "estimate", drop = TRUE]), sigma, tol = sigma * TOL)
@@ -263,6 +277,7 @@ test_that("A offset in formula works", {
   # print(s$plot)
   s$dat$offset <- rnorm(nrow(s$dat), mean = 0, sd = 0.1)
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
                   data = s$dat, time = "time",
                   lat = "lat", lon = "lon", nknots = nknots,
@@ -270,6 +285,8 @@ test_that("A offset in formula works", {
                   estimate_df = FALSE, fixed_df_value = df,
                   covariance = "squared-exponential"
   )
+  })
+  suppressWarnings({
   m_offset <- glmmfields(y ~ 1, offset = s$dat$offset,
                   data = s$dat, time = "time",
                   lat = "lat", lon = "lon", nknots = nknots,
@@ -277,6 +294,7 @@ test_that("A offset in formula works", {
                   estimate_df = FALSE, fixed_df_value = df,
                   covariance = "squared-exponential"
   )
+  })
   b <- tidy(m, estimate.method = "median")
   b_offset <- tidy(m_offset, estimate.method = "median")
 

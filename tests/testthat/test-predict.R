@@ -25,12 +25,14 @@ test_that("predict.glmmfields works", {
     gp_sigma = gp_sigma, sd_obs = sigma, n_knots = nknots, n_data_points = n_data_points
   )
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_df = FALSE, fixed_df_value = df
   )
+  })
 
   p <- predict(m)
   p_newdata <- predict(m, newdata = s$dat, offset = rep(0, nrow(s$dat)))

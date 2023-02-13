@@ -38,14 +38,16 @@ test_that("mvt-norm estimates random walk year effects", {
   # print(s$plot)
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
-  m <- glmmfields(y ~ 0,
-    data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
-    prior_intercept = student_t(999, 0, 5), control = list(adapt_delta = 0.9),
-    prior_rw_sigma = half_t(1e6, 0, 1)
-  )
+  suppressWarnings({
+    m <- glmmfields(y ~ 0,
+      data = s$dat, time = "time",
+      lat = "lat", lon = "lon", nknots = nknots,
+      iter = ITER, chains = CHAINS, seed = SEED,
+      estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
+      prior_intercept = student_t(999, 0, 5), control = list(adapt_delta = 0.9),
+      prior_rw_sigma = half_t(1e6, 0, 1)
+    )
+  })
   m
 
   b <- tidy(m, estimate.method = "median")
@@ -94,14 +96,16 @@ test_that("mvt-norm estimates random walk year effects with covariate", {
   # library(ggplot2); ggplot(s$dat, aes(time, y)) + geom_point()
 
   # include formula with the covariate and transformation
-  m <- glmmfields(y ~ -1+ cov + cov2,
-    data = s$dat, time = "time",
-    lat = "lat", lon = "lon", nknots = nknots,
-    iter = ITER, chains = CHAINS, seed = SEED,
-    estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
-    prior_intercept = student_t(999, 0, 5), control = list(adapt_delta = 0.9),
-    prior_rw_sigma = half_t(1e6, 0, 1)
-  )
+  suppressWarnings({
+    m <- glmmfields(y ~ -1+ cov + cov2,
+      data = s$dat, time = "time",
+      lat = "lat", lon = "lon", nknots = nknots,
+      iter = ITER, chains = CHAINS, seed = SEED,
+      estimate_df = FALSE, fixed_df_value = df, year_re = TRUE,
+      prior_intercept = student_t(999, 0, 5), control = list(adapt_delta = 0.9),
+      prior_rw_sigma = half_t(1e6, 0, 1)
+    )
+  })
   m
 
   b <- tidy(m, estimate.method = "median")
@@ -139,12 +143,14 @@ test_that("mvt-norm estimates ar process", {
   # library(ggplot2); ggplot(s$dat, aes(time, y)) +
   # geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
     iter = ITER, chains = CHAINS, seed = SEED,
     estimate_ar = TRUE
   )
+  })
   m
 
   b <- tidy(m, estimate.method = "median")
@@ -187,6 +193,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
   # library(ggplot2); ggplot(s$dat, aes(time, y)) +
   # geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -194,6 +201,7 @@ test_that("mvt-norm estimates ar process *with* year random walk effects", {
     year_re = TRUE,
     estimate_ar = TRUE
   )
+  })
   m
 
   TOL <- 0.15
@@ -249,14 +257,16 @@ test_that("mvt-norm estimates ar process *with* year random walk effects and cov
   s$dat$cov2 = model_matrix[,"cov2"]
 
   # include formula with the covariate and transformation
-  m <- glmmfields(y ~ -1 + cov + cov2,
-     data = s$dat, time = "time",
-     lat = "lat", lon = "lon", nknots = nknots,
-     iter = ITER, chains = CHAINS, seed = SEED,
-     year_re = TRUE, fixed_phi_value = phi,
-     estimate_ar = FALSE
-   )
-   m
+  suppressWarnings({
+    m <- glmmfields(y ~ -1 + cov + cov2,
+      data = s$dat, time = "time",
+      lat = "lat", lon = "lon", nknots = nknots,
+      iter = ITER, chains = CHAINS, seed = SEED,
+      year_re = TRUE, fixed_phi_value = phi,
+      estimate_ar = FALSE
+    )
+  })
+  m
 
   TOL <- 0.15
   b <- tidy(m, estimate.method = "median")
@@ -302,6 +312,7 @@ test_that("mvt-norm estimates global int + AR RF", {
   # library(ggplot2); ggplot(s$dat, aes(time, y)) +
   # geom_point(alpha = 0.5, position = position_jitter(width = 0.2))
 
+  suppressWarnings({
   m <- glmmfields(y ~ 1,
     data = s$dat, time = "time",
     lat = "lat", lon = "lon", nknots = nknots,
@@ -310,6 +321,7 @@ test_that("mvt-norm estimates global int + AR RF", {
     control = list(adapt_delta = 0.95),
     estimate_ar = TRUE, prior_intercept = student_t(99, 0, 30)
   )
+  })
   m
 
   b <- tidy(m, estimate.method = "median")
@@ -364,6 +376,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
       aes(x = time, y = B), inherit.aes = FALSE, col = "red"
     )
 
+  suppressWarnings({
   m <- glmmfields(y ~ 0 + as.factor(time),
     data = s$dat,
     time = "time",
@@ -372,8 +385,10 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     fixed_df_value = 6, estimate_df = FALSE,
     estimate_ar = FALSE, fixed_phi_value = 1, prior_intercept = student_t(99, 0, 30)
   )
+  })
   m
 
+  suppressWarnings({
   m2 <- glmmfields(y ~ -1,
     data = s$dat,
     time = "time",
@@ -382,6 +397,7 @@ test_that("mvt-norm estimates many ints + fixed AR", {
     fixed_df_value = 6, estimate_df = FALSE,
     estimate_ar = FALSE, fixed_phi_value = 1, prior_intercept = student_t(99, 0, 30)
   )
+  })
   m2
 
   b <- tidy(m, estimate.method = "median")
