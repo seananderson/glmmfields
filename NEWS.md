@@ -1,3 +1,11 @@
+# glmmfields 0.1.5
+
+* Other minor fixes to pass R CMD check on R devel
+
+* Fully delegate installation to rstantools (#15)
+
+* Add offset functionality
+
 # glmmfields 0.1.4
 
 * Make compatible with updated broom.mixed
