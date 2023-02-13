@@ -1,3 +1,7 @@
+# glmmfields 0.1.6
+
+* Add back RcppParallel as an import
+
 # glmmfields 0.1.5
 
 * Fully delegate installation to rstantools (#15)

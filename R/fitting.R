@@ -111,6 +111,7 @@
 #' @importFrom stats dist model.frame model.matrix model.response rnorm runif model.offset
 #' @importFrom assertthat assert_that is.count is.number
 #' @importFrom stats gaussian na.omit
+#' @importFrom RcppParallel RcppParallelLibs
 #'
 #' @examples
 #' \donttest{
