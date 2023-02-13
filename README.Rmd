@@ -42,8 +42,8 @@ install.packages("glmmfields")
 If you have a C++ compiler installed, you can install the development version of the package with:
 
 ```{r, eval=FALSE}
-# install.packages("devtools")
-devtools::install_github("seananderson/glmmfields", build_vignettes = TRUE)
+# install.packages("remotes")
+remotes::install_github("seananderson/glmmfields", build_vignettes = TRUE)
 ```
 
 glmmfields can also fit spatial GLMs with Stan. See the vignette:

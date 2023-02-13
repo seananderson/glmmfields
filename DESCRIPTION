@@ -2,8 +2,8 @@ Type: Package
 Package: glmmfields
 Title: Generalized Linear Mixed Models with Robust Random Fields
     for Spatiotemporal Modeling
-Version: 0.1.5
-Authors@R: 
+Version: 0.1.6
+Authors@R:
     c(person(given = c("Sean", "C."),
              family = "Anderson",
              role = c("aut", "cre"),
@@ -38,7 +38,6 @@ Imports:
     loo (>= 2.0.0),
     mvtnorm,
     nlme,
-    RcppParallel (>= 5.0.1),
     reshape2,
     rstan (>= 2.18.2),
     rstantools (>= 2.1.1),
@@ -51,17 +50,18 @@ Suggests:
     rmarkdown,
     testthat,
     viridis
-LinkingTo: 
+LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.8),
     RcppEigen (>= 0.3.3.3.0),
     RcppParallel (>= 5.0.1),
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.0)
-VignetteBuilder: 
+VignetteBuilder:
     knitr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 SystemRequirements: GNU make
+NeedsCompilation: yes
 Biarch: true

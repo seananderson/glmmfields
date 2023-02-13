@@ -13,3 +13,6 @@ inst/tests/mvt-mvn-difference_*
 *.html
 vignettes/*cache*
 vignettes/*files*
+src/
+R/stanmodels.R
+
