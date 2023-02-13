@@ -9,6 +9,6 @@ bibentry(
   journal = "Ecology",
   volume = "100",
   number = "1",
-  page = "e02403",
+  pages = "e02403",
   doi = "10.1002/ecy.2403"
 )
