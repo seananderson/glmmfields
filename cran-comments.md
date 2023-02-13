@@ -2,7 +2,7 @@
 
 This is a new version that is compatible with updates to 'rstantools'.
 
-At the same time, we have made minor updates to avoid R CMD check NOTES with R devel. 
+At the same time, we have made minor updates to avoid R CMD check NOTEs with R devel. 
 
 ## Test environments
 
