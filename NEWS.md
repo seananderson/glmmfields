@@ -1,8 +1,8 @@
 # glmmfields 0.1.5
 
-* Other minor fixes to pass R CMD check on R devel
-
 * Fully delegate installation to rstantools (#15)
+
+* Other minor fixes to pass R CMD check on R devel
 
 * Add offset functionality
 
