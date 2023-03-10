@@ -1,3 +1,7 @@
+# glmmfields 0.1.7
+
+* Rebuild with newest rstantools to avoid CRAN NOTE about C++ version
+
 # glmmfields 0.1.6
 
 * Add back RcppParallel as an import
