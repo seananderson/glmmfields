@@ -200,7 +200,7 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
   out$lat <- rep(g$lat, n_draws)
   out$station_id <- rep(station_id, n_draws)
 
-  plot <- ggplot(out, aes(x = out[["lon"]], y = out[["lat"]], colour = "y")) +
+  plot <- ggplot(out, aes(x = .data[["lon"]], y = .data[["lat"]], colour = .data[["y"]])) +
     facet_wrap(~time) +
     geom_point(size = 2) +
     scale_color_gradient2()
