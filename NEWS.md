@@ -1,3 +1,7 @@
+# glmmfields 0.1.8
+
+* Update for rstan 2.26 (#16)
+
 # glmmfields 0.1.7
 
 * Rebuild with newest rstantools to avoid CRAN NOTE about C++ version
