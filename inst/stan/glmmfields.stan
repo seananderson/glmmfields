@@ -3,19 +3,19 @@ data {
   int<lower=1> nLocs;
   int<lower=1> nT;
   int<lower=1> N;
-  int<lower=1> stationID[N];
-  int<lower=1> yearID[N];
-  int<lower=0> binomialN[N];
-  real y[N]; // y for normal and gamma obs. model
-  int y_int[N]; // y for NB2 or poisson or binomial obs. model
-  real offset[N]; // optional offset, is 0 if not included
-  real prior_gp_theta[3];
-  real prior_gp_sigma[3];
-  real prior_sigma[3];
-  real prior_rw_sigma[3];
-  real prior_intercept[3];
-  real prior_beta[3];
-  real prior_phi[3];
+  array[N] int<lower=1> stationID;
+  array[N] int<lower=1> yearID;
+  array[N] int<lower=0> binomialN;
+  array[N] real y; // y for normal and gamma obs. model
+  array[N] int y_int; // y for NB2 or poisson or binomial obs. model
+  array[N] real input_offset; // optional offset, is 0 if not included
+  array[3] real prior_gp_theta;
+  array[3] real prior_gp_sigma;
+  array[3] real prior_sigma;
+  array[3] real prior_rw_sigma;
+  array[3] real prior_intercept;
+  array[3] real prior_beta;
+  array[3] real prior_phi;
   matrix[nKnots, nKnots] distKnots;
   matrix[nLocs, nKnots] distKnots21;
   int<lower=0> nCov;
@@ -41,20 +41,20 @@ data {
 parameters {
   real<lower=0> gp_theta;
   real<lower=0> gp_sigma;
-  real<lower=df_lower_bound> df[est_df];
-  real<lower=0> sigma[norm_params];
-  real<lower=0> CV[gamma_params];
-  real<lower=0> nb2_phi[nb2_params];
-  real yearEffects[n_year_effects];
-  real<lower=0> year_sigma[est_temporalRE];
-  vector[nKnots] spatialEffectsKnots[nT];
+  array[est_df] real<lower=df_lower_bound> df;
+  array[norm_params] real<lower=0> sigma;
+  array[gamma_params] real<lower=0> CV;
+  array[nb2_params] real<lower=0> nb2_phi;
+  array[n_year_effects] real yearEffects;
+  array[est_temporalRE] real<lower=0> year_sigma;
+  array[nT] vector[nKnots] spatialEffectsKnots;
   vector[nCov] B;
-  real<lower=-1, upper=1> phi[est_phi];
-  real<lower=0> W[nW];
+  array[est_phi] real<lower=-1, upper=1> phi;
+  array[nW] real<lower=0> W;
 }
 transformed parameters {
   vector[nKnots] muZeros;
-  vector[nLocs] spatialEffects[nT];
+  array[nT] vector[nLocs] spatialEffects;
   matrix[nKnots, nKnots] SigmaKnots;
   matrix[nKnots, nKnots] transformed_dist;
   matrix[nLocs, nKnots] transformed_dist21;
@@ -62,7 +62,7 @@ transformed parameters {
   matrix[nLocs, nKnots] SigmaOffDiagTemp;
   matrix[nLocs, nKnots] invSigmaKnots;
   vector[N] y_hat;
-  real<lower=0> gammaA[gamma_params];
+  array[gamma_params] real<lower=0> gammaA;
   real<lower=0> gp_sigma_sq;
   gp_sigma_sq = pow(gp_sigma*gp_sigma_scaling_factor, 2.0);
 
@@ -127,7 +127,7 @@ transformed parameters {
         y_hat[i] = X[i] * B + spatialEffects[yearID[i], stationID[i]] + yearEffects[yearID[i]];
       }
     }
-    y_hat[i] = y_hat[i] + offset[i]; // optional offset, additive in link space
+    y_hat[i] = y_hat[i] + input_offset[i]; // optional offset, additive in link space
   }
 
   if (obs_model==0) {
