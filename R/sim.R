@@ -19,7 +19,7 @@
 #' @param X The model matrix
 #' @param g Grid of points
 #' @export
-#' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point scale_color_gradient2
+#' @importFrom ggplot2 ggplot facet_wrap geom_point scale_color_gradient2
 #' @examples
 #' s <- sim_glmmfields(n_draws = 12, n_knots = 12, gp_theta = 1.5,
 #'   gp_sigma = 0.2, sd_obs = 0.2)
@@ -200,7 +200,7 @@ sim_glmmfields <- function(n_knots = 15, n_draws = 10, gp_theta = 0.5,
   out$lat <- rep(g$lat, n_draws)
   out$station_id <- rep(station_id, n_draws)
 
-  plot <- ggplot(out, aes_string(x = "lon", y = "lat", colour = "y")) +
+  plot <- ggplot(out, aes(x = out[["lon"]], y = out[["lat"]], colour = "y")) +
     facet_wrap(~time) +
     geom_point(size = 2) +
     scale_color_gradient2()

@@ -6,7 +6,7 @@
 #'  or on the natural scale?
 #' @param ... Other arguments passed to \code{\link{predict.glmmfields}}
 #'
-#' @importFrom ggplot2 ggplot aes_string facet_wrap geom_point
+#' @importFrom ggplot2 aes ggplot facet_wrap geom_point
 #'   scale_color_gradient2 geom_smooth geom_hline facet_wrap
 #' @export
 #' @examples
@@ -40,20 +40,20 @@ plot.glmmfields <- function(x,
   g <- NULL
 
   if (type == "prediction") {
-    g <- ggplot(d, aes_string(x$lon, x$lat, colour = "estimate")) +
+    g <- ggplot(d, aes(d[[x$lon]], d[[x$lat]], colour = "estimate")) +
       geom_point(size = 2) +
       facet_wrap(x$time)
   }
 
   if (type == "spatial-residual") {
-    g <- ggplot(d, aes_string(x$lon, x$lat, colour = "residual")) +
+    g <- ggplot(d, aes(d[[x$lon]], d[[x$lat]], colour = "residual")) +
       geom_point(size = 2) +
       scale_color_gradient2() +
       facet_wrap(x$time)
   }
 
   if (type == "residual-vs-fitted") {
-    g <- ggplot(d, aes_string("estimate", "residual")) +
+    g <- ggplot(d, aes(d[["estimate"]], d[["residual"]])) +
       geom_point() +
       facet_wrap(x$time) +
       geom_hline(yintercept = 0, lty = 2) +
