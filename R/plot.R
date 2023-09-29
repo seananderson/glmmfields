@@ -46,7 +46,6 @@ plot.glmmfields <- function(x,
   }
 
   if (type == "spatial-residual") {
-    browser()
     g <- ggplot(d, aes(.data[[x$lon]], .data[[x$lat]], colour = .data[["residual"]])) +
       geom_point(size = 2) +
       scale_color_gradient2() +
